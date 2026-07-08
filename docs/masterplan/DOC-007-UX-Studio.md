@@ -55,8 +55,14 @@ Vista simultánea de varias soluciones con métricas comparables.
 ### SCR-004 — Inspector
 Información detallada del proyecto, tablero, pieza o solución seleccionada.
 
-### SCR-005 — Configuración
-Preferencias, estrategias, algoritmos y opciones avanzadas.
+### SCR-005 — Gestión del Proyecto
+Datos básicos, materiales, restricciones y configuración del proyecto en curso.
+
+### SCR-006 — Preferencias
+Comportamiento general de BoardComposer Studio, aplicado a todos los proyectos.
+
+### SCR-007 — Exportación
+Generación de la documentación final del proyecto en distintos formatos.
 
 ---
 

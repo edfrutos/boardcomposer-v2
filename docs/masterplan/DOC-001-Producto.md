@@ -113,8 +113,8 @@ BoardComposer no pretende convertirse en:
 
 - DOC-000 — Manifiesto.
 - DOC-002 — Arquitectura.
-- DOC-003 — Studio.
-- DOC-004 — Roadmap.
+- DOC-003 — Roadmap.
+- DOC-004 — Backlog.
 
 ---
 

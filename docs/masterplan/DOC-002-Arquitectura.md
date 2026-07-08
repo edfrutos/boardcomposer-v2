@@ -98,7 +98,7 @@ La arquitectura está diseñada para admitir, sin cambios estructurales importan
 
 - DOC-000 — Manifiesto.
 - DOC-001 — Producto.
-- DOC-003 — Studio.
+- DOC-003 — Roadmap.
 - ADR (Architecture Decision Records).
 
 ---
