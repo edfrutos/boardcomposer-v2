@@ -1,0 +1,1207 @@
+{
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/pyproject.toml": {
+    "mtime": 1783438113.0,
+    "ast_hash": "93ce71fcbdc5e1c011f797025de704fc",
+    "semantic_hash": "93ce71fcbdc5e1c011f797025de704fc"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/scripts/check_project.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "b28107fef17eba8f35347eb1352695d6",
+    "semantic_hash": "b28107fef17eba8f35347eb1352695d6"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/__init__.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "c089164f8bd87df23402f8db0eb6bc13",
+    "semantic_hash": "c089164f8bd87df23402f8db0eb6bc13"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/cli.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "2ea8e3636412d343f523fb262c8ead38",
+    "semantic_hash": "2ea8e3636412d343f523fb262c8ead38"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/domain/__init__.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "403b5d8c87e922ef25d60877f57f38db",
+    "semantic_hash": "403b5d8c87e922ef25d60877f57f38db"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/domain/board.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "1b01a2bc7d2fe7bf2e0d920ff692249b",
+    "semantic_hash": "1b01a2bc7d2fe7bf2e0d920ff692249b"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/domain/constraints.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "23d98d8c7ffd09d89174f35aa6012332",
+    "semantic_hash": "23d98d8c7ffd09d89174f35aa6012332"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/domain/explanation.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "b9da498cc150f5a8774344abfeb57613",
+    "semantic_hash": "b9da498cc150f5a8774344abfeb57613"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/domain/placement.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "8236d0436a324e19caa14605876d92dd",
+    "semantic_hash": "8236d0436a324e19caa14605876d92dd"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/domain/project.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "cf6a05de92dc03db81c13f0a2223d10b",
+    "semantic_hash": "cf6a05de92dc03db81c13f0a2223d10b"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/domain/score.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "7d41bb86dfddb91a483b2c74b4305398",
+    "semantic_hash": "7d41bb86dfddb91a483b2c74b4305398"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/domain/solution.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "9eb3b2c42ac17fb9cdcd85bfb228f3a9",
+    "semantic_hash": "9eb3b2c42ac17fb9cdcd85bfb228f3a9"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/export/__init__.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "8193fa1e826ba7f849a0571f57a4f0d0",
+    "semantic_hash": "8193fa1e826ba7f849a0571f57a4f0d0"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/export/svg_exporter.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "de4ae6672d2d68ee79004cc4ce3c8506",
+    "semantic_hash": "de4ae6672d2d68ee79004cc4ce3c8506"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/geometry/__init__.py": {
+    "mtime": 1783438113.0,
+    "ast_hash": "7ca6c9d660686e665fa8b9b80fbb254b",
+    "semantic_hash": "7ca6c9d660686e665fa8b9b80fbb254b"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/geometry/collision.py": {
+    "mtime": 1783438113.0,
+    "ast_hash": "813a7dcdd4530257f82996578778ea02",
+    "semantic_hash": "813a7dcdd4530257f82996578778ea02"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/geometry/rectangle.py": {
+    "mtime": 1783438113.0,
+    "ast_hash": "c0c837162cf8b00b314cb6d8490da6a7",
+    "semantic_hash": "c0c837162cf8b00b314cb6d8490da6a7"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/geometry/transform.py": {
+    "mtime": 1783438113.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/io/__init__.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "167bb0d5d3f2f55b7de5656d50a78970",
+    "semantic_hash": "167bb0d5d3f2f55b7de5656d50a78970"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/io/csv_loader.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "77c82daa5b5d6b1a4c9991bce58dbb96",
+    "semantic_hash": "77c82daa5b5d6b1a4c9991bce58dbb96"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/layout/__init__.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "382eade6f918dcbb4087e9de9022e204",
+    "semantic_hash": "382eade6f918dcbb4087e9de9022e204"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/layout/bounds.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "f9fcc1dfc7a3ba36df1a93df63fe391d",
+    "semantic_hash": "f9fcc1dfc7a3ba36df1a93df63fe391d"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/layout/collision.py": {
+    "mtime": 1783438113.0,
+    "ast_hash": "b0e1ea206706fb9f67d04b8b2af0825d",
+    "semantic_hash": "b0e1ea206706fb9f67d04b8b2af0825d"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/layout/free_space.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "b79aa6edd7869ce30c529d72ab9d8215",
+    "semantic_hash": "b79aa6edd7869ce30c529d72ab9d8215"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/layout/free_space_manager.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "fe34b2d3b3d402a4e1d0ab27b26d2535",
+    "semantic_hash": "fe34b2d3b3d402a4e1d0ab27b26d2535"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/layout/placer.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "68cf0f350b848f68fccebf71984a1632",
+    "semantic_hash": "68cf0f350b848f68fccebf71984a1632"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/layout/rectangle.py": {
+    "mtime": 1783438113.0,
+    "ast_hash": "7ca6c9d660686e665fa8b9b80fbb254b",
+    "semantic_hash": "7ca6c9d660686e665fa8b9b80fbb254b"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/layout/validation.py": {
+    "mtime": 1783438113.0,
+    "ast_hash": "25981a83b7ac5d0c4adb89a292c7f299",
+    "semantic_hash": "25981a83b7ac5d0c4adb89a292c7f299"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/presenters/__init__.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "80aa0fc7184bb4b9e3e85df7027fd790",
+    "semantic_hash": "80aa0fc7184bb4b9e3e85df7027fd790"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/presenters/base.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "459bba2620748593294cb0b0658b5334",
+    "semantic_hash": "459bba2620748593294cb0b0658b5334"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/presenters/json_presenter.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "5899edb45ea5c5021ea594626c8a0183",
+    "semantic_hash": "5899edb45ea5c5021ea594626c8a0183"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/presenters/text_presenter.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "4a76388d4aa0aaa27aeccc7af16da4ce",
+    "semantic_hash": "4a76388d4aa0aaa27aeccc7af16da4ce"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/__init__.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "616980e64dbfc8fe0b1bf62adee51e30",
+    "semantic_hash": "616980e64dbfc8fe0b1bf62adee51e30"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/base_solver.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "8295b27092107d9e28ab49f22077e5b2",
+    "semantic_hash": "8295b27092107d9e28ab49f22077e5b2"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/beam_search.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "81d3f3c4b0032c2e8121f5af660985c0",
+    "semantic_hash": "81d3f3c4b0032c2e8121f5af660985c0"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/board_ordering.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "4a1c9502eee64db8bce1b0fc593e62a2",
+    "semantic_hash": "4a1c9502eee64db8bce1b0fc593e62a2"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/candidate_pipeline.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "f5e20e94e36689e0f86279a15a215ba6",
+    "semantic_hash": "f5e20e94e36689e0f86279a15a215ba6"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/constraints_validator.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "be806dc1c3b41dd8e215372adb604586",
+    "semantic_hash": "be806dc1c3b41dd8e215372adb604586"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/deduplication.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "e011893a800551ee6efc24f6583f1c23",
+    "semantic_hash": "e011893a800551ee6efc24f6583f1c23"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/evaluation.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "725ec0384d6392299ef9e15e479c2f6f",
+    "semantic_hash": "725ec0384d6392299ef9e15e479c2f6f"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/free_space_generator.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "093781d1fc4d258e86d0f3b363f1a4d9",
+    "semantic_hash": "093781d1fc4d258e86d0f3b363f1a4d9"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/generator_utils.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "8bfb4b56f91544df8fdb54a70bf5f7dc",
+    "semantic_hash": "8bfb4b56f91544df8fdb54a70bf5f7dc"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/generators.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "4e31a50adf4e763e55944d7765db2443",
+    "semantic_hash": "4e31a50adf4e763e55944d7765db2443"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/geometry_solver.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "169979f4bb9f79f2b7f2414621f22b32",
+    "semantic_hash": "169979f4bb9f79f2b7f2414621f22b32"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/layout_generator.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "99ae3ad030bf2b243e8fdc68c788d66f",
+    "semantic_hash": "99ae3ad030bf2b243e8fdc68c788d66f"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/maxrects/__init__.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/maxrects/beam.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "e3fee5865551151b1b3cbd84217a93e4",
+    "semantic_hash": "e3fee5865551151b1b3cbd84217a93e4"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/maxrects/contact.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "ecc3c6da38e785c5ec8ccff855f2b060",
+    "semantic_hash": "ecc3c6da38e785c5ec8ccff855f2b060"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/maxrects/free_rectangle.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "c825b7280d61e233ac8fcbc248cf7a4c",
+    "semantic_hash": "c825b7280d61e233ac8fcbc248cf7a4c"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/maxrects/heuristics.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "fd668638bf63175d628d354dc2c260b9",
+    "semantic_hash": "fd668638bf63175d628d354dc2c260b9"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/maxrects/maxrects.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "3fcabfc64900ea4b3ee591aeda4ba770",
+    "semantic_hash": "3fcabfc64900ea4b3ee591aeda4ba770"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/maxrects/orderings.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "139d3fba7073328f3e9894ff34ce0bf7",
+    "semantic_hash": "139d3fba7073328f3e9894ff34ce0bf7"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/maxrects/placement.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "7946681d9688e87c38c374c2d83e956e",
+    "semantic_hash": "7946681d9688e87c38c374c2d83e956e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/maxrects/scoring.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "68c554f5dbb6ae1be66af4d57c8d39f0",
+    "semantic_hash": "68c554f5dbb6ae1be66af4d57c8d39f0"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/maxrects/state.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "93d85e89d1a27607652389bf8cfac181",
+    "semantic_hash": "93d85e89d1a27607652389bf8cfac181"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/maxrects/strategies.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d3da56b1279ef83d11f6ef8542d33e5a",
+    "semantic_hash": "d3da56b1279ef83d11f6ef8542d33e5a"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/maxrects_beam_runner.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "4005e83ca6076caff934c2b1a0e3a377",
+    "semantic_hash": "4005e83ca6076caff934c2b1a0e3a377"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/maxrects_engine.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "266532fe1fcc0b49e40f2855c3e18eb2",
+    "semantic_hash": "266532fe1fcc0b49e40f2855c3e18eb2"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/maxrects_generator.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "44a8769c4e03e258ea66d95dc29d0157",
+    "semantic_hash": "44a8769c4e03e258ea66d95dc29d0157"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/maxrects_runner.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "8e830c0a3534cfacfcb4659319772ef2",
+    "semantic_hash": "8e830c0a3534cfacfcb4659319772ef2"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/maxrects_search.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "ad617de3adce38fd93c39a36ba52cd69",
+    "semantic_hash": "ad617de3adce38fd93c39a36ba52cd69"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/objectives.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "adc9cbb099d0a5b6f6fa7677f553746b",
+    "semantic_hash": "adc9cbb099d0a5b6f6fa7677f553746b"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/packing_runner.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "c800fdaf898065c14f71f6976deb104e",
+    "semantic_hash": "c800fdaf898065c14f71f6976deb104e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/scoring_weights.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "8c2a886a58b9d1d9ce115e5cf6e4da80",
+    "semantic_hash": "8c2a886a58b9d1d9ce115e5cf6e4da80"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/search.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "acd92eaa45edaf00e858a3f717757c5a",
+    "semantic_hash": "acd92eaa45edaf00e858a3f717757c5a"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/sequential_solver.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "154a637d70110e5099d9986563bc121c",
+    "semantic_hash": "154a637d70110e5099d9986563bc121c"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/skyline/__init__.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/skyline/node.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d0b3bffe5db8801a3046051444cf0612",
+    "semantic_hash": "d0b3bffe5db8801a3046051444cf0612"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/skyline/placement.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "2bff4a3b3ff51e5f5a822768a78ce92d",
+    "semantic_hash": "2bff4a3b3ff51e5f5a822768a78ce92d"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/skyline/skyline.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "ce41637e7ce04ee9edbd98c40d737877",
+    "semantic_hash": "ce41637e7ce04ee9edbd98c40d737877"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/skyline_generator.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "a6a49fa39791afa2ed4ba52b05d4acfc",
+    "semantic_hash": "a6a49fa39791afa2ed4ba52b05d4acfc"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/skyline_runner.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d222c6e1e80c078508565e539644384c",
+    "semantic_hash": "d222c6e1e80c078508565e539644384c"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/skyline_search.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "83f5eb7b28eed705a92a0cdbb4cc65bd",
+    "semantic_hash": "83f5eb7b28eed705a92a0cdbb4cc65bd"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/src/boardcomposer/solver/strategies.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "19fd0ac5a00cdaa60ccc34034a996133",
+    "semantic_hash": "19fd0ac5a00cdaa60ccc34034a996133"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/__init__.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/app.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "f7f3110224cddb6b758a05175db5f8ef",
+    "semantic_hash": "f7f3110224cddb6b758a05175db5f8ef"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/commands/__init__.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "13961dd5bfc4c790e8fdb8ea0b021150",
+    "semantic_hash": "13961dd5bfc4c790e8fdb8ea0b021150"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/commands/command.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "1c75333121feeb60fb84e860b2492440",
+    "semantic_hash": "1c75333121feeb60fb84e860b2492440"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/commands/command_manager.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "8985b3e0fb29333de112caf9cbb46242",
+    "semantic_hash": "8985b3e0fb29333de112caf9cbb46242"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/commands/delete_piece_command.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "dab068f6dc41fd3702f9bc36aeda2fa5",
+    "semantic_hash": "dab068f6dc41fd3702f9bc36aeda2fa5"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/commands/move_piece_command.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "9857e5a122527fc6928cbabbba415ab0",
+    "semantic_hash": "9857e5a122527fc6928cbabbba415ab0"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/commands/rotate_piece_command.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "ab1c3056201448c3952562d96474394d",
+    "semantic_hash": "ab1c3056201448c3952562d96474394d"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/events/__init__.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "09aa33df1a0775e364071bc3a0c2a101",
+    "semantic_hash": "09aa33df1a0775e364071bc3a0c2a101"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/events/event_bus.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "18a834fbb8be19c5c0d15b35ea08b18e",
+    "semantic_hash": "18a834fbb8be19c5c0d15b35ea08b18e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/layout_service.py": {
+    "mtime": 1783438113.0,
+    "ast_hash": "78279b3e7fff5b74f0ea18df662b740d",
+    "semantic_hash": "78279b3e7fff5b74f0ea18df662b740d"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/main_window.py": {
+    "mtime": 1783438113.0,
+    "ast_hash": "e296442d3d13e02588344eea26c07331",
+    "semantic_hash": "e296442d3d13e02588344eea26c07331"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/models/__init__.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "e02fc013c72474b3ae81b604b96f3165",
+    "semantic_hash": "e02fc013c72474b3ae81b604b96f3165"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/models/board.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "83eccd179d5ae1a3290807b6df346572",
+    "semantic_hash": "83eccd179d5ae1a3290807b6df346572"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/models/piece.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "f13651e484af3cd322b136312e9873ca",
+    "semantic_hash": "f13651e484af3cd322b136312e9873ca"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/models/placement.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "1a6a313a26b0abec8ca099bb5ff29000",
+    "semantic_hash": "1a6a313a26b0abec8ca099bb5ff29000"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/models/project.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "b5d377484f4d67f407876115e0bfeaed",
+    "semantic_hash": "b5d377484f4d67f407876115e0bfeaed"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/panels/__init__.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/project/__init__.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d52df11966cddf6db5ae331ec64fc2df",
+    "semantic_hash": "d52df11966cddf6db5ae331ec64fc2df"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/project/project_manager.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "850c7d7adb9ba188f945bf292677cf48",
+    "semantic_hash": "850c7d7adb9ba188f945bf292677cf48"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/selection/__init__.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d9d196b4fd6e7c8a587a26ed0ee7bb8d",
+    "semantic_hash": "d9d196b4fd6e7c8a587a26ed0ee7bb8d"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/selection/selection_manager.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "24c4ed0c5c747caf2a228ffaad02cc15",
+    "semantic_hash": "24c4ed0c5c747caf2a228ffaad02cc15"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/services.py": {
+    "mtime": 1783438113.0,
+    "ast_hash": "75b7f2f21b90bedcbd12872d8aab5b12",
+    "semantic_hash": "75b7f2f21b90bedcbd12872d8aab5b12"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/workspace/__init__.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/workspace/board_item.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "e0d1dbdecc95f27ced611be453e4220b",
+    "semantic_hash": "e0d1dbdecc95f27ced611be453e4220b"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/workspace/board_piece_item.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "4ce2cd4c3d4f6c205555c3fc878105dc",
+    "semantic_hash": "4ce2cd4c3d4f6c205555c3fc878105dc"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/workspace/board_workspace.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "38aa27138e29b6224db342c0deba6e96",
+    "semantic_hash": "38aa27138e29b6224db342c0deba6e96"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/workspace/drag_controller.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "41793a950f878217e17853d1b46ef5ee",
+    "semantic_hash": "41793a950f878217e17853d1b46ef5ee"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/workspace/grid.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "aed71c7ba0d511d49c54139945b63eb1",
+    "semantic_hash": "aed71c7ba0d511d49c54139945b63eb1"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/workspace/piece_factory.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "40d2deff7594f4b2db9241d20b737d97",
+    "semantic_hash": "40d2deff7594f4b2db9241d20b737d97"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/workspace/placement_validator.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "5c7c7542fe3e755572f7f1d28a864aec",
+    "semantic_hash": "5c7c7542fe3e755572f7f1d28a864aec"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/workspace/selection.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "10ff146c9aeddd74996bda58136b44b6",
+    "semantic_hash": "10ff146c9aeddd74996bda58136b44b6"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/workspace/selection_controller.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "4cf2e97f03682d25292eb56c8db214f4",
+    "semantic_hash": "4cf2e97f03682d25292eb56c8db214f4"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/workspace/workspace_camera.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "b328d9cc36b2d8976365a5ed3f9aead8",
+    "semantic_hash": "b328d9cc36b2d8976365a5ed3f9aead8"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_algorithm_comparison.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "dfbc755caa75513cc6695f428096aa1e",
+    "semantic_hash": "dfbc755caa75513cc6695f428096aa1e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_beam_search.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "7fe4252830692940e613c1860ed8e440",
+    "semantic_hash": "7fe4252830692940e613c1860ed8e440"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_board_ordering.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "270eccf502ab6db53f6794da9f1c136b",
+    "semantic_hash": "270eccf502ab6db53f6794da9f1c136b"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_bounds.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "5be7cda01a5567de2a9c7f5215570bca",
+    "semantic_hash": "5be7cda01a5567de2a9c7f5215570bca"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_candidate_pipeline.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "6e2cb6cc3023651e8762e9b71d01b806",
+    "semantic_hash": "6e2cb6cc3023651e8762e9b71d01b806"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_cli.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "b251abb2b2500363b4cd83f46eddae9f",
+    "semantic_hash": "b251abb2b2500363b4cd83f46eddae9f"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_collision.py": {
+    "mtime": 1783438113.0,
+    "ast_hash": "f36c0b77c450395a74513ac8d6b9c3b2",
+    "semantic_hash": "f36c0b77c450395a74513ac8d6b9c3b2"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_constraints.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "ab0b3286b94ec7d4518eb9d2e3f7b9b4",
+    "semantic_hash": "ab0b3286b94ec7d4518eb9d2e3f7b9b4"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_constraints_validator.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "619fba8dba155b5f94740cab2dff69ff",
+    "semantic_hash": "619fba8dba155b5f94740cab2dff69ff"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_csv_loader.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "4f5d242fa5db6750d995711b57cf5765",
+    "semantic_hash": "4f5d242fa5db6750d995711b57cf5765"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_deduplication.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "1c897c35dfaa1c2cb7c074706892eae5",
+    "semantic_hash": "1c897c35dfaa1c2cb7c074706892eae5"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_evaluation.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "60b17760f4dfb4a1bf8fd1cafb087422",
+    "semantic_hash": "60b17760f4dfb4a1bf8fd1cafb087422"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_explanation.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "23531b84bb04f6eb46925ebf69c10933",
+    "semantic_hash": "23531b84bb04f6eb46925ebf69c10933"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_free_space.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "1e4907a5653174f4b69bb2d2c9afcb0e",
+    "semantic_hash": "1e4907a5653174f4b69bb2d2c9afcb0e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_free_space_generator.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "863ca25f4e1f39af792477dec94f2747",
+    "semantic_hash": "863ca25f4e1f39af792477dec94f2747"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_free_space_manager.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "4de7757e9f65a9bea85b49902598cc96",
+    "semantic_hash": "4de7757e9f65a9bea85b49902598cc96"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_generators.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "baf11d49491dc8c3aa6a55c69f4ac00a",
+    "semantic_hash": "baf11d49491dc8c3aa6a55c69f4ac00a"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_geometry_solver.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "06d40b3378f224cf0b230b31ad3b7d6e",
+    "semantic_hash": "06d40b3378f224cf0b230b31ad3b7d6e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_json_presenter.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "00e40c72b04698007539f8169642cf32",
+    "semantic_hash": "00e40c72b04698007539f8169642cf32"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_layout_generator.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "adc5c76ecdbc63ea0a78c8a57bd7d1d6",
+    "semantic_hash": "adc5c76ecdbc63ea0a78c8a57bd7d1d6"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_layout_permutations.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "9263ce0da68ee389ac0c2cf2c6010fef",
+    "semantic_hash": "9263ce0da68ee389ac0c2cf2c6010fef"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_layout_validation.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "dc7ff804615ee132c53896a0865f1fbe",
+    "semantic_hash": "dc7ff804615ee132c53896a0865f1fbe"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "3bebd3e9bddf2498b635bcdceaa3c5fc",
+    "semantic_hash": "3bebd3e9bddf2498b635bcdceaa3c5fc"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects_beam.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "bff9fa08a4730b3271ec618a84329ca0",
+    "semantic_hash": "bff9fa08a4730b3271ec618a84329ca0"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects_beam_search.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "6b63c2f3c3f75aa3e338108a31d7b008",
+    "semantic_hash": "6b63c2f3c3f75aa3e338108a31d7b008"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects_candidates.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "3336c6a2696e3224f1e88e4973a97b7e",
+    "semantic_hash": "3336c6a2696e3224f1e88e4973a97b7e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects_contact.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "b8395fc469c0a2d87da0f636ba9a48ad",
+    "semantic_hash": "b8395fc469c0a2d87da0f636ba9a48ad"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects_engine.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "7577e7d1729606920486c8ea3016aeec",
+    "semantic_hash": "7577e7d1729606920486c8ea3016aeec"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects_find_best.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "2325f88bb22b795e215aca038abaf7b8",
+    "semantic_hash": "2325f88bb22b795e215aca038abaf7b8"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects_free_rectangle.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "bff9faf8ebaa67c6fe2d635d5ddca88b",
+    "semantic_hash": "bff9faf8ebaa67c6fe2d635d5ddca88b"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects_generator.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "15f5360431b51dcb608d8b0381f2dceb",
+    "semantic_hash": "15f5360431b51dcb608d8b0381f2dceb"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects_heuristics.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "00ffeea96dfe1ae0bab4056587418211",
+    "semantic_hash": "00ffeea96dfe1ae0bab4056587418211"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects_intersection.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "c51f5d193d6999e7d0c964c3c43ce9c1",
+    "semantic_hash": "c51f5d193d6999e7d0c964c3c43ce9c1"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects_orderings.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "412d0a32057e83af790aab52b76e04c4",
+    "semantic_hash": "412d0a32057e83af790aab52b76e04c4"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects_overlap_resolution.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "c1557590f51e5c0063befe3edfa3858b",
+    "semantic_hash": "c1557590f51e5c0063befe3edfa3858b"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects_place.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "dd0baafe9f70f6a7647c54003cefded5",
+    "semantic_hash": "dd0baafe9f70f6a7647c54003cefded5"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects_prune.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "aa57ed6c90b423f3240edfaf3adeabe2",
+    "semantic_hash": "aa57ed6c90b423f3240edfaf3adeabe2"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects_split_overlap.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "4aaeaca2afceafcaf0c3ab6bfb9db258",
+    "semantic_hash": "4aaeaca2afceafcaf0c3ab6bfb9db258"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects_state.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "6c70b709261a2bb28b63660e7ebd70a7",
+    "semantic_hash": "6c70b709261a2bb28b63660e7ebd70a7"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects_state_scoring.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "a43a99694d82b60cc848cf9b9fb6aa86",
+    "semantic_hash": "a43a99694d82b60cc848cf9b9fb6aa86"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_maxrects_strategies.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "79495380a4c10b9e461866c6c531f2b1",
+    "semantic_hash": "79495380a4c10b9e461866c6c531f2b1"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_models.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "caf4003e1fa325e50d33a3f5d2fb58d6",
+    "semantic_hash": "caf4003e1fa325e50d33a3f5d2fb58d6"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_objectives.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d2a292d65edd9ff5280a53dcbed347e9",
+    "semantic_hash": "d2a292d65edd9ff5280a53dcbed347e9"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_packing_benchmarks.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "cc1c382c120b47d973d39f3e077d0f3f",
+    "semantic_hash": "cc1c382c120b47d973d39f3e077d0f3f"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_placement.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "de19ed549fd37faf6995f4c8731d38da",
+    "semantic_hash": "de19ed549fd37faf6995f4c8731d38da"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_placer.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "3287fde14440e5bf79b73069e1fcc7de",
+    "semantic_hash": "3287fde14440e5bf79b73069e1fcc7de"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_project_constraints.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "4fab0813ac71d5687e63235ce8f76e6a",
+    "semantic_hash": "4fab0813ac71d5687e63235ce8f76e6a"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_rectangle.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "710225d85a95eb20fb3012d0c0f1cd82",
+    "semantic_hash": "710225d85a95eb20fb3012d0c0f1cd82"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_score.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "df0a3a016e9fc22f02baa2cebe977d7b",
+    "semantic_hash": "df0a3a016e9fc22f02baa2cebe977d7b"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_scoring_profiles.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "2b4ed51c3848247eab6e69c96efdfb98",
+    "semantic_hash": "2b4ed51c3848247eab6e69c96efdfb98"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_scoring_weights.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "7ba991e08f153d412b2ebb2dff092187",
+    "semantic_hash": "7ba991e08f153d412b2ebb2dff092187"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_sequential_solver.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "1b2d8cd288a781fdda306c13450d9284",
+    "semantic_hash": "1b2d8cd288a781fdda306c13450d9284"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_skyline.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "c294c0f31ad84ec0bb318bf3fa3653af",
+    "semantic_hash": "c294c0f31ad84ec0bb318bf3fa3653af"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_skyline_best_fit.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "9eac5487de35926e50423c3fd0cd0fcc",
+    "semantic_hash": "9eac5487de35926e50423c3fd0cd0fcc"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_skyline_bottom_left.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "13741369b4bd0c774ffd067133254544",
+    "semantic_hash": "13741369b4bd0c774ffd067133254544"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_skyline_fragmentation.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "80750f315767bfbcf38ee93c820e2b82",
+    "semantic_hash": "80750f315767bfbcf38ee93c820e2b82"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_skyline_generator.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "bd45a32af1e6bb0038b5815397bcc225",
+    "semantic_hash": "bd45a32af1e6bb0038b5815397bcc225"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_skyline_generator_rotation.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "f102bc940df52e58a44be90a7cfb4e74",
+    "semantic_hash": "f102bc940df52e58a44be90a7cfb4e74"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_skyline_height.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "3c8833ebfd5b4ae6fa44abb895a0bad3",
+    "semantic_hash": "3c8833ebfd5b4ae6fa44abb895a0bad3"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_skyline_merge.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d2eabf8eb3ff47c1fa929a57012a969c",
+    "semantic_hash": "d2eabf8eb3ff47c1fa929a57012a969c"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_skyline_multinode.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "5b175e6a268d34648ddeceec75f68496",
+    "semantic_hash": "5b175e6a268d34648ddeceec75f68496"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_skyline_node.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "02d102afe69b5c5084354d12116668e9",
+    "semantic_hash": "02d102afe69b5c5084354d12116668e9"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_skyline_order.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "e883cd4e994897f2fb6300f46c80f66b",
+    "semantic_hash": "e883cd4e994897f2fb6300f46c80f66b"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_skyline_order_selection.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "2adc3c81564e0ffed94e04c1d25583a9",
+    "semantic_hash": "2adc3c81564e0ffed94e04c1d25583a9"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_skyline_place.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d4bb376e41b6d03b24699a0c66ba7a4b",
+    "semantic_hash": "d4bb376e41b6d03b24699a0c66ba7a4b"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_skyline_place_best_node.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d8814cb4afc58e8111ccacd5cc7065f0",
+    "semantic_hash": "d8814cb4afc58e8111ccacd5cc7065f0"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_skyline_place_rotation.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "af58f2912f2ce9e9da9014059f61fcce",
+    "semantic_hash": "af58f2912f2ce9e9da9014059f61fcce"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_skyline_position.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "2ee0cf95afda27247e372e956d75ec9a",
+    "semantic_hash": "2ee0cf95afda27247e372e956d75ec9a"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_skyline_rotation.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "67e5215ac26f5a5d9ac904724307328b",
+    "semantic_hash": "67e5215ac26f5a5d9ac904724307328b"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_skyline_strategy_integration.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "940d038ee0f2ae7115b7e91f92a783be",
+    "semantic_hash": "940d038ee0f2ae7115b7e91f92a783be"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_solution.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "1c25d1f9f6884b386f62d90d1f65b7a9",
+    "semantic_hash": "1c25d1f9f6884b386f62d90d1f65b7a9"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_strategies.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "3e0698898e8015cd381c6bc343a7a439",
+    "semantic_hash": "3e0698898e8015cd381c6bc343a7a439"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_svg_exporter.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "8f988c8bb2ef4653fbe50069dd1595f3",
+    "semantic_hash": "8f988c8bb2ef4653fbe50069dd1595f3"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_text_presenter.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "9edbb05e6d4c927e4be4488384590e72",
+    "semantic_hash": "9edbb05e6d4c927e4be4488384590e72"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tools/visualize_demo.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "cb4368b516a0c5435f11a1d83190c97d",
+    "semantic_hash": "cb4368b516a0c5435f11a1d83190c97d"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/workbench/app.py": {
+    "mtime": 1783325065.0,
+    "ast_hash": "608303e1e78ea25786ade0ec414f8efa",
+    "semantic_hash": "608303e1e78ea25786ade0ec414f8efa"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/.github/workflows/ci.yml": {
+    "mtime": 1783325065.0,
+    "ast_hash": "bb4bb0446a3ea7902b1deecb50de30e2",
+    "semantic_hash": "bb4bb0446a3ea7902b1deecb50de30e2"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/AI_CONTEXT.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "28c1b85e327da39836e8be9c686fc041",
+    "semantic_hash": "28c1b85e327da39836e8be9c686fc041"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/CHANGELOG.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "7bbab9c3ae0b9bd14cdeb765b1064cbe",
+    "semantic_hash": "7bbab9c3ae0b9bd14cdeb765b1064cbe"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/DECISIONS.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "6cb89c6ef8a1c3368c697ea6aadcfac5",
+    "semantic_hash": "6cb89c6ef8a1c3368c697ea6aadcfac5"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/NOTEBOOK.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "c573f8df1230d4a5629ee0dc5ed9c653",
+    "semantic_hash": "c573f8df1230d4a5629ee0dc5ed9c653"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/PROJECT_PHILOSOPHY.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d9864898baa04e0a77c667226993a175",
+    "semantic_hash": "d9864898baa04e0a77c667226993a175"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/README.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "cb69381690e47dd5984d4a3ce5e74bcd",
+    "semantic_hash": "cb69381690e47dd5984d4a3ce5e74bcd"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/ROADMAP.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "89a5c41c160178fc93a1627de1d80018",
+    "semantic_hash": "89a5c41c160178fc93a1627de1d80018"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/TODO.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "ecc6fa682c5c31c9c356df3a9fd1ef6f",
+    "semantic_hash": "ecc6fa682c5c31c9c356df3a9fd1ef6f"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/PromptBase.md": {
+    "mtime": 1770919173.0,
+    "ast_hash": "db9b196baf2977bfe010c05b1a4c83b5",
+    "semantic_hash": "db9b196baf2977bfe010c05b1a4c83b5"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/algorithms.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/architecture.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/data_model.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/estructura.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "0122b37db6d1a09523f4a2b6d268c3d9",
+    "semantic_hash": "0122b37db6d1a09523f4a2b6d268c3d9"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-000-Manifiesto.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "99142443486896533a1da745424496b7",
+    "semantic_hash": "99142443486896533a1da745424496b7"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-001-Manifiesto.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "5365642d23d1fb361e9bbc7ca9aec3ba",
+    "semantic_hash": "5365642d23d1fb361e9bbc7ca9aec3ba"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-001-Producto.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "dcf40891924209e210f10dae2c90170e",
+    "semantic_hash": "dcf40891924209e210f10dae2c90170e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-002-Arquitectura.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "576bd0449f9dd2f072ba691fff9a299f",
+    "semantic_hash": "576bd0449f9dd2f072ba691fff9a299f"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-003-Roadmap.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "3884c152486efe87c4f5d327dd34e151",
+    "semantic_hash": "3884c152486efe87c4f5d327dd34e151"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-004-Backlog.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "36ce717fc23031dba8c78346fd40b981",
+    "semantic_hash": "36ce717fc23031dba8c78346fd40b981"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-005-Decisiones.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "dd4fe82b91b688dd742ca5f22de6df03",
+    "semantic_hash": "dd4fe82b91b688dd742ca5f22de6df03"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-006-DeudaTecnica.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "7669d9d360b707b0917bb01b7df22e06",
+    "semantic_hash": "7669d9d360b707b0917bb01b7df22e06"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-007-UX-Studio.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "79da0bd3720ab3fbfe059547d39faaba",
+    "semantic_hash": "79da0bd3720ab3fbfe059547d39faaba"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-008-API.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d078b05e855deb9e4040e902b73597e2",
+    "semantic_hash": "d078b05e855deb9e4040e902b73597e2"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-999-Ideas.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/INDEX.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/MASTERPLAN.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "5a4a8b0f478e8d9b71d0885462211725",
+    "semantic_hash": "5a4a8b0f478e8d9b71d0885462211725"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/adr/ADR-001-Core-Inmutable.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "1d5c703f5de4fa9b81c5147a3d14597a",
+    "semantic_hash": "1d5c703f5de4fa9b81c5147a3d14597a"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/adr/ADR-002-Soluciones-Inmutables.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "9ceb4d9c92f98817dc644a7690477a3f",
+    "semantic_hash": "9ceb4d9c92f98817dc644a7690477a3f"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/adr/ADR-003-Event-Bus.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "cff270962efb18baaa6f1d0cec5589dc",
+    "semantic_hash": "cff270962efb18baaa6f1d0cec5589dc"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/adr/ADR-004-Plugin-System.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "b48858646492692ae4d5388bd47f7eb6",
+    "semantic_hash": "b48858646492692ae4d5388bd47f7eb6"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/adr/ADR-005-Timeline.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "46027aff84142f2fc8bcdc4ece607f17",
+    "semantic_hash": "46027aff84142f2fc8bcdc4ece607f17"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/adr/ADR-006-Project-UUID.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "1617c4876e36f3e1246dfd2107c44469",
+    "semantic_hash": "1617c4876e36f3e1246dfd2107c44469"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/adr/ADR-007-UI-Contextual.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "8e5669bc19ae7ecabd7deda7a4f7d96c",
+    "semantic_hash": "8e5669bc19ae7ecabd7deda7a4f7d96c"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/adr/ADR-008-Arquitectura basada en Commands (Command Pattern).md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "28a44bc632b5161aa205fb77f75b684f",
+    "semantic_hash": "28a44bc632b5161aa205fb77f75b684f"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/adr/ADR-009-Ley de estabilidad visual.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "e06c618730a94c5b4f3a193b3fc4d6b6",
+    "semantic_hash": "e06c618730a94c5b4f3a193b3fc4d6b6"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/adr/ADR-010-PlacementValidator.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "47dc5f9aae7f587f632898a2535d7129",
+    "semantic_hash": "47dc5f9aae7f587f632898a2535d7129"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/adr/ADR-011-Workspace-Blueprint.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "b3c2577091720bcf00e13f380f15d236",
+    "semantic_hash": "b3c2577091720bcf00e13f380f15d236"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/adr/ADR-012-SelectionController.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "32ada77f5f847213736e4413648c2352",
+    "semantic_hash": "32ada77f5f847213736e4413648c2352"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/adr/ADR-013-Geometry-Engine.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "8938a65ee7c6779fbd39ce4ad212295c",
+    "semantic_hash": "8938a65ee7c6779fbd39ce4ad212295c"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/ui/SCR-001-Pantalla de Inicio.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "131ac68d860ec999b97b29fc05b1b74c",
+    "semantic_hash": "131ac68d860ec999b97b29fc05b1b74c"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/ui/SCR-002-Workspace.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "0de6ebc4e0e14c85700e92bfe7152279",
+    "semantic_hash": "0de6ebc4e0e14c85700e92bfe7152279"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/ui/SCR-003-Comparador.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "0b67be472a2b780a4683b5d533df38b0",
+    "semantic_hash": "0b67be472a2b780a4683b5d533df38b0"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/ui/SCR-004-Inspector.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "2a3481b46061539eddfc8fc2daa0d6e8",
+    "semantic_hash": "2a3481b46061539eddfc8fc2daa0d6e8"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/ui/SCR-005-Proyecto.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "4b509043439582d112db7a326e8c48e1",
+    "semantic_hash": "4b509043439582d112db7a326e8c48e1"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/ui/SCR-006-Preferencias.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "4448755c8c07845c5bca74fa5d934c68",
+    "semantic_hash": "4448755c8c07845c5bca74fa5d934c68"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/ui/SCR-007-Exportacio\u0301n.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "95996cf8c6146ecbdfeafd65e614fdbf",
+    "semantic_hash": "95996cf8c6146ecbdfeafd65e614fdbf"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/ui/flows/FLW-001-Crear-Proyecto.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "c089b7adbccf86cb033ebc30bde3ae91",
+    "semantic_hash": "c089b7adbccf86cb033ebc30bde3ae91"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/ui/flows/FLW-002-Importar-CSV.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "81f003941fadbdfda5c377f493ecca47",
+    "semantic_hash": "81f003941fadbdfda5c377f493ecca47"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/ui/flows/FLW-003-Generar-Soluciones.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "128080b8e6a69bc69e6bf432cb84bfef",
+    "semantic_hash": "128080b8e6a69bc69e6bf432cb84bfef"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/ui/flows/FLW-004-Comparar.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "3658c12c76804d8fde00569258914724",
+    "semantic_hash": "3658c12c76804d8fde00569258914724"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/ui/flows/FLW-005-Exportar.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "589c23375d04b24894bd5aa5b70eab39",
+    "semantic_hash": "589c23375d04b24894bd5aa5b70eab39"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/ui/flows/FLW-006-Editar-Proyecto.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "25e6ac4374d16df22d95159cde955fc6",
+    "semantic_hash": "25e6ac4374d16df22d95159cde955fc6"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/project_structure.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "bd41876b827a5a45d9016a3484a75c4f",
+    "semantic_hash": "bd41876b827a5a45d9016a3484a75c4f"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/requirements.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "bd6df785a8911127d1f5bd43e24aa843",
+    "semantic_hash": "bd6df785a8911127d1f5bd43e24aa843"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/scoring.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/vision.md": {
+    "mtime": 1783325065.0,
+    "ast_hash": "8b93cecaf73c86ef352ea30011a1d9dd",
+    "semantic_hash": "8b93cecaf73c86ef352ea30011a1d9dd"
+  }
+}
