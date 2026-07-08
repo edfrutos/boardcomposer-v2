@@ -994,20 +994,15 @@
     "ast_hash": "99142443486896533a1da745424496b7",
     "semantic_hash": "99142443486896533a1da745424496b7"
   },
-  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-001-Manifiesto.md": {
-    "mtime": 1783325065.0,
-    "ast_hash": "5365642d23d1fb361e9bbc7ca9aec3ba",
-    "semantic_hash": "5365642d23d1fb361e9bbc7ca9aec3ba"
-  },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-001-Producto.md": {
-    "mtime": 1783325065.0,
-    "ast_hash": "dcf40891924209e210f10dae2c90170e",
-    "semantic_hash": "dcf40891924209e210f10dae2c90170e"
+    "mtime": 1783512246.0,
+    "ast_hash": "6202bb3257f24548c6c6145db80b74c9",
+    "semantic_hash": "6202bb3257f24548c6c6145db80b74c9"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-002-Arquitectura.md": {
-    "mtime": 1783325065.0,
-    "ast_hash": "576bd0449f9dd2f072ba691fff9a299f",
-    "semantic_hash": "576bd0449f9dd2f072ba691fff9a299f"
+    "mtime": 1783512250.0,
+    "ast_hash": "ac07b7396997e143fb60200b764e3621",
+    "semantic_hash": "ac07b7396997e143fb60200b764e3621"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-003-Roadmap.md": {
     "mtime": 1783325065.0,
@@ -1030,9 +1025,9 @@
     "semantic_hash": "7669d9d360b707b0917bb01b7df22e06"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-007-UX-Studio.md": {
-    "mtime": 1783325065.0,
-    "ast_hash": "79da0bd3720ab3fbfe059547d39faaba",
-    "semantic_hash": "79da0bd3720ab3fbfe059547d39faaba"
+    "mtime": 1783512262.0,
+    "ast_hash": "767bfa034b9b77a8fc96f54991e894d5",
+    "semantic_hash": "767bfa034b9b77a8fc96f54991e894d5"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-008-API.md": {
     "mtime": 1783325065.0,
@@ -1203,5 +1198,10 @@
     "mtime": 1783325065.0,
     "ast_hash": "8b93cecaf73c86ef352ea30011a1d9dd",
     "semantic_hash": "8b93cecaf73c86ef352ea30011a1d9dd"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/.claude/settings.local.json": {
+    "mtime": 1783512304.0,
+    "ast_hash": "c01c71e185e5c8deb25d0185ca7a2272",
+    "semantic_hash": "c01c71e185e5c8deb25d0185ca7a2272"
   }
 }
