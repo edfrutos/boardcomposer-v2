@@ -1,61 +1,60 @@
 # Graph Report - .  (2026-07-08)
 
 ## Corpus Check
-- Corpus is ~30,259 words - fits in a single context window. You may not need a graph.
+- Corpus is ~30,168 words - fits in a single context window. You may not need a graph.
 
 ## Summary
-- 987 nodes · 1891 edges · 69 communities (59 shown, 10 thin omitted)
-- Extraction: 71% EXTRACTED · 29% INFERRED · 0% AMBIGUOUS · INFERRED: 542 edges (avg confidence: 0.78)
-- Token cost: 176,712 input · 0 output
+- 987 nodes · 1888 edges · 69 communities (60 shown, 9 thin omitted)
+- Extraction: 71% EXTRACTED · 29% INFERRED · 0% AMBIGUOUS · INFERRED: 543 edges (avg confidence: 0.78)
+- Token cost: 72,622 input · 0 output
 
 ## Community Hubs (Navigation)
 - Qt Workspace Canvas
+- CLI, Presenters & Strategies
 - Skyline Algorithm & Docs
-- Rectangle Geometry & Bounds
 - Core Architecture ADRs
-- Domain Constraints & Data Model Docs
-- Assembly Solution & Scoring Docs
-- Packing Runner & Commands
-- MaxRects Beam Search & Docs
 - Project Foundational Docs
+- Rectangle Geometry & Data Model Docs
 - Masterplan Product & Manifesto Docs
+- Studio Commands (Undo/Redo)
+- Architecture Docs: Core Layers & Studio Bridge
+- MaxRects Contact Heuristics
+- Studio Main Window
+- Assembly Solution & Candidate Validation
+- Placement & Collision
+- MaxRects Free Rectangle
 - Board Domain & Ordering
 - MaxRects Core Algorithm
-- Studio Main Window
-- Architecture Docs: Studio & ADR Citations
-- MaxRects Free Rectangle
-- MaxRects Beam Runner & Engine
-- Domain Package & Explanation Docs
+- Solver Search Strategies
 - Studio Main Window & Board Models
+- MaxRects Beam State & Scoring
+- Domain Package & Explanation Docs
 - Studio Project Manager
-- Solver Strategies & Presenters Tests
-- Manifesto Algorithm Catalog
-- Placement & Constraints Validator
-- MaxRects Contact Heuristics
-- Architecture Docs: Core Layers
-- Studio App & Layout Service
+- SCR-007 Export Screen
+- Manifesto Algorithm Catalog & Decisions Index
 - Horizontal/Vertical Generators & Docs
-- Presenters & JSON Output
-- MaxRects Heuristics
+- Domain Constraints & Data Model Docs
+- Studio App & Layout Service
+- Backlog Items & UI Screens Catalog
+- Technical Debt Registry (DOC-006)
+- Sequential Solver
+- Solver Evaluation & Objectives
+- Generator Registry & Tests
 - Selection Manager
 - Workspace Blueprint ADRs
-- Geometry Collision & Layout Validation
-- Candidate Pipeline & Geometry Solver
-- SCR-007 Export Screen
-- Backlog Items
-- CLI & Architecture Docs
+- Free Space Generator & Generator Registry
+- MaxRects Core Algorithm (place/split/prune)
+- Skyline Generator
 - Event Bus
 - MASTERPLAN.md Current Block
-- Roadmap Phases
-- MaxRects Placement Ops
-- Scoring Weights Presets
-- UI Screens Catalog (SCR-001..004)
-- Free Space Generator & Docs
-- Skyline Runner
-- SCR-007 Export Formats
-- Base Solver & Sequential Solver
+- MaxRects Beam Runner & Engine
+- Roadmap Phases & Future Ideas
+- MaxRects Runner
+- Beam Search (generic)
+- Layout Bounds
+- Candidate Pipeline & Scoring Docs
+- Skyline Runner (board orderings)
 - SVG Exporter
-- Generator Utils Protocol
 - CSV Data Requirements
 - Architecture Dependency Rule & DOC-002
 - Sample Data Requirement
@@ -68,10 +67,10 @@
 
 ## God Nodes (most connected - your core abstractions)
 1. `Project` - 83 edges
-2. `Board` - 74 edges
+2. `Board` - 72 edges
 3. `AssemblySolution` - 70 edges
-4. `BoardPlacement` - 45 edges
-5. `MaxRects` - 45 edges
+4. `MaxRects` - 45 edges
+5. `BoardPlacement` - 43 edges
 6. `ProjectConstraints` - 37 edges
 7. `BoardPieceItem` - 31 edges
 8. `BoardWorkspace` - 29 edges
@@ -87,8 +86,8 @@
   /Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/data_model.md → src/boardcomposer/domain/score.py
 - `Capa geometry/` --references--> `Rectangle`  [EXTRACTED]
   /Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/architecture.md → src/boardcomposer/geometry/rectangle.py
-- `Capa domain/` --references--> `Board`  [EXTRACTED]
-  /Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/architecture.md → src/boardcomposer/domain/board.py
+- `CLI (cli.py)` --references--> `build_demo_project()`  [EXTRACTED]
+  /Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/architecture.md → src/boardcomposer/cli.py
 
 ## Import Cycles
 - None detected.
@@ -102,6 +101,8 @@
 - **Optimization Algorithms Compared as a Laboratory** — doc_000_manifiesto_skyline, doc_000_manifiesto_maxrects, doc_000_manifiesto_beam_search, doc_000_manifiesto_algoritmos_geneticos, doc_000_manifiesto_cp_sat [EXTRACTED 1.00]
 - **Interfaces consumen el Core mediante APIs públicas** — masterplan_doc_002_arquitectura_core, masterplan_doc_002_arquitectura_studio, masterplan_doc_002_arquitectura_cli, masterplan_doc_002_arquitectura_api [EXTRACTED 1.00]
 - **Domain, Solver y Exporters se apoyan en el Geometry Engine** — masterplan_doc_002_arquitectura_domain, masterplan_doc_002_arquitectura_solver, masterplan_doc_002_arquitectura_exporters, masterplan_doc_002_arquitectura_geometry_engine [EXTRACTED 1.00]
+- **Registro inicial de deuda técnica (DT-0001 a DT-0004)** — masterplan_doc_006_deudatecnica_dt_0001, masterplan_doc_006_deudatecnica_dt_0002, masterplan_doc_006_deudatecnica_dt_0003, masterplan_doc_006_deudatecnica_dt_0004 [EXTRACTED 1.00]
+- **Clasificación de categorías de deuda técnica** — masterplan_doc_006_deudatecnica_dt_a_arquitectura, masterplan_doc_006_deudatecnica_dt_c_codigo, masterplan_doc_006_deudatecnica_dt_t_tests, masterplan_doc_006_deudatecnica_dt_d_documentacion, masterplan_doc_006_deudatecnica_dt_p_rendimiento, masterplan_doc_006_deudatecnica_dt_ux_experiencia_usuario [EXTRACTED 1.00]
 - **Explicabilidad y confianza como eje transversal (Producto + UX)** — masterplan_doc_001_producto_propuesta_valor, masterplan_doc_001_producto_problema, masterplan_doc_007_ux_studio_objetivos_experiencia [INFERRED 0.85]
 - **Command Pattern for Studio Workspace Actions** — masterplan_masterplan_commandmanager, masterplan_masterplan_movepiececommand, masterplan_masterplan_rotatepiececommand [INFERRED 0.85]
 - **Arquitectura reactiva y trazable del Core** — adr_adr_003_event_bus_decision, adr_adr_005_timeline_decision, adr_adr_008_arquitectura_basada_en_commands_command_pattern_decision [INFERRED 0.85]
@@ -111,189 +112,189 @@
 - **Componentes principales de Exportación** — ui_scr_007_exportacion_seleccion_solucion, ui_scr_007_exportacion_formatos_disponibles, ui_scr_007_exportacion_opciones_exportacion, ui_scr_007_exportacion_vista_previa [EXTRACTED 1.00]
 - **Relación de Exportación con otras pantallas** — ui_scr_007_exportacion_pantalla, ui_scr_002_workspace_pantalla, ui_scr_003_comparador_pantalla, ui_scr_005_proyecto_pantalla, ui_scr_006_preferencias_pantalla [EXTRACTED 1.00]
 
-## Communities (69 total, 10 thin omitted)
+## Communities (69 total, 9 thin omitted)
 
 ### Community 0 - "Qt Workspace Canvas"
 Cohesion: 0.05
 Nodes (22): QGraphicsRectItem, QGraphicsScene, QGraphicsView, QMouseEvent, QPoint, QRectF, QWheelEvent, create_board_item() (+14 more)
 
-### Community 1 - "Skyline Algorithm & Docs"
+### Community 1 - "CLI, Presenters & Strategies"
+Cohesion: 0.06
+Nodes (43): ABC, Estrategias de optimización (OptimizationStrategy), build_demo_project(), main(), Presenter, JsonPresenter, solutions_to_json(), solution_to_text() (+35 more)
+
+### Community 2 - "Skyline Algorithm & Docs"
 Cohesion: 0.07
 Nodes (21): Algoritmo Skyline, SkylineNode, SkylinePlacement, Skyline, SkylineCandidate, test_skyline_prefers_leftmost_when_same_height(), test_skyline_prefers_lowest_node(), test_bottom_left_prefers_lowest_then_leftmost() (+13 more)
-
-### Community 2 - "Rectangle Geometry & Bounds"
-Cohesion: 0.07
-Nodes (19): Rectangle (primitiva geométrica), Rectangle, bounding_rectangle(), FreeSpace, FreeSpaceManager, place_board_in_first_space(), test_bounding_rectangle(), test_bounding_rectangle_empty() (+11 more)
 
 ### Community 3 - "Core Architecture ADRs"
 Cohesion: 0.07
 Nodes (44): Core, Core como única fuente de verdad, Las soluciones son inmutables, CsvImported (evento), Arquitectura basada en Event Bus, Event Bus, ExportCompleted (evento), ProjectCreated (evento) (+36 more)
 
-### Community 4 - "Domain Constraints & Data Model Docs"
-Cohesion: 0.09
-Nodes (32): Capa domain/, Board (dataclass), Project (dataclass), ProjectConstraints (dataclass), ProjectConstraints, Project, generate_maxrects_solution(), SequentialSolver (+24 more)
-
-### Community 5 - "Assembly Solution & Scoring Docs"
-Cohesion: 0.08
-Nodes (25): Métricas de puntuación (objectives.py), AssemblySolution, deduplicate_solutions(), solution_signature(), evaluate(), horizontal_generator(), maxrects_generator(), skyline_generator() (+17 more)
-
-### Community 6 - "Packing Runner & Commands"
-Cohesion: 0.08
-Nodes (14): Protocol, PackingAlgorithm, place_all_boards(), PlacementLike, to_board_placement(), Command, CommandManager, Command manager for undo/redo. (+6 more)
-
-### Community 7 - "MaxRects Beam Search & Docs"
-Cohesion: 0.08
-Nodes (26): Variante Beam Search de MaxRects, Score, beam_search(), BeamSearchConfig, search_states(), score_state(), _beam_candidate(), generate_beam_maxrects_solution() (+18 more)
-
-### Community 8 - "Project Foundational Docs"
+### Community 4 - "Project Foundational Docs"
 Cohesion: 0.07
 Nodes (38): BoardComposer purpose: generate board compositions reusing existing material via optimization algorithms, AI context rules (preserve data model compatibility, document decisions, update changelog), CHANGELOG 0.0.1 entry (2026-06-26), Decision: start with 2D flat assembly of rectangular boards, Decision: core independent of PySide6/files/AI, Decision: explainable solutions (score + explanation), Masterplan documents (Manifiesto, Producto, Arquitectura, Roadmap, Backlog, Decisiones, DeudaTecnica, UX-Studio, API), Project structure doc: docs/masterplan layout (INDEX + DOC-000..DOC-008 + sprints/) (+30 more)
 
-### Community 9 - "Masterplan Product & Manifesto Docs"
+### Community 5 - "Rectangle Geometry & Data Model Docs"
+Cohesion: 0.10
+Nodes (16): Rectangle (primitiva geométrica), Rectangle, FreeSpace, FreeSpaceManager, place_board_in_first_space(), test_free_space_manager_finds_space(), test_free_space_manager_places_rectangle(), test_free_space_manager_rejects_rectangle_that_does_not_fit() (+8 more)
+
+### Community 6 - "Masterplan Product & Manifesto Docs"
 Cohesion: 0.06
 Nodes (37): DOC-000 — Manifiesto, BoardComposer (Producto), DOC-001 — Especificación del Producto, Fuera del alcance (por ahora), Objetivos del producto, El problema: soluciones de corte opacas, Nuestra propuesta, Propuesta de valor (+29 more)
 
-### Community 10 - "Board Domain & Ordering"
-Cohesion: 0.10
-Nodes (22): Board, largest_area_first(), longest_edge_first(), original_order(), generators_by_name(), LayoutGenerator, _placed(), test_maxrects_places_at_least_as_many_boards_as_skyline() (+14 more)
+### Community 7 - "Studio Commands (Undo/Redo)"
+Cohesion: 0.09
+Nodes (10): Protocol, Command, CommandManager, Command manager for undo/redo., Stores undo and redo stacks., Base command protocol for Studio undo/redo., DeletePieceCommand, Studio command system. (+2 more)
 
-### Community 11 - "MaxRects Core Algorithm"
-Cohesion: 0.12
-Nodes (14): MaxRects, MaxRects bin packing over a set of free rectangles., Place rectangles using the MaxRects free-space algorithm., test_find_candidates_returns_all_candidates(), test_find_candidates_returns_multiple_candidates(), test_place_candidate_updates_free_rectangles(), test_custom_heuristic_is_used(), test_find_best_rectangle() (+6 more)
+### Community 8 - "Architecture Docs: Core Layers & Studio Bridge"
+Cohesion: 0.07
+Nodes (25): ADR-003 (EventBus), ADR-008 (patrón Command para undo/redo), CLI (cli.py), Core (src/boardcomposer/), DOC-008 (masterplan, capa API futura), Capa export/, Capa geometry/, Capa io/ (+17 more)
 
-### Community 12 - "Studio Main Window"
+### Community 9 - "MaxRects Contact Heuristics"
+Cohesion: 0.15
+Nodes (24): contact_score(), _contact_with_edges(), _contact_with_placements(), _overlap(), _shared_edge(), best_area_fit(), best_bottom_left_fit(), best_long_side_fit() (+16 more)
+
+### Community 10 - "Studio Main Window"
 Cohesion: 0.17
 Nodes (4): QMainWindow, MainWindow, Refresh inspector panel for the selected piece., Main application window.
 
-### Community 13 - "Architecture Docs: Studio & ADR Citations"
-Cohesion: 0.10
-Nodes (18): ADR-003 (EventBus), ADR-008 (patrón Command para undo/redo), Capa io/, layout_service.py (puente explícito Studio-Core), main_window.py, BoardComposer Studio (studio/), studio/commands/ (patrón Command: CommandManager, MovePieceCommand, RotatePieceCommand, DeletePieceCommand), studio/events/ (EventBus síncrono) (+10 more)
+### Community 11 - "Assembly Solution & Candidate Validation"
+Cohesion: 0.13
+Nodes (12): AssemblySolution, respects_constraints(), deduplicate_solutions(), solution_signature(), test_respects_constraints_accepts_valid_solution(), test_respects_constraints_rejects_excess_length(), test_deduplicate_solutions_removes_duplicates(), test_evaluation_returns_score() (+4 more)
 
-### Community 14 - "MaxRects Free Rectangle"
+### Community 12 - "Placement & Collision"
+Cohesion: 0.14
+Nodes (12): BoardPlacement, placement_to_rectangle(), placements_overlap(), has_overlaps(), test_placements_do_not_overlap_when_touching_edges(), test_placements_overlap(), test_has_overlaps_accepts_valid_layout(), test_has_overlaps_detects_collision() (+4 more)
+
+### Community 13 - "MaxRects Free Rectangle"
 Cohesion: 0.12
 Nodes (13): FreeRectangle, Heuristic, test_free_rectangle_area(), test_free_rectangle_fits_piece(), test_free_rectangle_rejects_large_piece(), test_intersection_detected(), test_intersection_not_detected(), test_resolve_overlaps_removes_free_rectangle_intersections() (+5 more)
 
-### Community 15 - "MaxRects Beam Runner & Engine"
-Cohesion: 0.17
-Nodes (14): BoardOrdering, _beam_candidate(), iter_beam_maxrects_solutions(), Heuristic, iter_maxrects_candidates(), generate_maxrects_candidate(), iter_maxrects_solutions(), _maxrects_size() (+6 more)
+### Community 14 - "Board Domain & Ordering"
+Cohesion: 0.15
+Nodes (12): Board, largest_area_first(), longest_edge_first(), original_order(), test_largest_area_first(), test_longest_edge_first(), test_original_order(), test_candidate_pipeline_returns_ranked_solutions() (+4 more)
 
-### Community 16 - "Domain Package & Explanation Docs"
+### Community 15 - "MaxRects Core Algorithm"
+Cohesion: 0.14
+Nodes (14): MaxRects, MaxRects bin packing over a set of free rectangles., Place rectangles using the MaxRects free-space algorithm., test_find_candidates_returns_all_candidates(), test_find_candidates_returns_multiple_candidates(), test_place_candidate_updates_free_rectangles(), test_custom_heuristic_is_used(), test_find_best_rectangle() (+6 more)
+
+### Community 16 - "Solver Search Strategies"
+Cohesion: 0.18
+Nodes (14): _beam_candidate(), generate_beam_maxrects_solution(), generate_best_maxrects_solution(), Heuristic, search_best_solution(), generate_best_skyline_solution(), _project(), test_beam_records_selected_heuristic() (+6 more)
+
+### Community 17 - "Studio Main Window & Board Models"
+Cohesion: 0.17
+Nodes (11): Main window for BoardComposer Studio., Board model for BoardComposer Studio., Board data used by the Studio workspace., StudioBoard, Piece model for BoardComposer Studio., Piece data used by the Studio workspace., StudioPiece, Placement model for BoardComposer Studio. (+3 more)
+
+### Community 18 - "MaxRects Beam State & Scoring"
+Cohesion: 0.16
+Nodes (10): Variante Beam Search de MaxRects, search_states(), score_state(), MaxRectsState, test_search_states_places_board(), test_score_state_prefers_more_placements(), test_clone_creates_independent_state(), test_expand_creates_child_states() (+2 more)
+
+### Community 19 - "Domain Package & Explanation Docs"
 Cohesion: 0.21
 Nodes (5): SolutionExplanation (dataclass), SolutionExplanation, SolutionScore, test_solution_score_rejects_negative_values(), test_solution_score_total()
 
-### Community 17 - "Studio Main Window & Board Models"
-Cohesion: 0.18
-Nodes (11): Main window for BoardComposer Studio., Board model for BoardComposer Studio., Board data used by the Studio workspace., StudioBoard, Piece model for BoardComposer Studio., Piece data used by the Studio workspace., StudioPiece, Placement model for BoardComposer Studio. (+3 more)
-
-### Community 18 - "Studio Project Manager"
+### Community 20 - "Studio Project Manager"
 Cohesion: 0.14
 Nodes (6): In-memory project data used by BoardComposer Studio., StudioProject, Project services for BoardComposer Studio., ProjectManager, Project manager for BoardComposer Studio., Owns the currently opened Studio project.
 
-### Community 19 - "Solver Strategies & Presenters Tests"
+### Community 21 - "SCR-007 Export Screen"
 Cohesion: 0.16
-Nodes (12): balanced_strategy(), compact_first_strategy(), material_first_strategy(), test_solutions_to_json_contains_strategy_metadata(), test_material_strategy_enables_skyline_generator(), test_balanced_strategy(), test_compact_first_strategy(), test_material_first_strategy() (+4 more)
+Nodes (17): BoardComposer Studio, Criterios de aceptación, Evolución prevista, Flujo principal de exportación, Formato CSV, Formato DXF, Formato Imagen (PNG/JPEG), Formato JSON (+9 more)
 
-### Community 20 - "Manifesto Algorithm Catalog"
+### Community 22 - "Manifesto Algorithm Catalog & Decisions Index"
 Cohesion: 0.16
 Nodes (16): DOC-000 — Manifiesto del Proyecto, Algoritmos Genéticos, Beam Search (algoritmo de optimización), CP-SAT, MaxRects (algoritmo de optimización), Skyline (algoritmo de optimización), Fase 1 — Core (Completada), IDE-0006 — API pública (+8 more)
 
-### Community 21 - "Placement & Constraints Validator"
-Cohesion: 0.16
-Nodes (8): BoardPlacement, respects_constraints(), test_respects_constraints_accepts_valid_solution(), test_respects_constraints_rejects_excess_length(), test_board_placement_area(), test_board_placement_bounds(), test_board_placement_rejects_negative_position(), test_custom_scoring_weights()
-
-### Community 22 - "MaxRects Contact Heuristics"
-Cohesion: 0.29
-Nodes (13): contact_score(), _contact_with_edges(), _contact_with_placements(), _overlap(), _shared_edge(), MaxRectsPlacement, test_contact_score_accumulates_multiple_contacts(), test_contact_score_with_bottom_edge() (+5 more)
-
-### Community 23 - "Architecture Docs: Core Layers"
-Cohesion: 0.13
-Nodes (15): Pipeline de candidatos (CandidatePipeline), Core (src/boardcomposer/), DOC-008 (masterplan, capa API futura), Capa export/, Capa geometry/, Capa layout/, Capa presenters/, Capa solver/ (+7 more)
-
-### Community 24 - "Studio App & Layout Service"
+### Community 23 - "Horizontal/Vertical Generators & Docs"
 Cohesion: 0.18
+Nodes (13): Registro de generadores (GENERATOR_REGISTRY), Generadores Horizontal / Vertical (fuerza bruta), Capa solver/, vertical_generator(), generate_horizontal_permutations(), generate_horizontal_solution(), generate_vertical_permutations(), generate_vertical_solution() (+5 more)
+
+### Community 24 - "Domain Constraints & Data Model Docs"
+Cohesion: 0.18
+Nodes (12): Capa domain/, Board (dataclass), Project (dataclass), ProjectConstraints (dataclass), ProjectConstraints, generate_maxrects_solution(), test_constraints_accept_empty_values(), test_constraints_reject_invalid_max_length() (+4 more)
+
+### Community 25 - "Studio App & Layout Service"
+Cohesion: 0.19
 Nodes (8): main(), Application entry point for BoardComposer Studio., Run BoardComposer Studio., LayoutService, Bridge between BoardComposer Studio and the core layout engine., Application services for BoardComposer Studio., Container for shared Studio services., StudioServices
 
-### Community 25 - "Horizontal/Vertical Generators & Docs"
-Cohesion: 0.21
-Nodes (11): Generadores Horizontal / Vertical (fuerza bruta), vertical_generator(), generate_horizontal_permutations(), generate_horizontal_solution(), generate_vertical_permutations(), generate_vertical_solution(), test_generate_horizontal_solution(), test_generate_vertical_solution() (+3 more)
-
-### Community 26 - "Presenters & JSON Output"
-Cohesion: 0.37
-Nodes (7): ABC, Presenter, JsonPresenter, solutions_to_json(), solution_to_text(), TextPresenter, OptimizationStrategy
-
-### Community 27 - "MaxRects Heuristics"
+### Community 26 - "Backlog Items & UI Screens Catalog"
 Cohesion: 0.26
-Nodes (11): best_area_fit(), best_bottom_left_fit(), best_long_side_fit(), best_short_side_fit(), test_best_area_fit_prefers_less_waste(), test_best_area_fit_returns_none_without_candidates(), test_best_long_side_fit_prefers_shorter_long_side(), test_best_long_side_fit_returns_none_without_candidates() (+3 more)
+Nodes (14): Explicabilidad — la explicación forma parte del resultado, Fase 2 — BoardComposer Studio (En curso), DOC-004 — Backlog del Producto, IDE-0001 — Workspace interactivo, IDE-0002 — Comparador de algoritmos, IDE-0003 — Inspector de piezas, IDE-0004 — Gestión de proyectos, IDE-0005 — Exportación PDF/SVG (+6 more)
 
-### Community 28 - "Selection Manager"
+### Community 27 - "Technical Debt Registry (DOC-006)"
+Cohesion: 0.20
+Nodes (14): ADR relacionados (referencia genérica), DOC-006 — Gestión de la Deuda Técnica, DT-0001 — Completar documentación funcional de BoardComposer Studio (Pendiente), DT-0002 — Revisar y documentar arquitectura interna del Solver tras nuevos algoritmos (Pendiente), DT-0003 — Mantener cobertura de pruebas por encima del objetivo definido (Controlado), DT-0004 — Eliminación de módulos solver sin uso: solver/packing_runner.py (runner+selector genérico, commit 8feea6b) y solver/generator_utils.py (adaptador single_solution_generator, commit ab7b963), tras adoptarse CandidatePipeline/evaluate() y el envoltorio manual de generators.py (Resuelto), DT-A — Arquitectura (problemas de diseño estructural), DT-C — Código (duplicación, complejidad, refactor pendiente) (+6 more)
+
+### Community 28 - "Sequential Solver"
+Cohesion: 0.27
+Nodes (10): Project, SequentialSolver, test_project_accepts_custom_constraints(), test_project_has_default_constraints(), test_sequential_solver_places_boards_in_sequence(), test_sequential_solver_returns_one_solution(), test_solver_respects_max_width(), test_solver_rotates_board_when_allowed() (+2 more)
+
+### Community 29 - "Solver Evaluation & Objectives"
+Cohesion: 0.27
+Nodes (10): Métricas de puntuación (objectives.py), evaluate(), compactness(), material_utilization(), placed_board_ratio(), rotation_ratio(), test_compactness(), test_material_utilization() (+2 more)
+
+### Community 30 - "Generator Registry & Tests"
+Cohesion: 0.22
+Nodes (10): LayoutGenerator, generators_by_name(), _placed(), test_maxrects_places_at_least_as_many_boards_as_skyline(), test_generators_by_name(), test_maxrects_generator_is_registered(), test_skyline_generator_is_registered(), _run() (+2 more)
+
+### Community 31 - "Selection Manager"
 Cohesion: 0.19
 Nodes (4): Selection services for BoardComposer Studio., Selection manager for BoardComposer Studio., Tracks selected Studio object identifiers., SelectionManager
 
-### Community 29 - "Workspace Blueprint ADRs"
+### Community 32 - "Workspace Blueprint ADRs"
 Cohesion: 0.27
 Nodes (12): PlacementValidator como fuente única de validación, PlacementValidator, BoardPieceItem, BoardWorkspace, Blueprint del Workspace, DragController, Factories, MainWindow (+4 more)
 
-### Community 30 - "Geometry Collision & Layout Validation"
-Cohesion: 0.24
-Nodes (7): placement_to_rectangle(), placements_overlap(), has_overlaps(), test_placements_do_not_overlap_when_touching_edges(), test_placements_overlap(), test_has_overlaps_accepts_valid_layout(), test_has_overlaps_detects_collision()
-
-### Community 31 - "Candidate Pipeline & Geometry Solver"
-Cohesion: 0.35
-Nodes (7): CandidatePipeline, GeometrySolver, build_two_board_project(), test_geometry_solver_includes_expected_layout_families(), test_geometry_solver_matches_candidate_pipeline(), test_geometry_solver_returns_solutions(), test_geometry_solver_sorts_solutions_by_score()
-
-### Community 32 - "SCR-007 Export Screen"
-Cohesion: 0.31
-Nodes (10): BoardComposer Studio, Criterios de aceptación, Evolución prevista, Flujo principal de exportación, Opciones de exportación, Pantalla de Exportación (SCR-007), Principios de interacción, Selección de solución (+2 more)
-
-### Community 33 - "Backlog Items"
+### Community 33 - "Free Space Generator & Generator Registry"
 Cohesion: 0.20
-Nodes (10): DOC-004 — Backlog del Producto, IDE-0001 — Workspace interactivo, IDE-0002 — Comparador de algoritmos, IDE-0003 — Inspector de piezas, IDE-0004 — Gestión de proyectos, IDE-0005 — Exportación PDF/SVG, DOC-006 — Gestión de la Deuda Técnica, DT-0001 — Completar documentación funcional de BoardComposer Studio (+2 more)
+Nodes (8): Generador Free Space, generate_free_space_solution(), free_space_generator(), horizontal_generator(), maxrects_generator(), skyline_generator(), test_generate_free_space_solution(), test_generate_free_space_solution_skips_boards_that_do_not_fit()
 
-### Community 34 - "CLI & Architecture Docs"
-Cohesion: 0.29
-Nodes (8): CLI (cli.py), build_demo_project(), main(), strategy_by_name(), test_build_demo_project(), test_cli_json_fields_are_stable(), test_cli_project_constraints_from_cli_options(), test_strategy_argument_is_supported()
+### Community 34 - "MaxRects Core Algorithm (place/split/prune)"
+Cohesion: 0.22
+Nodes (3): Algoritmo MaxRects, Place a rectangle and update the remaining free rectangles., Return the best placement candidate without mutating free space.
 
-### Community 35 - "Event Bus"
+### Community 35 - "Skyline Generator"
+Cohesion: 0.24
+Nodes (8): generate_skyline_solution(), Generate Skyline-based layout solutions., Generate the best Skyline layout solution for the given project., test_skyline_default_width_considers_rotation(), test_skyline_generator_uses_rotation_when_allowed(), test_generate_skyline_solution(), test_skyline_generator_preserves_layout_name(), test_skyline_generator_stacks_when_width_is_limited()
+
+### Community 36 - "Event Bus"
 Cohesion: 0.24
 Nodes (5): EventHandler, EventBus, Event bus for BoardComposer Studio., Simple synchronous event bus., Event services for BoardComposer Studio.
 
-### Community 36 - "MASTERPLAN.md Current Block"
+### Community 37 - "MASTERPLAN.md Current Block"
 Cohesion: 0.24
 Nodes (10): MASTERPLAN — Estado del Proyecto, ADR-010, ADR-011, ADR-012, BoardWorkspace, CommandManager, MovePieceCommand, PlacementValidator (+2 more)
 
-### Community 37 - "Roadmap Phases"
+### Community 38 - "MaxRects Beam Runner & Engine"
+Cohesion: 0.29
+Nodes (7): _beam_candidate(), iter_beam_maxrects_solutions(), Heuristic, iter_maxrects_candidates(), _project(), test_iter_maxrects_candidates_can_use_beam(), test_iter_maxrects_candidates_uses_classic_candidates_by_default()
+
+### Community 39 - "Roadmap Phases & Future Ideas"
 Cohesion: 0.22
 Nodes (9): Comparación de algoritmos — todo puede compararse, DOC-003 — Roadmap del Producto, Asistencia mediante IA, Fase 3 — Plataforma, Fase 4 — Inteligencia, Fase 5 — Ecosistema, Plugins, IDE-0007 — Asistente IA (+1 more)
 
-### Community 38 - "MaxRects Placement Ops"
-Cohesion: 0.28
-Nodes (3): Algoritmo MaxRects, Place a rectangle and update the remaining free rectangles., Return the best placement candidate without mutating free space.
+### Community 40 - "MaxRects Runner"
+Cohesion: 0.39
+Nodes (7): BoardOrdering, generate_maxrects_candidate(), iter_maxrects_solutions(), _maxrects_size(), _place_all_boards(), Heuristic, _to_board_placement()
 
-### Community 39 - "Scoring Weights Presets"
-Cohesion: 0.36
-Nodes (7): balanced(), compact_first(), material_first(), ScoringWeights, test_balanced_profile(), test_compact_first_profile(), test_material_first_profile()
+### Community 41 - "Beam Search (generic)"
+Cohesion: 0.39
+Nodes (6): Score, beam_search(), BeamSearchConfig, State, test_beam_search_keeps_best_states(), test_beam_search_stops_when_no_candidates()
 
-### Community 40 - "UI Screens Catalog (SCR-001..004)"
-Cohesion: 0.54
-Nodes (8): Explicabilidad — la explicación forma parte del resultado, Fase 2 — BoardComposer Studio (En curso), SCR-001 — Pantalla de Inicio, SCR-002 — Workspace, SCR-003 — Comparador de Soluciones, SCR-004 — Inspector Contextual, SCR-005 — Gestión del Proyecto, SCR-006 — Preferencias
-
-### Community 41 - "Free Space Generator & Docs"
+### Community 42 - "Layout Bounds"
 Cohesion: 0.29
-Nodes (6): Generador Free Space, Registro de generadores (GENERATOR_REGISTRY), generate_free_space_solution(), free_space_generator(), test_generate_free_space_solution(), test_generate_free_space_solution_skips_boards_that_do_not_fit()
+Nodes (3): bounding_rectangle(), test_bounding_rectangle(), test_bounding_rectangle_empty()
 
-### Community 42 - "Skyline Runner"
+### Community 43 - "Candidate Pipeline & Scoring Docs"
+Cohesion: 0.29
+Nodes (7): Pipeline de candidatos (CandidatePipeline), AssemblySolution (dataclass frozen), BoardPlacement (dataclass), SolutionScore (dataclass), Cálculo evaluate(), Reglas de explicación textual, ScoringWeights (scoring_weights.py)
+
+### Community 44 - "Skyline Runner (board orderings)"
 Cohesion: 0.43
 Nodes (5): _candidate_orders(), _default_skyline_width(), _generate_for_order(), iter_skyline_solutions(), test_candidate_orders()
 
-### Community 43 - "SCR-007 Export Formats"
-Cohesion: 0.29
-Nodes (7): Formato CSV, Formato DXF, Formato Imagen (PNG/JPEG), Formato JSON, Formato PDF, Formato SVG, Formatos disponibles
-
-### Community 46 - "Generator Utils Protocol"
-Cohesion: 0.50
-Nodes (3): SolutionGenerator, LayoutGenerator, single_solution_generator()
-
-### Community 47 - "CSV Data Requirements"
+### Community 46 - "CSV Data Requirements"
 Cohesion: 0.67
 Nodes (3): Data directory (data/samples/: sample CSVs), RF-002 Import from CSV/Excel, CSV input format: id,length_mm,width_mm,thickness_mm
 
@@ -310,7 +311,7 @@ Nodes (3): Data directory (data/samples/: sample CSVs), RF-002 Import from CSV/E
 ## Knowledge Gaps
 - **94 isolated node(s):** `boardcomposer`, `Ruff format check step`, `Ruff lint step`, `Run tests step (pytest)`, `Principle: the program proposes multiple solutions` (+89 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **10 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **9 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
@@ -323,9 +324,9 @@ _Questions this graph is uniquely positioned to answer:_
   _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
 - **What is the exact relationship between `DOC-004 — Backlog del Producto` and `DOC-005 — Registro de Decisiones`?**
   _Edge tagged AMBIGUOUS (relation: references) - confidence is low._
-- **Why does `LayoutService` connect `Studio App & Layout Service` to `Domain Constraints & Data Model Docs`, `Architecture Docs: Studio & ADR Citations`, `Candidate Pipeline & Geometry Solver`?**
-  _High betweenness centrality (0.206) - this node is a cross-community bridge._
-- **Why does `Board` connect `Board Domain & Ordering` to `CLI & Architecture Docs`, `Rectangle Geometry & Bounds`, `Domain Constraints & Data Model Docs`, `Packing Runner & Commands`, `MaxRects Beam Search & Docs`, `Free Space Generator & Docs`, `Skyline Runner`, `Architecture Docs: Studio & ADR Citations`, `MaxRects Beam Runner & Engine`, `Domain Package & Explanation Docs`, `Solver Strategies & Presenters Tests`, `Horizontal/Vertical Generators & Docs`, `Candidate Pipeline & Geometry Solver`?**
-  _High betweenness centrality (0.155) - this node is a cross-community bridge._
-- **Why does `Project` connect `Domain Constraints & Data Model Docs` to `CLI & Architecture Docs`, `Assembly Solution & Scoring Docs`, `MaxRects Beam Search & Docs`, `Free Space Generator & Docs`, `Board Domain & Ordering`, `Skyline Runner`, `Architecture Docs: Studio & ADR Citations`, `MaxRects Beam Runner & Engine`, `Domain Package & Explanation Docs`, `Solver Strategies & Presenters Tests`, `Horizontal/Vertical Generators & Docs`, `Presenters & JSON Output`, `Candidate Pipeline & Geometry Solver`?**
-  _High betweenness centrality (0.126) - this node is a cross-community bridge._
+- **Why does `LayoutService` connect `Studio App & Layout Service` to `Architecture Docs: Core Layers & Studio Bridge`, `CLI, Presenters & Strategies`, `Studio Main Window & Board Models`?**
+  _High betweenness centrality (0.235) - this node is a cross-community bridge._
+- **Why does `Board` connect `Board Domain & Ordering` to `CLI, Presenters & Strategies`, `Free Space Generator & Generator Registry`, `Skyline Generator`, `Rectangle Geometry & Data Model Docs`, `MaxRects Beam Runner & Engine`, `Architecture Docs: Core Layers & Studio Bridge`, `MaxRects Runner`, `Skyline Runner (board orderings)`, `Solver Search Strategies`, `MaxRects Beam State & Scoring`, `Domain Package & Explanation Docs`, `Horizontal/Vertical Generators & Docs`, `Domain Constraints & Data Model Docs`, `Studio App & Layout Service`, `Sequential Solver`, `Generator Registry & Tests`?**
+  _High betweenness centrality (0.150) - this node is a cross-community bridge._
+- **Why does `Project` connect `Sequential Solver` to `CLI, Presenters & Strategies`, `Free Space Generator & Generator Registry`, `Skyline Generator`, `MaxRects Beam Runner & Engine`, `Architecture Docs: Core Layers & Studio Bridge`, `MaxRects Runner`, `Skyline Runner (board orderings)`, `Board Domain & Ordering`, `Solver Search Strategies`, `Domain Package & Explanation Docs`, `Horizontal/Vertical Generators & Docs`, `Domain Constraints & Data Model Docs`, `Studio App & Layout Service`, `Generator Registry & Tests`?**
+  _High betweenness centrality (0.135) - this node is a cross-community bridge._

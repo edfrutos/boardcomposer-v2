@@ -271,4 +271,4 @@ Las modificaciones de este documento deberán considerarse decisiones estratégi
 
 ---
 
-**Fin del Documento 0**
+## **Fin del Documento 0**

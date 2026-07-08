@@ -1,6 +1,4 @@
 
-
-
 # BoardComposer
 
 ## Documento 7 — UX / BoardComposer Studio
@@ -44,24 +42,31 @@ Definir la experiencia de usuario de BoardComposer Studio, estableciendo los pri
 ## Pantallas previstas
 
 ### SCR-001 — Inicio
+
 Acceso a proyectos recientes, creación de proyectos y documentación.
 
 ### SCR-002 — Workspace
+
 Área principal con la representación gráfica de los tableros y las piezas.
 
 ### SCR-003 — Comparador
+
 Vista simultánea de varias soluciones con métricas comparables.
 
 ### SCR-004 — Inspector
+
 Información detallada del proyecto, tablero, pieza o solución seleccionada.
 
 ### SCR-005 — Gestión del Proyecto
+
 Datos básicos, materiales, restricciones y configuración del proyecto en curso.
 
 ### SCR-006 — Preferencias
+
 Comportamiento general de BoardComposer Studio, aplicado a todos los proyectos.
 
 ### SCR-007 — Exportación
+
 Generación de la documentación final del proyecto en distintos formatos.
 
 ---

@@ -1,4 +1,3 @@
-
 # BoardComposer
 
 ## Documento 4 — Backlog del Producto
