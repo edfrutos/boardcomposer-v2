@@ -1,0 +1,2 @@
+[console_scripts]
+boardcomposer = boardcomposer.cli:main

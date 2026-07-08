@@ -1,0 +1,4 @@
+allow_rotation
+# False positive: local AWS dummy credential (LocalStack-style) uses literal
+# "test" as access key/secret, so git-secrets --aws-provider flags any word "test".
+test
