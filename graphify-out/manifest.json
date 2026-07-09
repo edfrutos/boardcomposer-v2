@@ -995,14 +995,14 @@
     "semantic_hash": "ac07b7396997e143fb60200b764e3621"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-003-Roadmap.md": {
-    "mtime": 1783538958.0,
-    "ast_hash": "c286b8a9b7716913c974a7addd1e1f99",
-    "semantic_hash": "c286b8a9b7716913c974a7addd1e1f99"
+    "mtime": 1783539053.0,
+    "ast_hash": "ff388ae41b4379dc41654808fd6e2eff",
+    "semantic_hash": "ff388ae41b4379dc41654808fd6e2eff"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-004-Backlog.md": {
-    "mtime": 1783538930.0,
-    "ast_hash": "ed43bcc46f3aea29279cfd6f26cc290a",
-    "semantic_hash": "ed43bcc46f3aea29279cfd6f26cc290a"
+    "mtime": 1783584171.0,
+    "ast_hash": "3a262a4a2569717e6fdbdfa21c23d6fc",
+    "semantic_hash": "3a262a4a2569717e6fdbdfa21c23d6fc"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-005-Decisiones.md": {
     "mtime": 1783325065.0,
@@ -1010,9 +1010,9 @@
     "semantic_hash": "dd4fe82b91b688dd742ca5f22de6df03"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-006-DeudaTecnica.md": {
-    "mtime": 1783535563.0,
-    "ast_hash": "9b7bac7fa85ca0b3f1ae1ba7ebb36e92",
-    "semantic_hash": "9b7bac7fa85ca0b3f1ae1ba7ebb36e92"
+    "mtime": 1783584130.0,
+    "ast_hash": "0fd88fff4cedd5918b03465029fcff1f",
+    "semantic_hash": "0fd88fff4cedd5918b03465029fcff1f"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-007-UX-Studio.md": {
     "mtime": 1783538631.0,
@@ -1193,5 +1193,15 @@
     "mtime": 1783512304.0,
     "ast_hash": "c01c71e185e5c8deb25d0185ca7a2272",
     "semantic_hash": "c01c71e185e5c8deb25d0185ca7a2272"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/solver_architecture.md": {
+    "mtime": 1783584109.0,
+    "ast_hash": "43c64665ad22b7cf4c7268556af96d40",
+    "semantic_hash": "43c64665ad22b7cf4c7268556af96d40"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/studio.md": {
+    "mtime": 1783584015.0,
+    "ast_hash": "e3379741a53fc32c4e6353f843f29fda",
+    "semantic_hash": "e3379741a53fc32c4e6353f843f29fda"
   }
 }
