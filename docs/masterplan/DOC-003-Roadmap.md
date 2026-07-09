@@ -22,7 +22,7 @@ El Roadmap representa la dirección del proyecto, no una planificación cerrada.
 
 ---
 
-# Fase 1 — Core (Completada)
+## Fase 1 — Core (Completada)
 
 **Estado:** 🟢
 
@@ -37,7 +37,7 @@ Objetivos alcanzados:
 
 ---
 
-# Fase 2 — BoardComposer Studio (En curso)
+## Fase 2 — BoardComposer Studio (En curso)
 
 **Estado:** 🟡
 
@@ -56,7 +56,7 @@ Entregables principales:
 
 ---
 
-# Fase 3 — Plataforma
+## Fase 3 — Plataforma
 
 **Estado:** ⚪ Planificada
 
@@ -69,7 +69,7 @@ Incluye:
 
 ---
 
-# Fase 4 — Inteligencia
+## Fase 4 — Inteligencia
 
 **Estado:** ⚪ Idea consolidada
 
@@ -82,7 +82,7 @@ Objetivos:
 
 ---
 
-# Fase 5 — Ecosistema
+## Fase 5 — Ecosistema
 
 **Estado:** ⚪ Visión futura
 

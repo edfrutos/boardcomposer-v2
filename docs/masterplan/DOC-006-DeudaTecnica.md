@@ -83,8 +83,8 @@ Estado
 | ID | Categoría | Descripción | Estado |
 
 |----|-----------|-------------|--------|
-| DT-0001 | DT-D | Completar la documentación funcional de BoardComposer Studio. | 🟡 Pendiente |
-| DT-0002 | DT-A | Revisar y documentar la arquitectura interna del Solver tras la incorporación de nuevos algoritmos. | 🟡 Pendiente |
+| DT-0001 | DT-D | Completar la documentación funcional de BoardComposer Studio. Resuelto en `docs/studio.md`: servicios compartidos (`StudioServices`), ciclo de vida del proyecto, undo/redo, las dos capas de selección, validación de colocación, arrastre, flujo de resolución de layout y el `EventBus` (construido pero aún sin ningún publisher/subscriber real). | 🟢 Resuelto |
+| DT-0002 | DT-A | Revisar y documentar la arquitectura interna del Solver tras la incorporación de nuevos algoritmos. Resuelto en `docs/solver_architecture.md`: aclara las dos jerarquías de `BaseSolver` (`GeometrySolver` en producción, `SequentialSolver` sin usar fuera de sus propios tests), y documenta que la variante beam search de MaxRects (`maxrects_engine.py`/`maxrects_beam_runner.py`) funciona pero no está dada de alta en `GENERATOR_REGISTRY` — solo la usan `workbench/` y `tools/visualize_demo.py`. | 🟢 Resuelto |
 | DT-0003 | DT-T | Mantener la cobertura de pruebas por encima del objetivo definido. | 🟢 Controlado |
 | DT-0004 | DT-C | `solver/packing_runner.py` (experimento de runner+selector genérico, commit `8feea6b`) y `solver/generator_utils.py` (adaptador `single_solution_generator`, commit `ab7b963`) quedaron sin uso tras adoptarse `CandidatePipeline`/`evaluate()` y el envoltorio manual de `generators.py`. Eliminados: sin importaciones, sin tests, sin mención en documentación. | 🟢 Resuelto |
 
