@@ -92,6 +92,16 @@ Los contextos "Solución" y "Algoritmo" de SCR-004 dependen del Comparador (`IDE
 
 `MainWindow._solve_layout()` → `services.layout.solve_current_project()` (Core, ver `docs/architecture.md`) → si hay solución, `_show_layout_solution()` la muestra en el inspector (piezas colocadas, dimensiones totales, `waste_ratio`) **sin aplicarla todavía**. `_apply_layout()` es un paso explícito y separado: llama a `services.layout.apply_last_solution_to_current_project()`, recarga el workspace y limpia la selección. Este calcular-antes-de-aplicar es intencional: dos operaciones distintas, ninguna deshace la otra automáticamente (no hay un `ApplyLayoutCommand` en el sistema de undo/redo).
 
+## Comparador de soluciones — `studio/panels/comparator_panel.py`
+
+Cubre `IDE-0002` (`docs/masterplan/DOC-004-Backlog.md`) y la especificación `docs/masterplan/ui/SCR-003-Comparador.md`. `render_comparison(solutions)` es una función pura (sin Qt, testeada en `tests/test_comparator_panel.py`) que construye la tabla HTML mostrada en el dock "Comparador" (tabificado junto a "Timeline" en la zona inferior).
+
+- **`LayoutService.compare_solutions()`** (`studio/layout_service.py`, testeado en `tests/test_layout_service.py`) ejecuta `GeometrySolver` con `material_first_strategy()` (en vez de la `balanced_strategy()` por defecto de `solve_current_project()`) porque incluye los cinco generadores — `horizontal`, `vertical`, `free_space`, `skyline`, `maxrects` — necesarios para comparar algoritmos realmente distintos; guarda hasta `MAX_COMPARISON_SOLUTIONS` (4, según el criterio de aceptación de SCR-003) en `last_solutions`.
+- **`LayoutService.apply_comparison_solution(index)`** aplica la solución de esa posición al proyecto actual; devuelve `False` si el índice está fuera de rango, sin lanzar excepción.
+- `MainWindow._compare_solutions()`/`_apply_comparison_solution(index)` conectan esto al menú "Comparar": "Generar comparación" y cuatro acciones "Aplicar solución 1..4".
+
+Métricas mostradas por solución: algoritmo (`explanation.notes` tal cual las registra el generador), piezas colocadas, aprovechamiento y desperdicio (`1 - waste_ratio` / `waste_ratio`), puntuación (`score.total`), y fortalezas/debilidades de `explanation`. La especificación SCR-003 pide también número de cortes, tiempo de cálculo, fragmentación del material y tiempo estimado de mecanizado — **ninguno de estos se calcula en el dominio actual**, así que se omiten con una nota explícita en vez de inventarse. Tampoco hay todavía miniaturas gráficas por tablero (solo texto/tabla) ni "fijar como favorita".
+
 ## EventBus — infraestructura presente, aún sin uso
 
 `studio/events/event_bus.py`. `EventBus` implementa un pub/sub síncrono simple (`subscribe(event_name, handler)`, `publish(event_name, payload)`) y está instanciado en `StudioServices.events`, como prevé ADR-003 (Event Bus). **A día de hoy ningún componente de Studio llama a `publish()` ni `subscribe()`** — es infraestructura ya construida y disponible, pero todavía no conectada a ningún flujo real. Cualquier extensión futura que necesite desacoplar componentes (p. ej. notificar a varios paneles cuando cambia el proyecto) tiene esta pieza lista para usarse.

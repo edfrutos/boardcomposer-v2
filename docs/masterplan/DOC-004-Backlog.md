@@ -70,7 +70,7 @@ Observaciones:
 | ID | Título | Estado | Prioridad |
 |----|--------|--------|-----------|
 | IDE-0001 | Workspace interactivo | 🟢 | P0 |
-| IDE-0002 | Comparador de algoritmos | 🔵 | P0 |
+| IDE-0002 | Comparador de algoritmos | 🟢 | P0 |
 | IDE-0003 | Inspector de piezas | 🟢 | P0 |
 | IDE-0004 | Gestión de proyectos | 🟢 | P1 |
 | IDE-0005 | Exportación PDF/SVG | 🔵 | P1 |

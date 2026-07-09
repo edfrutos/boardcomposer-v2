@@ -20,7 +20,13 @@ from studio.models import (
     StudioPlacement,
     StudioProject,
 )
-from studio.panels import render_board, render_empty, render_piece, render_project
+from studio.panels import (
+    render_board,
+    render_comparison,
+    render_empty,
+    render_piece,
+    render_project,
+)
 from studio.project import load_project_from_file, save_project_to_file
 from studio.workspace.board_workspace import BoardWorkspace
 from studio.commands import RotatePieceCommand
@@ -93,6 +99,21 @@ class MainWindow(QMainWindow):
         menus["Herramientas"].addAction(self._actions["apply_layout"])
         self._actions["apply_layout"].triggered.connect(self._apply_layout)
 
+        self._actions["compare_solutions"] = QAction("Generar comparación", self)
+        menus["Comparar"].addAction(self._actions["compare_solutions"])
+        self._actions["compare_solutions"].triggered.connect(self._compare_solutions)
+
+        menus["Comparar"].addSeparator()
+
+        self._comparison_actions = []
+        for index in range(4):
+            action = QAction(f"Aplicar solución {index + 1}", self)
+            menus["Comparar"].addAction(action)
+            action.triggered.connect(
+                lambda checked=False, i=index: self._apply_comparison_solution(i)
+            )
+            self._comparison_actions.append(action)
+
         self._actions["undo"].triggered.connect(self._undo)
         self._actions["redo"].triggered.connect(self._redo)
 
@@ -142,6 +163,18 @@ class MainWindow(QMainWindow):
             Qt.DockWidgetArea.BottomDockWidgetArea,
             console_dock,
         )
+
+        self.comparator = QTextEdit()
+        self.comparator.setReadOnly(True)
+        self.comparator.setHtml(render_comparison([]))
+
+        comparator_dock = QDockWidget("Comparador", self)
+        comparator_dock.setWidget(self.comparator)
+        self.addDockWidget(
+            Qt.DockWidgetArea.BottomDockWidgetArea,
+            comparator_dock,
+        )
+        self.tabifyDockWidget(console_dock, comparator_dock)
 
     def _build_statusbar(self):
         status = QStatusBar(self)
@@ -441,3 +474,32 @@ class MainWindow(QMainWindow):
         self._update_window_title()
 
         self.statusBar().showMessage("Layout aplicado al proyecto", 3000)
+
+    def _compare_solutions(self):
+        solutions = self.services.layout.compare_solutions()
+        self.comparator.setHtml(render_comparison(solutions))
+
+        if not solutions:
+            self.statusBar().showMessage(
+                "No se pudieron generar soluciones para comparar", 3000
+            )
+            return
+
+        self.statusBar().showMessage(
+            f"{len(solutions)} solución(es) generada(s) para comparar", 3000
+        )
+
+    def _apply_comparison_solution(self, index: int):
+        if not self.services.layout.apply_comparison_solution(index):
+            self.statusBar().showMessage(
+                "No hay una solución generada en esa posición", 3000
+            )
+            return
+
+        self.workspace.reload_project()
+        self.workspace.selection.clear()
+        self.workspace.selection.sync_inspector(self)
+        self._reload_explorer()
+        self._update_window_title()
+        self._update_undo_redo()
+        self.statusBar().showMessage(f"Solución {index + 1} aplicada", 3000)
