@@ -72,6 +72,18 @@ Hay **dos** mecanismos de selección con responsabilidades distintas, que se sin
 
 `MainWindow._rotate_selected_piece()` llama a `can_rotate_item()` (envoltorio en `BoardWorkspace` sobre `PlacementValidator.can_rotate()`) **antes** de crear el `RotatePieceCommand`; si no cabe, muestra un mensaje en la barra de estado y no ejecuta nada.
 
+## Inspector contextual — `studio/panels/inspector_panel.py`
+
+Cubre `IDE-0003` (`docs/masterplan/DOC-004-Backlog.md`) y la especificación `docs/masterplan/ui/SCR-004-Inspector.md`. `render_project()`/`render_board()`/`render_piece()`/`render_empty()` son funciones puras (sin Qt, testeadas en `tests/test_inspector_panel.py`) que devuelven el HTML mostrado en el dock "Inspector" (`MainWindow.inspector.setHtml(...)`), según qué se seleccione en el explorador o en el workspace:
+
+- **Proyecto** (nodo raíz del explorador): nombre, materiales usados (unión de tableros + piezas), nº de tableros, nº de piezas.
+- **Tablero**: dimensiones, material, nº de piezas colocadas, superficie utilizada y desperdicio (calculados sumando el área de las piezas de `project.placements` — Studio solo soporta un tablero activo por proyecto, así que se asume que todas las colocaciones pertenecen a él).
+- **Pieza**: dimensiones, material, rotación y coordenadas si está colocada; si no, se indica explícitamente "Sin colocar".
+
+Solo se muestran campos con datos reales. La especificación SCR-004 menciona campos que el modelo de datos actual no soporta (descripción y fecha de modificación de proyecto, espesor y restricciones activas) — se omiten en vez de rellenarlos con valores inventados; la propia especificación los marca como "edición directa de propiedades" para una versión futura, no la actual.
+
+Los contextos "Solución" y "Algoritmo" de SCR-004 dependen del Comparador (`IDE-0002`, aún sin construir) y no están cubiertos todavía.
+
 ## Arrastre de piezas — `DragController`
 
 `studio/workspace/drag_controller.py`. Deliberadamente mínimo: solo guarda `(piece_id, x, y)` al iniciar el arrastre (`begin()`) y lo devuelve al soltar (`clear()`), para que `BoardWorkspace` pueda comparar posición inicial/final y decidir si merece la pena crear un `MovePieceCommand` (evita comandos de undo/redo vacíos cuando no hubo movimiento real).

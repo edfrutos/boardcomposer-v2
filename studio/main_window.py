@@ -20,6 +20,7 @@ from studio.models import (
     StudioPlacement,
     StudioProject,
 )
+from studio.panels import render_board, render_empty, render_piece, render_project
 from studio.project import load_project_from_file, save_project_to_file
 from studio.workspace.board_workspace import BoardWorkspace
 from studio.commands import RotatePieceCommand
@@ -122,7 +123,7 @@ class MainWindow(QMainWindow):
 
         self.inspector = QTextEdit()
         self.inspector.setReadOnly(True)
-        self.inspector.setText("Inspector\n\nSin selección")
+        self.inspector.setHtml(render_empty())
 
         inspector_dock = QDockWidget("Inspector", self)
         inspector_dock.setWidget(self.inspector)
@@ -177,6 +178,7 @@ class MainWindow(QMainWindow):
             return
 
         root = QTreeWidgetItem([project.name])
+        root.setData(0, Qt.ItemDataRole.UserRole, f"project:{project.project_id}")
         boards_root = QTreeWidgetItem(["Tableros"])
         pieces_root = QTreeWidgetItem(["Piezas"])
         solutions_root = QTreeWidgetItem(["Soluciones"])
@@ -213,7 +215,7 @@ class MainWindow(QMainWindow):
         selected = self.explorer.selectedItems()
 
         if not selected:
-            self.inspector.setText("Inspector\n\nSin selección")
+            self.inspector.setHtml(render_empty())
             return
 
         item = selected[0]
@@ -221,33 +223,28 @@ class MainWindow(QMainWindow):
         project = self.services.projects.current_project
 
         if project is None or data is None:
-            self.inspector.setText(f"Inspector\n\n{item.text(0)}")
+            self.inspector.setHtml(f"<h3>Inspector</h3><p>{item.text(0)}</p>")
             return
 
         kind, object_id = data.split(":", 1)
+
+        if kind == "project":
+            self.inspector.setHtml(render_project(project))
+            return
 
         if kind == "board":
             board = next(
                 board for board in project.boards if board.board_id == object_id
             )
-            self.inspector.setText(
-                "Inspector\n\n"
-                f"Tablero: {board.board_id}\n"
-                f"Dimensiones: {board.length_mm:g} x {board.width_mm:g} mm\n"
-                f"Material: {board.material}"
+            pieces_by_id = {piece.piece_id: piece for piece in project.pieces}
+            self.inspector.setHtml(
+                render_board(board, project.placements, pieces_by_id)
             )
             return
 
         if kind == "piece":
-            piece = project.piece_by_id(object_id)
             self.services.selection.select_one(object_id)
             self.workspace.select_piece(object_id)
-            self.inspector.setText(
-                "Inspector\n\n"
-                f"Pieza: {piece.piece_id}\n"
-                f"Dimensiones: {piece.length_mm:g} x {piece.width_mm:g} mm\n"
-                f"Material: {piece.material}"
-            )
 
     def _new_project(self):
         self._load_demo_project()
@@ -315,19 +312,9 @@ class MainWindow(QMainWindow):
             return
 
         piece = project.piece_by_id(piece_id)
-        placement = next(
-            placement
-            for placement in project.placements
-            if placement.piece_id == piece_id
-        )
+        placement = project.placement_by_piece_id(piece_id)
 
-        self.inspector.setText(
-            "Inspector\n\n"
-            f"Pieza: {piece.piece_id}\n"
-            f"Dimensiones: {piece.length_mm:g} x {piece.width_mm:g} mm\n"
-            f"Posición: {placement.x_mm:g}, {placement.y_mm:g} mm\n"
-            f"Material: {piece.material}"
-        )
+        self.inspector.setHtml(render_piece(piece, placement))
 
     def _update_window_title(self):
         project = self.services.projects.current_project
