@@ -13,6 +13,7 @@ Todos los algoritmos viven en `src/boardcomposer/solver/` y comparten la misma f
 | `free_space` | `generate_free_space_solution()` | 1 |
 | `skyline` | `generate_skyline_solution()` | 1 (la mejor encontrada) |
 | `maxrects` | `generate_maxrects_solution()` | 1 (la mejor encontrada) |
+| `maxrects_beam` | `generate_beam_maxrects_solution(beam_width=4)` | 1 (la mejor encontrada, vía beam search) |
 
 Qué generadores se ejecutan depende de la `OptimizationStrategy` elegida (ver `docs/scoring.md`).
 
@@ -49,7 +50,7 @@ Mantiene una lista de rectángulos libres (`FreeRectangle`), inicializada con un
 
 ### Variante Beam Search
 
-`solver/maxrects_beam_runner.py` combina MaxRects con `solver/beam_search.py` (búsqueda genérica de haz: en cada profundidad expande el estado actual y conserva solo los `width` mejores según una función de puntuación). `search_states()` (`solver/maxrects/beam.py`) expande, para cada tabla pendiente, todas las heurísticas de `MAXRECTS_HEURISTICS` y todos los órdenes de `MAXRECTS_BOARD_ORDERINGS`, puntuando cada estado con `score_state()` — esto explora más combinaciones heurística/orden que la versión "greedy" simple, a cambio de más coste computacional.
+`solver/maxrects_beam_runner.py` combina MaxRects con `solver/beam_search.py` (búsqueda genérica de haz: en cada profundidad expande el estado actual y conserva solo los `width` mejores según una función de puntuación). `search_states()` (`solver/maxrects/beam.py`) expande, para cada tabla pendiente, todas las heurísticas de `MAXRECTS_HEURISTICS` y todos los órdenes de `MAXRECTS_BOARD_ORDERINGS`, puntuando cada estado con `score_state()` — esto explora más combinaciones heurística/orden que la versión "greedy" simple, a cambio de más coste computacional. Registrada en `GENERATOR_REGISTRY` como `maxrects_beam` con `beam_width=4` (mismo valor usado en `workbench/app.py` y `tools/visualize_demo.py`); no forma parte de ninguna `OptimizationStrategy` por defecto, hay que seleccionarla explícitamente.
 
 ## Pipeline de candidatos
 

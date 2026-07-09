@@ -7,7 +7,7 @@ Cubre `DT-0002` (`docs/masterplan/DOC-006-DeudaTecnica.md`): "Revisar y document
 `BaseSolver` (`base_solver.py`) es una `ABC` con un único método abstracto `solve() -> list[AssemblySolution]`. Solo tiene **dos** implementaciones, y no comparten código entre sí:
 
 - **`GeometrySolver`** (`geometry_solver.py`) — el solver de producción. `solve()` delega en `CandidatePipeline` (ver `docs/algorithms.md`), que ejecuta los generadores de la estrategia elegida, filtra por restricciones, deduplica y puntúa con `evaluate()`/`ScoringWeights`. Es el único que usa el CLI (`cli.py`) y `LayoutService` (Studio).
-- **`SequentialSolver`** (`sequential_solver.py`) — un solver autocontenido, más antiguo: coloca las tablas en fila (con salto de línea manual si no caben) calculando su propia puntuación simplificada a mano (`usage_score`/`waste_score` con fórmulas ad-hoc), sin pasar por `evaluate()` ni `ScoringWeights`. Exportado en `solver/__init__.py` y cubierto por tests, pero **no lo invoca ni el CLI, ni `generators.py`, ni Studio** — es una implementación alternativa independiente, no parte del pipeline de producción.
+- **`SequentialSolver`** (`sequential_solver.py`) — coloca las tablas en fila (con salto de línea manual si no caben) calculando su propia puntuación simplificada a mano (`usage_score`/`waste_score` con fórmulas ad-hoc), sin pasar por `evaluate()` ni `ScoringWeights`. **No es un experimento abandonado**: según el historial del repositorio original (`edfrutos/boardcomposer`), fue el primer solver del proyecto (27/06/2026, "Motor v0.1" de `TODO.md`), construido incrementalmente antes de que existieran `GENERATOR_REGISTRY`/`CandidatePipeline`. Se mantiene como implementación de referencia mínima — exportada en `solver/__init__.py` y cubierta por tests — pero **no la invoca ni el CLI, ni `generators.py`, ni Studio**; no forma parte del pipeline de producción.
 
 ## La familia MaxRects: por qué hay tantos ficheros `maxrects_*`
 
@@ -22,19 +22,19 @@ generators.py (GENERATOR_REGISTRY["maxrects"])
         → maxrects/maxrects.py :: MaxRects               (el algoritmo geométrico real)
 ```
 
-Esta es la **única** ruta que usan `cli.py` y `GENERATOR_REGISTRY` — MaxRects "clásico", sin beam search.
+MaxRects "clásico", sin beam search — es la ruta más barata computacionalmente.
 
-Existe una **segunda ruta**, con beam search, que **no está conectada al registro de producción**:
+Existe una **segunda ruta**, con beam search, registrada en `GENERATOR_REGISTRY` como `"maxrects_beam"` (`beam_width=4`, ver `docs/algorithms.md`):
 
 ```
-workbench/app.py, tools/visualize_demo.py   (herramientas de exploración/demo)
-  → maxrects_engine.py :: iter_maxrects_candidates(project, beam_width)
-    → si beam_width <= 1: maxrects_runner.py :: iter_maxrects_solutions()   (mismo camino de arriba)
-    → si beam_width  > 1: maxrects_beam_runner.py :: iter_beam_maxrects_solutions()
-       → solver/maxrects/beam.py :: search_states()   (beam search genérico sobre MaxRectsState)
+generators.py (GENERATOR_REGISTRY["maxrects_beam"])
+  → generators.py :: maxrects_beam_generator()
+    → maxrects_search.py :: generate_beam_maxrects_solution(beam_width=4)
+      → maxrects_beam_runner.py :: iter_beam_maxrects_solutions()
+        → solver/maxrects/beam.py :: search_states()   (beam search genérico sobre MaxRectsState)
 ```
 
-`maxrects_search.py::generate_beam_maxrects_solution()` también existe y llama a `maxrects_beam_runner.py` directamente, pero **tampoco está registrada en `GENERATOR_REGISTRY`** ni se llama desde `generators.py`. En resumen: la variante beam search de MaxRects **funciona y tiene tests**, pero hoy solo es alcanzable desde las herramientas de exploración (`workbench/`, `tools/visualize_demo.py`), no desde el CLI ni Studio. Si se quiere ofrecer al usuario, falta darla de alta en `GENERATOR_REGISTRY` (p. ej. como `"maxrects_beam"`).
+No está incluida en ninguna `OptimizationStrategy` por defecto (`balanced`/`material`/`compact`) — hay que seleccionarla explícitamente pasando `"maxrects_beam"` en `generator_names`. Las herramientas de exploración (`workbench/app.py`, `tools/visualize_demo.py`) usan una tercera vía equivalente, `maxrects_engine.py::iter_maxrects_candidates(project, beam_width)`, que decide entre la ruta clásica y la de beam search según el `beam_width` recibido — útil para comparar ambas variantes en un mismo script, pero no es la que usa `GENERATOR_REGISTRY`.
 
 ### Paquete `solver/maxrects/` — el algoritmo en sí
 
@@ -71,4 +71,4 @@ A diferencia de MaxRects, Skyline no tiene variante beam search ni una segunda r
 
 ## Generadores "de una sola solución" vs "de varias"
 
-`GENERATOR_REGISTRY` (`generators.py`) espera funciones `Project -> list[AssemblySolution]`. `skyline`/`maxrects`/`free_space` internamente calculan **una única** mejor solución (`search_best_solution()` ya eligió la ganadora) y la envuelven en una lista de un elemento a mano (`return [generate_x_solution(project)]`); `horizontal`/`vertical` sí devuelven varias (todas las permutaciones válidas). No existe un adaptador genérico para el caso "una sola solución" — cada generador escribe su propio `return [...]` de una línea.
+`GENERATOR_REGISTRY` (`generators.py`) espera funciones `Project -> list[AssemblySolution]`. `skyline`/`maxrects`/`maxrects_beam`/`free_space` internamente calculan **una única** mejor solución (`search_best_solution()` ya eligió la ganadora, o en el caso de `maxrects_beam` el propio beam search) y la envuelven en una lista de un elemento a mano (`return [generate_x_solution(project)]`); `horizontal`/`vertical` sí devuelven varias (todas las permutaciones válidas). No existe un adaptador genérico para el caso "una sola solución" — cada generador escribe su propio `return [...]` de una línea.

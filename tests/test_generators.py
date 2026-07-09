@@ -39,3 +39,15 @@ def test_maxrects_generator_is_registered():
 
     assert len(solutions) == 1
     assert "maxrects" in solutions[0].explanation.notes
+
+
+def test_maxrects_beam_generator_is_registered():
+    project = Project()
+    project.add_board(Board(2000, 300, 20, "A"))
+
+    generator = generators_by_name(["maxrects_beam"])[0]
+    solutions = generator(project)
+
+    assert len(solutions) == 1
+    assert "maxrects" in solutions[0].explanation.notes
+    assert "beam" in solutions[0].explanation.notes
