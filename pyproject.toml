@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "boardcomposer"
 version = "0.1.0"
@@ -13,6 +17,10 @@ dev = [
     "pytest",
     "pylint",
 ]
+
+[tool.setuptools.packages.find]
+where = ["src", "."]
+include = ["boardcomposer*", "studio*"]
 
 [tool.ruff]
 line-length = 88

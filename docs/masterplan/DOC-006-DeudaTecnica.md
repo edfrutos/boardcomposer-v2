@@ -87,6 +87,7 @@ Estado
 | DT-0002 | DT-A | Revisar y documentar la arquitectura interna del Solver tras la incorporación de nuevos algoritmos. Resuelto en `docs/solver_architecture.md`: aclara las dos jerarquías de `BaseSolver` (`GeometrySolver` en producción, `SequentialSolver` sin usar fuera de sus propios tests), y documenta que la variante beam search de MaxRects (`maxrects_engine.py`/`maxrects_beam_runner.py`) funciona pero no está dada de alta en `GENERATOR_REGISTRY` — solo la usan `workbench/` y `tools/visualize_demo.py`. | 🟢 Resuelto |
 | DT-0003 | DT-T | Mantener la cobertura de pruebas por encima del objetivo definido. | 🟢 Controlado |
 | DT-0004 | DT-C | `solver/packing_runner.py` (experimento de runner+selector genérico, commit `8feea6b`) y `solver/generator_utils.py` (adaptador `single_solution_generator`, commit `ab7b963`) quedaron sin uso tras adoptarse `CandidatePipeline`/`evaluate()` y el envoltorio manual de `generators.py`. Eliminados: sin importaciones, sin tests, sin mención en documentación. | 🟢 Resuelto |
+| DT-0005 | DT-A | `pyproject.toml` no declaraba `[build-system]` ni `[tool.setuptools.packages.find]`: el paquete `studio/` (fuera de `src/`) solo era importable "por accidente" cuando el directorio de trabajo actual estaba en `sys.path` (p. ej. `python -m pytest`), pero no con la invocación real de CI (`pytest -q`, sin `python -m`). Detectado al añadir el primer test de Studio (`test_studio_project_io.py`). Resuelto añadiendo `where = ["src", "."]` a `packages.find`; verificado con `pip install -e .` + `pytest -q` puro. | 🟢 Resuelto |
 
 ---
 

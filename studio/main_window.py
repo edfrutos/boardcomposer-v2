@@ -5,6 +5,7 @@ from PySide6.QtGui import QAction
 
 from PySide6.QtWidgets import (
     QDockWidget,
+    QFileDialog,
     QMainWindow,
     QMenuBar,
     QStatusBar,
@@ -19,9 +20,12 @@ from studio.models import (
     StudioPlacement,
     StudioProject,
 )
+from studio.project import load_project_from_file, save_project_to_file
 from studio.workspace.board_workspace import BoardWorkspace
 from studio.commands import RotatePieceCommand
 from studio.commands import DeletePieceCommand
+
+PROJECT_FILE_FILTER = "BoardComposer Studio (*.bcstudio.json)"
 
 
 class MainWindow(QMainWindow):
@@ -100,6 +104,8 @@ class MainWindow(QMainWindow):
 
         self._actions["exit"].triggered.connect(self.close)
         self._actions["new_project"].triggered.connect(self._new_project)
+        self._actions["open"].triggered.connect(self._open_project)
+        self._actions["save"].triggered.connect(self._save_project)
 
     def _build_workspace(self):
         self.workspace = BoardWorkspace(self.services)
@@ -247,6 +253,60 @@ class MainWindow(QMainWindow):
         self._load_demo_project()
         self.statusBar().showMessage("Nuevo proyecto creado", 3000)
         self._update_window_title()
+
+    def _open_project(self):
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Abrir proyecto", "", PROJECT_FILE_FILTER
+        )
+
+        if not path:
+            return
+
+        try:
+            project = load_project_from_file(path)
+        except (OSError, ValueError, KeyError) as error:
+            self.statusBar().showMessage(f"No se pudo abrir el proyecto: {error}", 5000)
+            return
+
+        self.services.projects.open_project(project, filename=path)
+        self.workspace.reload_project()
+        self.workspace.selection.clear()
+        self.workspace.selection.sync_inspector(self)
+        self._reload_explorer()
+        self._update_window_title()
+        self._update_undo_redo()
+        self.statusBar().showMessage(f"Proyecto abierto: {path}", 3000)
+
+    def _save_project(self):
+        project = self.services.projects.current_project
+
+        if project is None:
+            return
+
+        path = self.services.projects.filename
+
+        if path is None:
+            path, _ = QFileDialog.getSaveFileName(
+                self,
+                "Guardar proyecto",
+                f"{project.name}.bcstudio.json",
+                PROJECT_FILE_FILTER,
+            )
+
+            if not path:
+                return
+
+        try:
+            save_project_to_file(project, path)
+        except OSError as error:
+            self.statusBar().showMessage(
+                f"No se pudo guardar el proyecto: {error}", 5000
+            )
+            return
+
+        self.services.projects.mark_saved(path)
+        self._update_window_title()
+        self.statusBar().showMessage(f"Proyecto guardado: {path}", 3000)
 
     def refresh_inspector_for_piece(self, piece_id: str):
         """Refresh inspector panel for the selected piece."""

@@ -27,6 +27,12 @@ Cubre `DT-0001` (`docs/masterplan/DOC-006-DeudaTecnica.md`). Complementa a `docs
 
 `MainWindow._update_window_title()` lee `is_modified` para mostrar el marcador `●` en el título de la ventana.
 
+### Persistencia — `studio/project/project_io.py`
+
+`project_to_dict()`/`project_from_dict()` (serialización pura, sin Qt) convierten un `StudioProject` a/desde un `dict` JSON-compatible (tableros, piezas y colocaciones); `save_project_to_file()`/`load_project_from_file()` son los envoltorios de fichero. Formato: `.bcstudio.json`.
+
+`MainWindow._open_project()`/`_save_project()` conectan esto a los `QAction` "Abrir…"/"Guardar" del menú Archivo (antes creados pero sin conectar — `IDE-0004`): `_save_project()` reutiliza `ProjectManager.filename` si ya existe, o pide ruta con `QFileDialog` la primera vez; `_open_project()` carga el fichero, lo registra vía `ProjectManager.open_project()` y recarga workspace/explorador/inspector.
+
 ## Undo/Redo — `CommandManager` + `Command`
 
 `studio/commands/`. `Command` (`command.py`) es un `Protocol` con `name: str`, `redo()` y `undo()` — cualquier objeto que implemente esos tres miembros sirve como comando, sin herencia obligatoria.
