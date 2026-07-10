@@ -7,12 +7,12 @@ Desarrollo del principio fundamental de `docs/masterplan/DOC-002-Arquitectura.md
 ```
                  BoardComposer
                        │
-        ┌──────────────┼──────────────┐
-        │                             │
-        ▼                             ▼
-BoardComposer Studio (studio/)    CLI (cli.py)
-        │                             │
-        └──────────────┬──────────────┘
+        ┌──────────────┼──────────────┬──────────────┐
+        │                             │              │
+        ▼                             ▼              ▼
+BoardComposer Studio (studio/)    CLI (cli.py)   API (api.py)
+        │                             │              │
+        └──────────────┬──────────────┴──────────────┘
                         ▼
               boardcomposer Core (src/boardcomposer/)
                         │
@@ -24,8 +24,6 @@ BoardComposer Studio (studio/)    CLI (cli.py)
                          ▼
                   geometry/, layout/
 ```
-
-No existe todavía una capa API independiente (DOC-002 y DOC-008 la describen como evolución prevista, no como código actual).
 
 ## Core (`src/boardcomposer/`)
 
@@ -40,6 +38,18 @@ No existe todavía una capa API independiente (DOC-002 y DOC-008 la describen co
 ## CLI (`src/boardcomposer/cli.py`)
 
 Consume el Core directamente: carga un `Project` (desde CSV o `build_demo_project()`), construye una `OptimizationStrategy` por nombre y llama a `GeometrySolver(project, strategy).solve()`. Sin lógica propia de negocio — es una interfaz fina sobre el Core, tal como exige el principio arquitectónico.
+
+## API (`src/boardcomposer/api.py`)
+
+Cubre `IDE-0006` (`docs/masterplan/DOC-004-Backlog.md`). Primer contrato HTTP mínimo sobre el Core (Flask, ya declarado en `pyproject.toml` pero sin usar hasta ahora) — mismo papel que `cli.py`, sin lógica propia: traduce peticiones a las mismas llamadas que ya usan CLI y Studio (`Project`/`ProjectConstraints`/`GeometrySolver`/`solutions_to_json`).
+
+| Ruta | Método | Qué hace |
+|---|---|---|
+| `/health` | GET | Comprobación trivial de que el servicio responde. |
+| `/strategies` | GET | Lista las estrategias registradas (`balanced`, `material`, `compact`). |
+| `/solve` | POST | Recibe `boards`/`constraints`/`strategy`/`top` en JSON, ejecuta `GeometrySolver` y devuelve el mismo JSON que ya genera `solutions_to_json()` para el CLI. |
+
+`docs/masterplan/DOC-008-API.md` describe una API mucho más amplia — autenticación, versionado (`/api/v1/`), gestión de perfiles, soporte multi-cliente — pero ese documento sigue "🟡 En revisión... pendiente de: definir los contratos públicos... especificar los recursos principales". Esta primera versión implementa solo lo que el backlog pide ("API pública", sin más detalle) y deja el resto para cuando esos contratos se definan: sin auth, sin versionado, sin persistencia entre peticiones.
 
 ## BoardComposer Studio (`studio/`)
 

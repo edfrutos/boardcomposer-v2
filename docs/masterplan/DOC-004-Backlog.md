@@ -74,7 +74,7 @@ Observaciones:
 | IDE-0003 | Inspector de piezas | 🟢 | P0 |
 | IDE-0004 | Gestión de proyectos | 🟢 | P1 |
 | IDE-0005 | Exportación PDF/SVG | 🟢 | P1 |
-| IDE-0006 | API pública | ⚪ | P2 |
+| IDE-0006 | API pública | 🟢 | P2 |
 | IDE-0007 | Asistente IA | ⚪ | P2 |
 | IDE-0008 | Sistema de plugins | ⚪ | P3 |
 
