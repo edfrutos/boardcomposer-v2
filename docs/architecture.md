@@ -50,8 +50,10 @@ Aplicación PySide6 (Qt) para explorar y editar proyectos visualmente. Estructur
 - **`commands/`** — `CommandManager` + comandos (`MovePieceCommand`, `RotatePieceCommand`, `DeletePieceCommand`): patrón Command para undo/redo (ver ADR-008).
 - **`events/`** — `EventBus` síncrono para desacoplar componentes de Studio (ver ADR-003).
 - **`selection/`** — `SelectionManager`, seguimiento de qué objetos están seleccionados.
-- **`project/`** — `ProjectManager`, ciclo de vida del proyecto abierto en Studio.
-- **`layout_service.py`** — **el puente explícito entre Studio y el Core.** `LayoutService.to_core_project()` traduce un `StudioProject` a un `Project` del Core (con `ProjectConstraints(allow_rotation=True, allow_cutting=False)`); `solve_current_project()` invoca `GeometrySolver` sobre ese proyecto traducido; `apply_last_solution_to_current_project()` vuelca las `BoardPlacement` resultantes de vuelta a `StudioPlacement`. Es el único punto donde Studio conoce tipos del Core.
+- **`project/`** — `ProjectManager` (ciclo de vida del proyecto abierto) + `project_io.py` (persistencia JSON `.bcstudio.json`).
+- **`panels/`** — contenido de los paneles contextuales: `inspector_panel.py` (Proyecto/Tablero/Pieza) y `comparator_panel.py` (comparación de varias soluciones). Funciones puras, sin Qt, testeadas directamente.
+- **`export/`** — exportación del estado actual del workspace a fichero: `svg_export.py` reutiliza `boardcomposer.export.solution_to_svg()` del Core; `pdf_export.py` dibuja lo mismo vía `QPainter`/`QPdfWriter` (Qt, por eso vive en Studio y no en el Core). `solution_bridge.py` convierte `StudioProject` (piezas + colocaciones) a un `AssemblySolution` del Core para que ambos exportadores reutilicen la misma geometría.
+- **`layout_service.py`** — **el puente explícito entre Studio y el Core.** `LayoutService.to_core_project()` traduce un `StudioProject` a un `Project` del Core (con `ProjectConstraints(allow_rotation=True, allow_cutting=False)`); `solve_current_project()`/`compare_solutions()` invocan `GeometrySolver` sobre ese proyecto traducido; `apply_last_solution_to_current_project()`/`apply_comparison_solution()` vuelcan las `BoardPlacement` resultantes de vuelta a `StudioPlacement`. Es el único punto donde Studio conoce tipos del Core.
 - **`main_window.py`** — ventana principal, ensambla menú, paneles y workspace.
 
 ## Regla de dependencia

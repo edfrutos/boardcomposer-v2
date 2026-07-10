@@ -102,6 +102,15 @@ Cubre `IDE-0002` (`docs/masterplan/DOC-004-Backlog.md`) y la especificación `do
 
 Métricas mostradas por solución: algoritmo (`explanation.notes` tal cual las registra el generador), piezas colocadas, aprovechamiento y desperdicio (`1 - waste_ratio` / `waste_ratio`), puntuación (`score.total`), y fortalezas/debilidades de `explanation`. La especificación SCR-003 pide también número de cortes, tiempo de cálculo, fragmentación del material y tiempo estimado de mecanizado — **ninguno de estos se calcula en el dominio actual**, así que se omiten con una nota explícita en vez de inventarse. Tampoco hay todavía miniaturas gráficas por tablero (solo texto/tabla) ni "fijar como favorita".
 
+## Exportación — `studio/export/`
+
+Cubre `IDE-0005` (`docs/masterplan/DOC-004-Backlog.md`). Exporta el estado actual del workspace (lo que haya colocado en `project.placements`, venga de arrastrar piezas o de aplicar una solución) a fichero — no depende de haber ejecutado el solver.
+
+- **`solution_bridge.py::studio_project_to_solution(project)`** — función pura que convierte `StudioProject` (piezas + `StudioPlacement`) a un `AssemblySolution` del Core (`BoardPlacement`, intercambiando `length_mm`/`width_mm` si `rotated=True`). Evita reimplementar en Studio la geometría de bounding-box que ya existe en `boardcomposer.domain`.
+- **`svg_export.py::export_project_to_svg(project, path)`** — reutiliza `boardcomposer.export.solution_to_svg()` del Core sobre la solución convertida. Devuelve `False` (sin escribir fichero) si no hay piezas colocadas.
+- **`pdf_export.py::export_project_to_pdf(project, path)`** — misma idea que el SVG (rectángulos + etiqueta `board_id`) pero dibujada con `QPainter` sobre un `QPdfWriter`, a 96 DPI con la página ajustada a las dimensiones reales en mm. Vive en Studio y no en el Core porque necesita Qt (`docs/architecture.md`: el Core nunca depende de una interfaz). Como `QPainter`/`QFontDatabase` abortan sin una `QGuiApplication` activa, sus tests (`tests/test_pdf_export.py`) necesitan `tests/conftest.py`, que fija `QT_QPA_PLATFORM=offscreen` para que funcionen igual en local que en CI (sin pantalla).
+- `MainWindow._export_svg()`/`_export_pdf()` conectan esto al menú "Exportar" → "Exportar SVG…"/"Exportar PDF…", pidiendo la ruta con `QFileDialog`.
+
 ## EventBus — infraestructura presente, aún sin uso
 
 `studio/events/event_bus.py`. `EventBus` implementa un pub/sub síncrono simple (`subscribe(event_name, handler)`, `publish(event_name, payload)`) y está instanciado en `StudioServices.events`, como prevé ADR-003 (Event Bus). **A día de hoy ningún componente de Studio llama a `publish()` ni `subscribe()`** — es infraestructura ya construida y disponible, pero todavía no conectada a ningún flujo real. Cualquier extensión futura que necesite desacoplar componentes (p. ej. notificar a varios paneles cuando cambia el proyecto) tiene esta pieza lista para usarse.

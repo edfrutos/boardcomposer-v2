@@ -27,6 +27,7 @@ from studio.panels import (
     render_piece,
     render_project,
 )
+from studio.export import export_project_to_pdf, export_project_to_svg
 from studio.project import load_project_from_file, save_project_to_file
 from studio.workspace.board_workspace import BoardWorkspace
 from studio.commands import RotatePieceCommand
@@ -113,6 +114,14 @@ class MainWindow(QMainWindow):
                 lambda checked=False, i=index: self._apply_comparison_solution(i)
             )
             self._comparison_actions.append(action)
+
+        self._actions["export_svg"] = QAction("Exportar SVG…", self)
+        menus["Exportar"].addAction(self._actions["export_svg"])
+        self._actions["export_svg"].triggered.connect(self._export_svg)
+
+        self._actions["export_pdf"] = QAction("Exportar PDF…", self)
+        menus["Exportar"].addAction(self._actions["export_pdf"])
+        self._actions["export_pdf"].triggered.connect(self._export_pdf)
 
         self._actions["undo"].triggered.connect(self._undo)
         self._actions["redo"].triggered.connect(self._redo)
@@ -503,3 +512,41 @@ class MainWindow(QMainWindow):
         self._update_window_title()
         self._update_undo_redo()
         self.statusBar().showMessage(f"Solución {index + 1} aplicada", 3000)
+
+    def _export_svg(self):
+        project = self.services.projects.current_project
+        if project is None:
+            return
+
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Exportar SVG", f"{project.name}.svg", "SVG (*.svg)"
+        )
+        if not path:
+            return
+
+        if not export_project_to_svg(project, path):
+            self.statusBar().showMessage(
+                "El proyecto no tiene piezas colocadas que exportar", 3000
+            )
+            return
+
+        self.statusBar().showMessage(f"SVG exportado: {path}", 3000)
+
+    def _export_pdf(self):
+        project = self.services.projects.current_project
+        if project is None:
+            return
+
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Exportar PDF", f"{project.name}.pdf", "PDF (*.pdf)"
+        )
+        if not path:
+            return
+
+        if not export_project_to_pdf(project, path):
+            self.statusBar().showMessage(
+                "El proyecto no tiene piezas colocadas que exportar", 3000
+            )
+            return
+
+        self.statusBar().showMessage(f"PDF exportado: {path}", 3000)

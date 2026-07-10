@@ -1,0 +1,17 @@
+"""SVG export for the current Studio workspace state (IDE-0005)."""
+
+from pathlib import Path
+
+from boardcomposer.export import solution_to_svg
+
+from studio.export.solution_bridge import studio_project_to_solution
+from studio.models import StudioProject
+
+
+def export_project_to_svg(project: StudioProject, path: str | Path) -> bool:
+    solution = studio_project_to_solution(project)
+    if not solution.placements:
+        return False
+
+    Path(path).write_text(solution_to_svg(solution), encoding="utf-8")
+    return True
