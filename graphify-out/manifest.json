@@ -410,14 +410,14 @@
     "semantic_hash": "18a834fbb8be19c5c0d15b35ea08b18e"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/layout_service.py": {
-    "mtime": 1783438113.0,
-    "ast_hash": "78279b3e7fff5b74f0ea18df662b740d",
-    "semantic_hash": "78279b3e7fff5b74f0ea18df662b740d"
+    "mtime": 1783622809.0,
+    "ast_hash": "f43da83b3abd436ca0f6134a0ae247df",
+    "semantic_hash": "f43da83b3abd436ca0f6134a0ae247df"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/main_window.py": {
-    "mtime": 1783618725.0,
-    "ast_hash": "782624a02838dbd9964b4c62b13ca375",
-    "semantic_hash": "782624a02838dbd9964b4c62b13ca375"
+    "mtime": 1783622477.0,
+    "ast_hash": "a3c61b36a707a412970300ac677bc9d3",
+    "semantic_hash": "a3c61b36a707a412970300ac677bc9d3"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/models/__init__.py": {
     "mtime": 1783325065.0,
@@ -445,9 +445,9 @@
     "semantic_hash": "b5d377484f4d67f407876115e0bfeaed"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/panels/__init__.py": {
-    "mtime": 1783618571.0,
-    "ast_hash": "25670466084aa9aaa0665dcc6d7fc96c",
-    "semantic_hash": "25670466084aa9aaa0665dcc6d7fc96c"
+    "mtime": 1783621882.0,
+    "ast_hash": "a0ae9d1950dbb307787e4760c28528ca",
+    "semantic_hash": "a0ae9d1950dbb307787e4760c28528ca"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/project/__init__.py": {
     "mtime": 1783612081.0,
@@ -1000,9 +1000,9 @@
     "semantic_hash": "ff388ae41b4379dc41654808fd6e2eff"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-004-Backlog.md": {
-    "mtime": 1783619059.0,
-    "ast_hash": "d7c60e4f5ae8d38e0919eeb189f38f32",
-    "semantic_hash": "d7c60e4f5ae8d38e0919eeb189f38f32"
+    "mtime": 1783622920.0,
+    "ast_hash": "df61156f91bf6134b0d7c93211840fca",
+    "semantic_hash": "df61156f91bf6134b0d7c93211840fca"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-005-Decisiones.md": {
     "mtime": 1783325065.0,
@@ -1200,9 +1200,9 @@
     "semantic_hash": "b3b953f88453e38a79f2bd90e71dc311"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/studio.md": {
-    "mtime": 1783619048.0,
-    "ast_hash": "73624ada3c4d277595eb11c2a2e1d510",
-    "semantic_hash": "73624ada3c4d277595eb11c2a2e1d510"
+    "mtime": 1783622910.0,
+    "ast_hash": "b563bc7cb59d257ce2dc464be8d088ed",
+    "semantic_hash": "b563bc7cb59d257ce2dc464be8d088ed"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/project/project_io.py": {
     "mtime": 1783613748.0,
@@ -1223,5 +1223,20 @@
     "mtime": 1783618587.0,
     "ast_hash": "f29ceea7d2e9fa6604f58da8af3b3bbb",
     "semantic_hash": "f29ceea7d2e9fa6604f58da8af3b3bbb"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/panels/comparator_panel.py": {
+    "mtime": 1783621866.0,
+    "ast_hash": "bdcbe2bdcd5e8009f8bc7ec4cdd09557",
+    "semantic_hash": "bdcbe2bdcd5e8009f8bc7ec4cdd09557"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_comparator_panel.py": {
+    "mtime": 1783622809.0,
+    "ast_hash": "497049b61ee8eb00f44d6da561231cb0",
+    "semantic_hash": "497049b61ee8eb00f44d6da561231cb0"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_layout_service.py": {
+    "mtime": 1783622268.0,
+    "ast_hash": "586ee144d1952adf22158f653b678ff8",
+    "semantic_hash": "586ee144d1952adf22158f653b678ff8"
   }
 }
