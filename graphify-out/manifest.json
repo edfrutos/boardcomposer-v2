@@ -415,9 +415,9 @@
     "semantic_hash": "f43da83b3abd436ca0f6134a0ae247df"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/main_window.py": {
-    "mtime": 1783622477.0,
-    "ast_hash": "a3c61b36a707a412970300ac677bc9d3",
-    "semantic_hash": "a3c61b36a707a412970300ac677bc9d3"
+    "mtime": 1783676522.0,
+    "ast_hash": "a57855ceb08f22265b32e714491698a5",
+    "semantic_hash": "a57855ceb08f22265b32e714491698a5"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/models/__init__.py": {
     "mtime": 1783325065.0,
@@ -965,9 +965,9 @@
     "semantic_hash": "b16687a94ee27be2e5600d3a7d0ade10"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/architecture.md": {
-    "mtime": 1783524214.0,
-    "ast_hash": "c9c61f3178848820a1bc0c22dba9831e",
-    "semantic_hash": "c9c61f3178848820a1bc0c22dba9831e"
+    "mtime": 1783677290.0,
+    "ast_hash": "d9e8157370e9cbfc0399aaf183fa2524",
+    "semantic_hash": "d9e8157370e9cbfc0399aaf183fa2524"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/data_model.md": {
     "mtime": 1783524150.0,
@@ -1000,9 +1000,9 @@
     "semantic_hash": "ff388ae41b4379dc41654808fd6e2eff"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-004-Backlog.md": {
-    "mtime": 1783622920.0,
-    "ast_hash": "df61156f91bf6134b0d7c93211840fca",
-    "semantic_hash": "df61156f91bf6134b0d7c93211840fca"
+    "mtime": 1783677326.0,
+    "ast_hash": "e68217db2c6783f459ca52a6210f9bb5",
+    "semantic_hash": "e68217db2c6783f459ca52a6210f9bb5"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/masterplan/DOC-005-Decisiones.md": {
     "mtime": 1783325065.0,
@@ -1200,9 +1200,9 @@
     "semantic_hash": "b3b953f88453e38a79f2bd90e71dc311"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/docs/studio.md": {
-    "mtime": 1783622910.0,
-    "ast_hash": "b563bc7cb59d257ce2dc464be8d088ed",
-    "semantic_hash": "b563bc7cb59d257ce2dc464be8d088ed"
+    "mtime": 1783677319.0,
+    "ast_hash": "4b3b4c9325018566fc3f5da79463f0a6",
+    "semantic_hash": "4b3b4c9325018566fc3f5da79463f0a6"
   },
   "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/project/project_io.py": {
     "mtime": 1783613748.0,
@@ -1238,5 +1238,45 @@
     "mtime": 1783622268.0,
     "ast_hash": "586ee144d1952adf22158f653b678ff8",
     "semantic_hash": "586ee144d1952adf22158f653b678ff8"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/export/__init__.py": {
+    "mtime": 1783670049.0,
+    "ast_hash": "28e138712ef7317728ad09cdb5d8a412",
+    "semantic_hash": "28e138712ef7317728ad09cdb5d8a412"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/export/pdf_export.py": {
+    "mtime": 1783670042.0,
+    "ast_hash": "bfda78e60a585203507c5e32d2357b5d",
+    "semantic_hash": "bfda78e60a585203507c5e32d2357b5d"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/export/solution_bridge.py": {
+    "mtime": 1783670012.0,
+    "ast_hash": "96984177f7a378daa4dadb9c090cda8e",
+    "semantic_hash": "96984177f7a378daa4dadb9c090cda8e"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/studio/export/svg_export.py": {
+    "mtime": 1783670018.0,
+    "ast_hash": "30a79e0498ae2ce9d964fe053eeff0a0",
+    "semantic_hash": "30a79e0498ae2ce9d964fe053eeff0a0"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/conftest.py": {
+    "mtime": 1783673177.0,
+    "ast_hash": "7832371020de2a81fcc2c5af3621fd48",
+    "semantic_hash": "7832371020de2a81fcc2c5af3621fd48"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_pdf_export.py": {
+    "mtime": 1783673188.0,
+    "ast_hash": "23d32ebf3d2c777b39af31b2e368f5c1",
+    "semantic_hash": "23d32ebf3d2c777b39af31b2e368f5c1"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_solution_bridge.py": {
+    "mtime": 1783670059.0,
+    "ast_hash": "6ee1fe2b6f8bf4722f2d246a43d663a4",
+    "semantic_hash": "6ee1fe2b6f8bf4722f2d246a43d663a4"
+  },
+  "/Volumes/BACKUPS_PROYECTOS/__03.-Github_Repositories/boardcomposer/tests/test_svg_export.py": {
+    "mtime": 1783676466.0,
+    "ast_hash": "e2eb65082ac88f3f2f3259ea76fd38f4",
+    "semantic_hash": "e2eb65082ac88f3f2f3259ea76fd38f4"
   }
 }
