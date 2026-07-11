@@ -16,11 +16,11 @@ BoardComposer Studio (studio/)    CLI (cli.py)   API (api.py)
                         ▼
               boardcomposer Core (src/boardcomposer/)
                         │
-     ┌──────────────────┼───────────────────┐
-     ▼                  ▼                   ▼
-  domain/            solver/            io/, export/, presenters/
-     │                  │                   │
-     └──────────────────┼───────────────────┘
+     ┌──────────────────┼───────────────────┬──────────┐
+     ▼                  ▼                   ▼          ▼
+  domain/            solver/            io/, export/,  ai/
+     │                  │               presenters/    │
+     └──────────────────┼───────────────────┴──────────┘
                          ▼
                   geometry/, layout/
 ```
@@ -34,6 +34,7 @@ BoardComposer Studio (studio/)    CLI (cli.py)   API (api.py)
 - **`io/`** — `load_project_from_csv()`, la única fuente de importación implementada hoy (RF-002 solo cubre CSV; Excel sigue pendiente).
 - **`export/`** — `solution_to_svg()`, único exportador implementado.
 - **`presenters/`** — `solution_to_text()` y `solutions_to_json()`, formateo de resultados para el CLI.
+- **`ai/`** — cubre la Fase A de `IDE-0007` (`docs/masterplan/DOC-004-Backlog.md`): puerto `AIProvider` (`ABC`, mismo patrón que `Presenter`) con un único método `complete(prompt: str) -> str`, `MockAIProvider` como implementación sin llamadas externas y `provider_by_name()` para resolver el proveedor por nombre (mismo patrón que `strategy_by_name()`). Todavía no hay proveedor real conectado ni servicios de las capacidades concretas (generación de proyectos, explicación de resultados, sugerencia de disposiciones, chat) — quedan para fases posteriores de `IDE-0007`, todas construidas sobre este puerto.
 
 ## CLI (`src/boardcomposer/cli.py`)
 

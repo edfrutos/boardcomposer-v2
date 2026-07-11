@@ -75,8 +75,23 @@ Observaciones:
 | IDE-0004 | Gestión de proyectos | 🟢 | P1 |
 | IDE-0005 | Exportación PDF/SVG | 🟢 | P1 |
 | IDE-0006 | API pública | 🟢 | P2 |
-| IDE-0007 | Asistente IA | ⚪ | P2 |
+| IDE-0007 | Asistente IA | 🟡 | P2 |
 | IDE-0008 | Sistema de plugins | ⚪ | P3 |
+
+---
+
+## IDE-0007 — Asistente IA
+
+**Estado:** 🟡 En desarrollo. Proveedor real todavía sin decidir.
+
+Alcance dividido en fases, cada una construida sobre la anterior:
+
+- **Fase A** (🟢 completada) — puerto `AIProvider` en el Core (`src/boardcomposer/ai/`) con `MockAIProvider` y `provider_by_name()`, sin proveedor real conectado.
+- **Fase B** (⚪) — generación de `Project` desde lenguaje natural.
+- **Fase C** (⚪) — explicación en lenguaje natural de un `AssemblySolution`, apoyada en `SolutionExplanation`.
+- **Fase D** (⚪) — sugerencia/optimización de disposiciones más allá de las estrategias `balanced`/`material`/`compact`.
+- **Fase E** (⚪) — chat de ayuda contextual, panel nuevo en Studio.
+- **Fase F** (⚪) — exposición de las capacidades anteriores vía API (`/assist/...`).
 
 ---
 
