@@ -11,3 +11,6 @@ graphify-out/cache/
 graphify-out/.graphify_python
 graphify-out/.graphify_root
 graphify-out/.graphify_labels.json
+
+# Claude Code: personal, machine-specific permissions
+.claude/settings.local.json
