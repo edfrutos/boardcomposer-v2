@@ -6,12 +6,15 @@ from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
     QDockWidget,
     QFileDialog,
+    QLineEdit,
     QMainWindow,
     QMenuBar,
     QStatusBar,
     QTextEdit,
     QTreeWidget,
     QTreeWidgetItem,
+    QVBoxLayout,
+    QWidget,
 )
 
 from studio.models import (
@@ -22,6 +25,7 @@ from studio.models import (
 )
 from studio.panels import (
     render_board,
+    render_chat,
     render_comparison,
     render_empty,
     render_piece,
@@ -184,6 +188,28 @@ class MainWindow(QMainWindow):
             comparator_dock,
         )
         self.tabifyDockWidget(console_dock, comparator_dock)
+
+        self.assistant_history = QTextEdit()
+        self.assistant_history.setReadOnly(True)
+        self.assistant_history.setHtml(render_chat([]))
+
+        self.assistant_input = QLineEdit()
+        self.assistant_input.setPlaceholderText("Pregunta al asistente…")
+        self.assistant_input.returnPressed.connect(self._ask_assistant)
+
+        assistant_widget = QWidget()
+        assistant_layout = QVBoxLayout(assistant_widget)
+        assistant_layout.setContentsMargins(0, 0, 0, 0)
+        assistant_layout.addWidget(self.assistant_history)
+        assistant_layout.addWidget(self.assistant_input)
+
+        assistant_dock = QDockWidget("Asistente", self)
+        assistant_dock.setWidget(assistant_widget)
+        self.addDockWidget(
+            Qt.DockWidgetArea.RightDockWidgetArea,
+            assistant_dock,
+        )
+        self.tabifyDockWidget(inspector_dock, assistant_dock)
 
     def _build_statusbar(self):
         status = QStatusBar(self)
@@ -512,6 +538,15 @@ class MainWindow(QMainWindow):
         self._update_window_title()
         self._update_undo_redo()
         self.statusBar().showMessage(f"Solución {index + 1} aplicada", 3000)
+
+    def _ask_assistant(self):
+        question = self.assistant_input.text()
+        if not question.strip():
+            return
+
+        self.services.assistant.ask(question)
+        self.assistant_history.setHtml(render_chat(self.services.assistant.history))
+        self.assistant_input.clear()
 
     def _export_svg(self):
         project = self.services.projects.current_project

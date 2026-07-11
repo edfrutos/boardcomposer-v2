@@ -1,5 +1,6 @@
 """Panel content builders for BoardComposer Studio."""
 
+from studio.panels.chat_panel import render_chat
 from studio.panels.comparator_panel import render_comparison
 from studio.panels.inspector_panel import (
     render_board,
@@ -10,6 +11,7 @@ from studio.panels.inspector_panel import (
 
 __all__ = [
     "render_board",
+    "render_chat",
     "render_comparison",
     "render_empty",
     "render_piece",

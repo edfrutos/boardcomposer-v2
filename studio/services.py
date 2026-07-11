@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 
+from studio.assistant_service import AssistantService
 from studio.commands import CommandManager
 from studio.events import EventBus
 from studio.project import ProjectManager
@@ -20,3 +21,4 @@ class StudioServices:
 
     def __post_init__(self):
         self.layout = LayoutService(self)
+        self.assistant = AssistantService(self)
