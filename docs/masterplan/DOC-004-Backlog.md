@@ -87,7 +87,7 @@ Observaciones:
 Alcance dividido en fases, cada una construida sobre la anterior:
 
 - **Fase A** (🟢 completada) — puerto `AIProvider` en el Core (`src/boardcomposer/ai/`) con `MockAIProvider` y `provider_by_name()`, sin proveedor real conectado.
-- **Fase B** (⚪) — generación de `Project` desde lenguaje natural.
+- **Fase B** (🟢 completada) — `project_from_text()` (`src/boardcomposer/ai/project_from_text.py`): genera un `Project` a partir de texto libre, pidiendo al `AIProvider` un JSON con la misma forma que ya valida `/solve` en la API.
 - **Fase C** (⚪) — explicación en lenguaje natural de un `AssemblySolution`, apoyada en `SolutionExplanation`.
 - **Fase D** (⚪) — sugerencia/optimización de disposiciones más allá de las estrategias `balanced`/`material`/`compact`.
 - **Fase E** (⚪) — chat de ayuda contextual, panel nuevo en Studio.
