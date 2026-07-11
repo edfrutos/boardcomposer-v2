@@ -1,5 +1,6 @@
 from boardcomposer.ai.provider import AIProvider
 from boardcomposer.domain import AssemblySolution
+from boardcomposer.layout.bounds import bounding_rectangle
 
 PROMPT_TEMPLATE = (
     "Explica en lenguaje natural, en español y en un párrafo breve, la "
@@ -18,11 +19,19 @@ PROMPT_TEMPLATE = (
 
 
 def explain_solution(solution: AssemblySolution, provider: AIProvider) -> str:
+    rect = bounding_rectangle(solution.placements)
+    bounding_area_mm2 = rect.area_mm2
+    waste_ratio = (
+        (bounding_area_mm2 - solution.used_area_mm2) / bounding_area_mm2
+        if bounding_area_mm2
+        else 0
+    )
+
     prompt = PROMPT_TEMPLATE.format(
         placements=len(solution.placements),
-        total_length_mm=solution.total_length_mm,
-        total_width_mm=solution.total_width_mm,
-        waste_ratio=solution.waste_ratio,
+        total_length_mm=rect.length_mm,
+        total_width_mm=rect.width_mm,
+        waste_ratio=waste_ratio,
         score_total=solution.score.total,
         strengths=", ".join(solution.explanation.strengths) or "ninguno registrado",
         weaknesses=", ".join(solution.explanation.weaknesses) or "ninguno registrado",
