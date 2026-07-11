@@ -75,14 +75,14 @@ Observaciones:
 | IDE-0004 | Gestión de proyectos | 🟢 | P1 |
 | IDE-0005 | Exportación PDF/SVG | 🟢 | P1 |
 | IDE-0006 | API pública | 🟢 | P2 |
-| IDE-0007 | Asistente IA | 🟡 | P2 |
+| IDE-0007 | Asistente IA | 🟢 | P2 |
 | IDE-0008 | Sistema de plugins | ⚪ | P3 |
 
 ---
 
 ## IDE-0007 — Asistente IA
 
-**Estado:** 🟡 En desarrollo. Proveedor real todavía sin decidir.
+**Estado:** 🟢 Completado (Fases A–F). Proveedor real todavía sin decidir — todas las capacidades funcionan con `MockAIProvider`; las que necesitan una respuesta JSON estructurada (`project_from_text()`, `suggest_strategy()`, y por tanto `/assist/project`/`/assist/strategy`) requieren un proveedor real para dar resultados útiles.
 
 Alcance dividido en fases, cada una construida sobre la anterior:
 
@@ -91,7 +91,7 @@ Alcance dividido en fases, cada una construida sobre la anterior:
 - **Fase C** (🟢 completada) — `explain_solution()` (`src/boardcomposer/ai/explain_solution.py`): pide al `AIProvider` una explicación en lenguaje natural de un `AssemblySolution`, a partir de sus métricas (tablas colocadas, dimensiones, desperdicio, puntuación) y de `SolutionExplanation` (fortalezas/debilidades/notas).
 - **Fase D** (🟢 completada) — `suggest_strategy()` (`src/boardcomposer/ai/suggest_strategy.py`): a partir de un objetivo en lenguaje natural, pide al `AIProvider` unos pesos de puntuación (`ScoringWeights`) y generadores de disposición, y construye una `OptimizationStrategy` que `GeometrySolver` ejecuta igual que `balanced`/`material`/`compact`. La IA solo ajusta parámetros del solver determinista existente — nunca genera geometría directamente, para no comprometer la validez de las disposiciones.
 - **Fase E** (🟢 completada) — `AssistantService`/`render_chat()` (`studio/assistant_service.py`, `studio/panels/chat_panel.py`): chat de ayuda contextual, nuevo dock "Asistente" en Studio. Envía la pregunta del usuario más el contexto del proyecto abierto directamente a `AIProvider.complete()` (conversación libre, sin pasar por `project_from_text()`/`explain_solution()`/`suggest_strategy()`).
-- **Fase F** (⚪) — exposición de las capacidades anteriores vía API (`/assist/...`).
+- **Fase F** (🟢 completada) — `POST /assist/project`, `POST /assist/strategy`, `POST /assist/explain` (`src/boardcomposer/api.py`): exponen las Fases B, D y C respectivamente vía HTTP, con la misma validación de `boards`/`constraints` que ya usa `/solve`. `create_app(ai_provider=None)` acepta ahora un `AIProvider` inyectable (por defecto `provider_by_name("mock")`).
 
 ---
 
