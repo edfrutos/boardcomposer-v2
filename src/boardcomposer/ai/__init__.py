@@ -1,3 +1,4 @@
+from .explain_solution import explain_solution
 from .mock_provider import MockAIProvider
 from .project_from_text import ProjectFromTextError, project_from_text
 from .provider import AIProvider
@@ -8,6 +9,7 @@ __all__ = [
     "AIProvider",
     "MockAIProvider",
     "ProjectFromTextError",
+    "explain_solution",
     "project_from_text",
     "provider_by_name",
 ]
