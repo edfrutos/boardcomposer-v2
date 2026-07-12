@@ -1,6 +1,7 @@
 from collections.abc import Callable
 
 from boardcomposer.domain import AssemblySolution, Project
+from boardcomposer.plugins import PluginLoadError, discover_plugins
 from boardcomposer.solver.free_space_generator import generate_free_space_solution
 from boardcomposer.solver.skyline_generator import generate_skyline_solution
 from boardcomposer.solver.maxrects_generator import generate_maxrects_solution
@@ -11,6 +12,7 @@ from boardcomposer.solver.layout_generator import (
 )
 
 MAXRECTS_BEAM_WIDTH = 4
+GENERATOR_PLUGIN_GROUP = "boardcomposer.generators"
 
 LayoutGenerator = Callable[[Project], list[AssemblySolution]]
 
@@ -49,5 +51,20 @@ GENERATOR_REGISTRY: dict[str, LayoutGenerator] = {
 }
 
 
+def available_generators() -> dict[str, LayoutGenerator]:
+    """GENERATOR_REGISTRY más los generadores registrados por plugins
+    instalados (grupo GENERATOR_PLUGIN_GROUP). Los nombres integrados
+    siempre ganan: un plugin no puede sustituir un generador existente."""
+    plugins, _errors = discover_plugins(GENERATOR_PLUGIN_GROUP)
+    return {**plugins, **GENERATOR_REGISTRY}
+
+
+def generator_plugin_errors() -> list[PluginLoadError]:
+    """Plugins de generadores instalados que fallaron al cargarse."""
+    _plugins, errors = discover_plugins(GENERATOR_PLUGIN_GROUP)
+    return errors
+
+
 def generators_by_name(names: list[str]) -> list[LayoutGenerator]:
-    return [GENERATOR_REGISTRY[name] for name in names]
+    registry = available_generators()
+    return [registry[name] for name in names]

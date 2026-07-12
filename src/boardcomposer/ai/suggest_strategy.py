@@ -2,7 +2,7 @@ import json
 
 from boardcomposer.ai.provider import AIProvider
 from boardcomposer.domain import Project
-from boardcomposer.solver.generators import GENERATOR_REGISTRY
+from boardcomposer.solver.generators import available_generators
 from boardcomposer.solver.scoring_weights import ScoringWeights
 from boardcomposer.solver.strategies import OptimizationStrategy
 
@@ -29,8 +29,9 @@ class SuggestStrategyError(ValueError):
 def suggest_strategy(
     project: Project, provider: AIProvider, goal: str = ""
 ) -> OptimizationStrategy:
+    generators = available_generators()
     prompt = PROMPT_TEMPLATE.format(
-        generators=", ".join(sorted(GENERATOR_REGISTRY)),
+        generators=", ".join(sorted(generators)),
         board_count=len(project.boards),
         goal=goal or "sin especificar; usa un equilibrio razonable.",
     )
@@ -74,9 +75,9 @@ def suggest_strategy(
             "La respuesta del asistente no incluye 'generator_names'."
         )
 
-    unknown = [name for name in generator_names if name not in GENERATOR_REGISTRY]
+    unknown = [name for name in generator_names if name not in generators]
     if unknown:
-        valid = ", ".join(sorted(GENERATOR_REGISTRY))
+        valid = ", ".join(sorted(generators))
         raise SuggestStrategyError(
             f"Generadores desconocidos: {', '.join(unknown)}. Válidos: {valid}"
         )
