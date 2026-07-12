@@ -264,4 +264,4 @@ def create_app(ai_provider: AIProvider | None = None) -> Flask:
 
 
 if __name__ == "__main__":
-    create_app().run()
+    create_app().run(port=5050)
