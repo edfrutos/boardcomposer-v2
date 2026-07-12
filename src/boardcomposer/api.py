@@ -37,9 +37,11 @@ from boardcomposer.ai import (
 from boardcomposer.domain import Board, Project, ProjectConstraints
 from boardcomposer.presenters import solutions_to_json
 from boardcomposer.solver import GeometrySolver
-from boardcomposer.solver.strategies import OptimizationStrategy, strategy_by_name
-
-STRATEGY_NAMES = ("balanced", "material", "compact")
+from boardcomposer.solver.strategies import (
+    OptimizationStrategy,
+    available_strategies,
+    strategy_by_name,
+)
 
 
 def _parse_boards(boards_data) -> list[Board]:
@@ -96,7 +98,7 @@ def create_app(ai_provider: AIProvider | None = None) -> Flask:
 
     @app.get("/strategies")
     def strategies():
-        return jsonify(strategies=list(STRATEGY_NAMES))
+        return jsonify(strategies=list(available_strategies()))
 
     @app.post("/solve")
     def solve():
