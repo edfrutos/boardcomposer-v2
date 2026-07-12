@@ -33,6 +33,8 @@ Cubre `DT-0001` (`docs/masterplan/DOC-006-DeudaTecnica.md`). Complementa a `docs
 
 `MainWindow._open_project()`/`_save_project()` conectan esto a los `QAction` "Abrir…"/"Guardar" del menú Archivo (antes creados pero sin conectar — `IDE-0004`): `_save_project()` reutiliza `ProjectManager.filename` si ya existe, o pide ruta con `QFileDialog` la primera vez; `_open_project()` carga el fichero, lo registra vía `ProjectManager.open_project()` y recarga workspace/explorador/inspector.
 
+`MainWindow.closeEvent()` (testeado en `tests/test_main_window_close.py`) impide perder cambios sin guardar al cerrar la ventana: si `ProjectManager.is_modified` es `False` acepta el cierre directamente; si es `True`, muestra un `QMessageBox` con "Guardar"/"Descartar"/"Cancelar" — "Cancelar" hace `event.ignore()`, "Descartar" acepta el cierre sin tocar el fichero, y "Guardar" reutiliza `_save_project()` y solo acepta el cierre si terminó con éxito (si el usuario cancela el diálogo de ruta o falla el guardado, `is_modified` sigue en `True` y el cierre se ignora también).
+
 ## Undo/Redo — `CommandManager` + `Command`
 
 `studio/commands/`. `Command` (`command.py`) es un `Protocol` con `name: str`, `redo()` y `undo()` — cualquier objeto que implemente esos tres miembros sirve como comando, sin herencia obligatoria.
