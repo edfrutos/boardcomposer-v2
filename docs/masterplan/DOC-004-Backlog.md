@@ -76,7 +76,7 @@ Observaciones:
 | IDE-0005 | Exportación PDF/SVG | 🟢 | P1 |
 | IDE-0006 | API pública | 🟢 | P2 |
 | IDE-0007 | Asistente IA | 🟢 | P2 |
-| IDE-0008 | Sistema de plugins | ⚪ | P3 |
+| IDE-0008 | Sistema de plugins | 🟡 | P3 |
 
 ---
 
@@ -92,6 +92,20 @@ Alcance dividido en fases, cada una construida sobre la anterior:
 - **Fase D** (🟢 completada) — `suggest_strategy()` (`src/boardcomposer/ai/suggest_strategy.py`): a partir de un objetivo en lenguaje natural, pide al `AIProvider` unos pesos de puntuación (`ScoringWeights`) y generadores de disposición, y construye una `OptimizationStrategy` que `GeometrySolver` ejecuta igual que `balanced`/`material`/`compact`. La IA solo ajusta parámetros del solver determinista existente — nunca genera geometría directamente, para no comprometer la validez de las disposiciones.
 - **Fase E** (🟢 completada) — `AssistantService`/`render_chat()` (`studio/assistant_service.py`, `studio/panels/chat_panel.py`): chat de ayuda contextual, nuevo dock "Asistente" en Studio. Envía la pregunta del usuario más el contexto del proyecto abierto directamente a `AIProvider.complete()` (conversación libre, sin pasar por `project_from_text()`/`explain_solution()`/`suggest_strategy()`).
 - **Fase F** (🟢 completada) — `POST /assist/project`, `POST /assist/strategy`, `POST /assist/explain` (`src/boardcomposer/api.py`): exponen las Fases B, D y C respectivamente vía HTTP, con la misma validación de `boards`/`constraints` que ya usa `/solve`. `create_app(ai_provider=None)` acepta ahora un `AIProvider` inyectable (por defecto `provider_by_name("mock")`).
+
+---
+
+## IDE-0008 — Sistema de plugins
+
+**Estado:** 🟡 En desarrollo. A diferencia de `IDE-0007`, introduce ejecución de código de terceros dentro de la aplicación (paquetes Python instalables, registrados vía *entry points*).
+
+Alcance dividido en fases, cada una construida sobre la anterior:
+
+- **Fase A** (🟢 completada) — `discover_plugins(group)` (`src/boardcomposer/plugins/discovery.py`): resuelve los *entry points* instalados para un grupo dado (`importlib.metadata.entry_points()`) en un diccionario `nombre -> objeto`, junto a una lista de `PluginLoadError` para los que fallan al cargar sin bloquear al resto.
+- **Fase B** (⚪) — generadores de disposición como plugins, junto a los 6 ya existentes en `solver.generators.GENERATOR_REGISTRY`.
+- **Fase C** (⚪) — estrategias de optimización como plugins, junto a `balanced`/`material`/`compact` en `strategy_by_name()`.
+- **Fase D** (⚪) — importadores/exportadores como plugins (hoy solo hay CSV de entrada y SVG de salida en el Core).
+- **Fase E** (⚪) — paneles/acciones de menú de Studio como plugins.
 
 ---
 
