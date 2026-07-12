@@ -4,6 +4,8 @@ import pytest
 
 from boardcomposer.ai import MockAIProvider
 from boardcomposer.api import create_app
+from boardcomposer.solver.scoring_weights import ScoringWeights
+from boardcomposer.solver.strategies import OptimizationStrategy
 
 
 @pytest.fixture
@@ -31,6 +33,22 @@ def test_strategies_lists_known_names(client):
 
     assert response.status_code == 200
     assert response.get_json()["strategies"] == ["balanced", "material", "compact"]
+
+
+def test_strategies_includes_plugin_strategies(client, monkeypatch):
+    def _custom_strategy():
+        return OptimizationStrategy(
+            name="custom", weights=ScoringWeights(), generator_names=("horizontal",)
+        )
+
+    monkeypatch.setattr(
+        "boardcomposer.solver.strategies.discover_plugins",
+        lambda group: ({"custom": _custom_strategy}, []),
+    )
+
+    response = client.get("/strategies")
+
+    assert "custom" in response.get_json()["strategies"]
 
 
 def test_solve_with_valid_boards_returns_solutions(client):
