@@ -1,7 +1,7 @@
 """Main window for BoardComposer Studio."""
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QCloseEvent
 
 from PySide6.QtWidgets import (
     QDockWidget,
@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMainWindow,
     QMenuBar,
+    QMessageBox,
     QStatusBar,
     QTextEdit,
     QTreeWidget,
@@ -372,6 +373,37 @@ class MainWindow(QMainWindow):
         self.services.projects.mark_saved(path)
         self._update_window_title()
         self.statusBar().showMessage(f"Proyecto guardado: {path}", 3000)
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        if not self.services.projects.is_modified:
+            event.accept()
+            return
+
+        project = self.services.projects.current_project
+        name = project.name if project is not None else "el proyecto"
+
+        choice = QMessageBox.question(
+            self,
+            "Cambios sin guardar",
+            f'"{name}" tiene cambios sin guardar. ¿Quieres guardarlos antes de salir?',
+            QMessageBox.StandardButton.Save
+            | QMessageBox.StandardButton.Discard
+            | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Save,
+        )
+
+        if choice == QMessageBox.StandardButton.Cancel:
+            event.ignore()
+            return
+
+        if choice == QMessageBox.StandardButton.Save:
+            self._save_project()
+            if self.services.projects.is_modified:
+                # El usuario canceló el diálogo de guardado, o falló: no cerramos.
+                event.ignore()
+                return
+
+        event.accept()
 
     def refresh_inspector_for_piece(self, piece_id: str):
         """Refresh inspector panel for the selected piece."""
