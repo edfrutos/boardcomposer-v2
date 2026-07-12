@@ -144,3 +144,28 @@ def test_suggest_strategy_rejects_unknown_generator():
 
     with pytest.raises(SuggestStrategyError):
         suggest_strategy(_project(), provider)
+
+
+def test_suggest_strategy_accepts_a_plugin_generator(monkeypatch):
+    def _custom(project):
+        return []
+
+    monkeypatch.setattr(
+        "boardcomposer.solver.generators.discover_plugins",
+        lambda group: ({"custom": _custom}, []),
+    )
+    provider = _provider(
+        {
+            "weights": {
+                "material_utilization": 40,
+                "placed_boards": 30,
+                "compactness": 20,
+                "rotation_penalty": 10,
+            },
+            "generator_names": ["custom"],
+        }
+    )
+
+    strategy = suggest_strategy(_project(), provider)
+
+    assert strategy.generator_names == ("custom",)

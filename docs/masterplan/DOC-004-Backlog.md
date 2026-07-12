@@ -102,7 +102,7 @@ Alcance dividido en fases, cada una construida sobre la anterior:
 Alcance dividido en fases, cada una construida sobre la anterior:
 
 - **Fase A** (🟢 completada) — `discover_plugins(group)` (`src/boardcomposer/plugins/discovery.py`): resuelve los *entry points* instalados para un grupo dado (`importlib.metadata.entry_points()`) en un diccionario `nombre -> objeto`, junto a una lista de `PluginLoadError` para los que fallan al cargar sin bloquear al resto.
-- **Fase B** (⚪) — generadores de disposición como plugins, junto a los 6 ya existentes en `solver.generators.GENERATOR_REGISTRY`.
+- **Fase B** (🟢 completada) — `available_generators()`/`generator_plugin_errors()` (`src/boardcomposer/solver/generators.py`): generadores de disposición registrados por plugins (grupo `boardcomposer.generators`) junto a los 6 ya existentes en `GENERATOR_REGISTRY`, que siempre gana si un plugin repite un nombre. `generators_by_name()` (usado por `CandidatePipeline`) y `suggest_strategy()` (`IDE-0007` Fase D) ya resuelven contra este conjunto ampliado.
 - **Fase C** (⚪) — estrategias de optimización como plugins, junto a `balanced`/`material`/`compact` en `strategy_by_name()`.
 - **Fase D** (⚪) — importadores/exportadores como plugins (hoy solo hay CSV de entrada y SVG de salida en el Core).
 - **Fase E** (⚪) — paneles/acciones de menú de Studio como plugins.
