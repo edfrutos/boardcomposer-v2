@@ -5,7 +5,7 @@
       "name": "boardcomposer-api",
       "runtimeExecutable": ".venv/bin/python",
       "runtimeArgs": ["-m", "boardcomposer.api"],
-      "port": 5000
+      "port": 5050
     }
   ]
 }
