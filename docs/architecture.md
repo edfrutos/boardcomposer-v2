@@ -16,11 +16,11 @@ BoardComposer Studio (studio/)    CLI (cli.py)   API (api.py)
                         ▼
               boardcomposer Core (src/boardcomposer/)
                         │
-     ┌──────────────────┼───────────────────┬──────────┐
-     ▼                  ▼                   ▼          ▼
-  domain/            solver/            io/, export/,  ai/
-     │                  │               presenters/    │
-     └──────────────────┼───────────────────┴──────────┘
+     ┌──────────────────┼───────────────────┬──────────┬──────────┐
+     ▼                  ▼                   ▼          ▼          ▼
+  domain/            solver/            io/, export/,  ai/     plugins/
+     │                  │               presenters/    │          │
+     └──────────────────┼───────────────────┴──────────┴──────────┘
                          ▼
                   geometry/, layout/
 ```
@@ -35,6 +35,7 @@ BoardComposer Studio (studio/)    CLI (cli.py)   API (api.py)
 - **`export/`** — `solution_to_svg()`, único exportador implementado.
 - **`presenters/`** — `solution_to_text()` y `solutions_to_json()`, formateo de resultados para el CLI.
 - **`ai/`** — cubre las Fases A, B, C y D de `IDE-0007` (`docs/masterplan/DOC-004-Backlog.md`). Fase A: puerto `AIProvider` (`ABC`, mismo patrón que `Presenter`) con un único método `complete(prompt: str) -> str`, `MockAIProvider` como implementación sin llamadas externas y `provider_by_name()` para resolver el proveedor por nombre (mismo patrón que `strategy_by_name()`). Fase B: `project_from_text()` (`project_from_text.py`) construye un `Project` a partir de texto libre — pide al `AIProvider` un JSON con la misma forma que ya valida `/solve` en la API (`boards`/`constraints`) y reutiliza esa misma validación; si la respuesta no es interpretable lanza `ProjectFromTextError`. Fase C: `explain_solution()` (`explain_solution.py`) pide al `AIProvider` una explicación en lenguaje natural de un `AssemblySolution`, a partir de sus métricas (tablas colocadas, dimensiones, desperdicio, puntuación) y de `SolutionExplanation`; a diferencia de `project_from_text()`, aquí la salida es texto libre sin parseo. Fase D: `suggest_strategy()` (`suggest_strategy.py`) traduce un objetivo en lenguaje natural en una `OptimizationStrategy` (pesos de `solver/scoring_weights.py` + `generator_names` validados contra `solver.generators.GENERATOR_REGISTRY`) que `GeometrySolver` ejecuta igual que las estrategias predefinidas — la IA nunca genera geometría directamente, solo ajusta los parámetros del solver determinista. Todavía no hay proveedor real conectado. La Fase E (chat contextual, ver sección Studio) consume directamente `AIProvider.complete()` en vez de estas funciones específicas; la Fase F (ver sección API) expone las Fases B, C y D vía HTTP.
+- **`plugins/`** — cubre la Fase A de `IDE-0008` (`docs/masterplan/DOC-004-Backlog.md`): `discover_plugins(group)` resuelve los *entry points* de Python instalados para un grupo dado (`importlib.metadata.entry_points()`) en un diccionario `nombre -> objeto cargado`, junto a una lista de `PluginLoadError` para los que fallan al cargar — un plugin de terceros roto no bloquea a los demás ni a la aplicación. Sin capacidades concretas todavía (generadores/estrategias/importadores-exportadores/paneles de Studio como plugins): quedan para fases posteriores de `IDE-0008`, todas construidas sobre esta misma función, cada una con su propio grupo de entry points (p. ej. futuro `boardcomposer.generators`).
 
 ## CLI (`src/boardcomposer/cli.py`)
 
