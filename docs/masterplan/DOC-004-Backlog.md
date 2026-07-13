@@ -76,7 +76,7 @@ Observaciones:
 | IDE-0005 | Exportación PDF/SVG | 🟢 | P1 |
 | IDE-0006 | API pública | 🟢 | P2 |
 | IDE-0007 | Asistente IA | 🟢 | P2 |
-| IDE-0008 | Sistema de plugins | 🟡 | P3 |
+| IDE-0008 | Sistema de plugins | 🟢 | P3 |
 
 ---
 
@@ -97,7 +97,7 @@ Alcance dividido en fases, cada una construida sobre la anterior:
 
 ## IDE-0008 — Sistema de plugins
 
-**Estado:** 🟡 En desarrollo. A diferencia de `IDE-0007`, introduce ejecución de código de terceros dentro de la aplicación (paquetes Python instalables, registrados vía *entry points*).
+**Estado:** 🟢 Completado (Fases A–E). A diferencia de `IDE-0007`, introduce ejecución de código de terceros dentro de la aplicación (paquetes Python instalables, registrados vía *entry points*).
 
 Alcance dividido en fases, cada una construida sobre la anterior:
 
@@ -105,7 +105,7 @@ Alcance dividido en fases, cada una construida sobre la anterior:
 - **Fase B** (🟢 completada) — `available_generators()`/`generator_plugin_errors()` (`src/boardcomposer/solver/generators.py`): generadores de disposición registrados por plugins (grupo `boardcomposer.generators`) junto a los 6 ya existentes en `GENERATOR_REGISTRY`, que siempre gana si un plugin repite un nombre. `generators_by_name()` (usado por `CandidatePipeline`) y `suggest_strategy()` (`IDE-0007` Fase D) ya resuelven contra este conjunto ampliado.
 - **Fase C** (🟢 completada) — `available_strategies()`/`strategy_plugin_errors()` (`src/boardcomposer/solver/strategies.py`): estrategias de optimización registradas por plugins (grupo `boardcomposer.strategies`) junto a `balanced`/`material`/`compact` en `STRATEGY_FACTORIES`, que siempre gana si un plugin repite un nombre. `strategy_by_name()` y `GET /strategies` en la API ya resuelven contra este conjunto ampliado.
 - **Fase D** (🟢 completada) — `available_importers()`/`importer_by_name()` (`src/boardcomposer/io/registry.py`) y `available_exporters()`/`exporter_by_name()` (`src/boardcomposer/export/registry.py`): importadores/exportadores registrados por plugins (grupos `boardcomposer.importers`/`boardcomposer.exporters`) junto a `"csv"`/`"svg"`, que siempre ganan si un plugin repite un nombre. A diferencia de B y C, no había un mecanismo existente de selección por nombre en CLI/API/Studio al que enchufarse — queda como infraestructura lista para usarse cuando se necesite.
-- **Fase E** (⚪) — paneles/acciones de menú de Studio como plugins.
+- **Fase E** (🟢 completada) — `discover_panel_plugins()` (`studio/panel_plugins.py`) y `MainWindow._build_plugin_panels()`: paneles de Studio registrados por plugins (grupo `boardcomposer.studio_panels`, factoría `(services) -> QWidget`). Cada panel añade un `QDockWidget` y su acción de mostrar/ocultar al menú "Ver" (antes vacío). Sin capacidad integrada que fusionar (a diferencia de B/C/D): Explorer/Inspector/Timeline/Comparador/Asistente son parte fija de `MainWindow`, no plugins; un plugin que repita uno de esos 5 nombres, falle al cargarse o falle al construir su widget se ignora con aviso en la barra de estado, sin bloquear el arranque de Studio.
 
 ---
 
