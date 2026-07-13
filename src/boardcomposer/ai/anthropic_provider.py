@@ -23,6 +23,4 @@ class AnthropicProvider(AIProvider):
             max_tokens=MAX_TOKENS,
             messages=[{"role": "user", "content": prompt}],
         )
-        return "".join(
-            block.text for block in response.content if block.type == "text"
-        )
+        return "".join(block.text for block in response.content if block.type == "text")

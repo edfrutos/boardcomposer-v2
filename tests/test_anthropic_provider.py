@@ -42,9 +42,7 @@ def test_complete_sends_the_prompt_as_a_user_message(monkeypatch):
     AnthropicProvider().complete("¿cuántas piezas caben?")
 
     call = fake_client.messages.calls[0]
-    assert call["messages"] == [
-        {"role": "user", "content": "¿cuántas piezas caben?"}
-    ]
+    assert call["messages"] == [{"role": "user", "content": "¿cuántas piezas caben?"}]
 
 
 def test_complete_uses_the_default_model_by_default(monkeypatch):
