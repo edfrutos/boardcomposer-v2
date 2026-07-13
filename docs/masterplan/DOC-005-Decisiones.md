@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 01/07/2026
+**Última revisión:** 13/07/2026
 
 ---
 
@@ -63,6 +63,9 @@ Documentos relacionados
 | DEC-0003 | El usuario explorará soluciones en lugar de ejecutar un único «Resolver» | ✅ Vigente |
 | DEC-0004 | Toda funcionalidad comenzará en el Core antes de llegar a cualquier interfaz | ✅ Vigente |
 | DEC-0005 | El proyecto utilizará un Master Plan versionado como referencia oficial | ✅ Vigente |
+| DEC-0006 | El Asistente IA (`IDE-0007`) solo ajusta parámetros del solver determinista (pesos de puntuación, generadores a usar) — nunca genera geometría/colocaciones directamente | ✅ Vigente |
+| DEC-0007 | Los plugins (`IDE-0008`) se registran vía *entry points* estándar de Python (`importlib.metadata`), no un cargador propio | ✅ Vigente |
+| DEC-0008 | Ante una colisión de nombre, las capacidades integradas (generadores, estrategias, importadores, exportadores) siempre ganan sobre un plugin | ✅ Vigente |
 
 ---
 

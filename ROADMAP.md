@@ -1,59 +1,52 @@
 # ROADMAP - BoardComposer
 
+> **Superado.** Este fichero es el andamiaje del primer día del proyecto
+> (26/06/2026). El roadmap vivo y mantenido está en
+> `docs/masterplan/DOC-003-Roadmap.md`; el backlog funcionalidad por
+> funcionalidad, en `docs/masterplan/DOC-004-Backlog.md`. Se conserva aquí
+> como registro histórico, sin actualizar checkbox a checkbox.
+
 ## Fase 0 - Fundamentos
 
 - [x] Directorio raíz.
-
 - [x] Documentación fundacional.
-
 - [x] Estructura inicial.
-
 - [x] Documentación técnica v0.1.
-
-- [ ] Inicializar Git.
-
-- [ ] Primer commit.
+- [x] Inicializar Git.
+- [x] Primer commit.
 
 ## Fase 1 - Motor mínimo 2D
 
-- Modelo Board.
-
-- Modelo Project.
-
-- Modelo AssemblySolution.
-
-- Restricciones básicas.
-
-- Motor de puntuación.
-
-- Generador de soluciones simples.
-
-- Salida por consola.
-
-- Tests unitarios.
+- [x] Modelo Board.
+- [x] Modelo Project.
+- [x] Modelo AssemblySolution.
+- [x] Restricciones básicas.
+- [x] Motor de puntuación.
+- [x] Generador de soluciones simples.
+- [x] Salida por consola.
+- [x] Tests unitarios.
 
 ## Fase 2 - Datos
 
-- CSV.
-
-- Excel.
-
-- JSON.
-
-- Formato .bcproj.
+- [x] CSV.
+- [ ] Excel.
+- [x] JSON.
+- [x] Formato .bcstudio.json (equivalente al `.bcproj` previsto).
 
 ## Fase 3 - Visualización
 
-- Dibujo 2D.
-
-- Comparación de soluciones.
-
-- Exportación de imagen/PDF.
+- [x] Dibujo 2D (workspace de BoardComposer Studio).
+- [x] Comparación de soluciones.
+- [x] Exportación de imagen/PDF.
 
 ## Fase 4 - Aplicación macOS
 
-- Interfaz PySide6.
+- [x] Interfaz PySide6.
+- [x] Editor visual.
+- [x] Panel de criterios (Inspector).
 
-- Editor visual.
+## Fases no previstas originalmente, añadidas después
 
-- Panel de criterios.
+- [x] API HTTP pública.
+- [x] Asistente IA (sobre proveedor simulado; sin proveedor real conectado).
+- [x] Sistema de plugins (generadores, estrategias, importadores/exportadores, paneles de Studio).

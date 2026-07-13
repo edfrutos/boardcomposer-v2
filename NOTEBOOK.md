@@ -31,3 +31,12 @@ BoardComposer no será un optimizador de corte tradicional. Será un motor para 
 
 - Uniones complejas de carpintería.
 
+## 2026-07-13 - Actualización de alcance
+
+De lo que "quedaba fuera por ahora" en la sesión inicial, dos puntos ya están construidos:
+
+- **Interfaz gráfica**: BoardComposer Studio (PySide6), completa — workspace, comparador, inspector, gestión de proyectos, exportación SVG/PDF.
+
+- **IA integrada**: Asistente IA (IDE-0007, 6 fases) sobre un proveedor de IA pluggable — todavía sin conectar un proveedor real (usa `MockAIProvider`).
+
+Modelado 3D, muebles completos y uniones complejas de carpintería siguen fuera de alcance. Ver `docs/masterplan/DOC-004-Backlog.md` para el estado vivo de cada funcionalidad.

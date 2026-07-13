@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 01/07/2026
+**Última revisión:** 13/07/2026
 
 ---
 
@@ -37,9 +37,9 @@ Objetivos alcanzados:
 
 ---
 
-## Fase 2 — BoardComposer Studio (En curso)
+## Fase 2 — BoardComposer Studio (Completada)
 
-**Estado:** 🟡
+**Estado:** 🟢
 
 Objetivo:
 
@@ -47,72 +47,74 @@ Construir la aplicación visual profesional para explorar, comparar y comprender
 
 Entregables principales:
 
-- Workspace.
-- Comparador de algoritmos.
-- Inspector de piezas.
-- Panel de propiedades.
-- Gestión de proyectos.
-- Exportación visual.
+- Workspace. 🟢 (IDE-0001)
+- Comparador de algoritmos. 🟢 (IDE-0002)
+- Inspector de piezas. 🟢 (IDE-0003)
+- Panel de propiedades. 🟢 (cubierto por el Inspector, IDE-0003)
+- Gestión de proyectos. 🟢 (IDE-0004)
+- Exportación visual. 🟢 (SVG/PDF, IDE-0005)
 
 ---
 
 ## Fase 3 — Plataforma
 
-**Estado:** ⚪ Planificada
+**Estado:** 🟡 En curso
 
 Incluye:
 
-- API pública.
-- Automatización.
-- Integraciones.
-- Servicios remotos.
+- API pública. 🟢 (IDE-0006: `/health`, `/strategies`, `/solve`; ver `docs/architecture.md`)
+- Automatización. ⚪ Sin empezar.
+- Integraciones. ⚪ Sin empezar.
+- Servicios remotos. ⚪ Sin empezar — la API sigue siendo el servidor de desarrollo de Flask, sin auth, sin WSGI de producción.
 
 ---
 
 ## Fase 4 — Inteligencia
 
-**Estado:** ⚪ Idea consolidada
+**Estado:** 🟢 Completada (Fases A–F de IDE-0007)
 
 Objetivos:
 
-- Asistencia mediante IA.
-- Explicaciones inteligentes.
-- Recomendación automática de estrategias.
-- Análisis avanzado de soluciones.
+- Asistencia mediante IA. 🟢 (`AssistantService`/chat en Studio, Fase E)
+- Explicaciones inteligentes. 🟢 (`explain_solution()`, Fase C)
+- Recomendación automática de estrategias. 🟢 (`suggest_strategy()`, Fase D)
+- Análisis avanzado de soluciones. 🟢 (generación de proyecto desde texto, Fase B; expuesto vía API, Fase F)
+
+Con una salvedad importante: todo corre sobre `MockAIProvider` — no hay ningún proveedor de IA real conectado todavía (`docs/masterplan/DOC-004-Backlog.md`). `/assist/project` y `/assist/strategy` no dan resultados útiles sin uno.
 
 ---
 
 ## Fase 5 — Ecosistema
 
-**Estado:** ⚪ Visión futura
+**Estado:** 🟡 En curso
 
 Objetivos:
 
-- Plugins.
-- Marketplace.
-- Biblioteca de materiales.
-- Comunidad.
+- Plugins. 🟢 (IDE-0008, Fases A–E completas: generadores, estrategias, importadores/exportadores y paneles de Studio registrables vía entry points de Python)
+- Marketplace. ⚪ Sin empezar.
+- Biblioteca de materiales. ⚪ Sin empezar.
+- Comunidad. ⚪ Sin empezar.
 
 ---
 
 ## Prioridades actuales
 
+Studio, API, IA y Plugins (antes P0–P2) ya están completos — ver arriba. Las prioridades reales hoy son:
+
 ### Prioridad P0
 
-- BoardComposer Studio.
-- Diseño UX.
-- Flujo completo de trabajo.
+- Conectar un proveedor de IA real (hoy todo corre sobre `MockAIProvider`).
+- Endurecimiento para producción: autenticación, rate limiting, servidor WSGI de producción (hoy es el servidor de desarrollo de Flask).
 
 ### Prioridad P1
 
-- API.
-- Exportadores avanzados.
-- Persistencia de proyectos.
+- Importación desde Excel (RF-002, pendiente desde el inicio).
+- Empaquetado y distribución de Studio (hoy se ejecuta desde código fuente).
 
 ### Prioridad P2
 
-- IA.
-- Plugins.
+- Exportación DXF.
+- Marketplace, biblioteca de materiales, comunidad (Fase 5).
 - Cloud.
 
 ---
