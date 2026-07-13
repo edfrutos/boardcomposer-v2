@@ -45,6 +45,8 @@ Consume el Core directamente: carga un `Project` (desde CSV o `build_demo_projec
 
 Cubre `IDE-0006` y la Fase F de `IDE-0007` (`docs/masterplan/DOC-004-Backlog.md`). Primer contrato HTTP mínimo sobre el Core (Flask, ya declarado en `pyproject.toml`) — mismo papel que `cli.py`, sin lógica propia: traduce peticiones a las mismas llamadas que ya usan CLI y Studio (`Project`/`ProjectConstraints`/`GeometrySolver`/`solutions_to_json`, y ahora también `boardcomposer.ai`). `_parse_boards()`/`_parse_constraints()`/`_parse_top()`/`_solve_response()` son helpers internos que factorizan la validación que `/solve` y los `/assist/*` comparten.
 
+`MAX_BOARDS = 100` limita `boards` en `/solve`, `/assist/strategy` y `/assist/explain` (`400` si se supera). No protege contra combinatoria — `generate_horizontal_permutations()`/`generate_vertical_permutations()` ya se limitan solas a 6 tableros internamente (`layout_generator.py`, sin relación con esta constante) — sino contra el coste, más difuso pero real, de `GeometrySolver` con proyectos grandes: medido empíricamente, 100 tableros resuelven en ~1s, 200 en ~7s, 300+ no termina en un tiempo razonable.
+
 | Ruta | Método | Qué hace |
 |---|---|---|
 | `/health` | GET | Comprobación trivial de que el servicio responde. |
