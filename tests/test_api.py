@@ -83,6 +83,23 @@ def test_solve_rejects_empty_boards_list(client):
     assert response.status_code == 400
 
 
+def test_solve_rejects_too_many_boards(client):
+    boards = [{"id": f"B{i}", "length_mm": 500, "width_mm": 300} for i in range(101)]
+
+    response = client.post("/solve", json={"boards": boards})
+
+    assert response.status_code == 400
+    assert "100" in response.get_json()["error"]
+
+
+def test_solve_accepts_exactly_the_board_limit(client):
+    boards = [{"id": f"B{i}", "length_mm": 500, "width_mm": 300} for i in range(100)]
+
+    response = client.post("/solve", json={"boards": boards})
+
+    assert response.status_code == 200
+
+
 def test_solve_rejects_non_json_body(client):
     response = client.post("/solve", data="not json", content_type="text/plain")
 
@@ -213,6 +230,14 @@ def test_assist_strategy_rejects_missing_boards(client):
     assert "boards" in response.get_json()["error"]
 
 
+def test_assist_strategy_rejects_too_many_boards(client):
+    boards = [{"id": f"B{i}", "length_mm": 500, "width_mm": 300} for i in range(101)]
+
+    response = client.post("/assist/strategy", json={"boards": boards})
+
+    assert response.status_code == 400
+
+
 def test_assist_strategy_returns_502_when_the_provider_reply_is_not_json(client):
     response = client.post(
         "/assist/strategy",
@@ -236,5 +261,13 @@ def test_assist_explain_returns_solve_results_plus_an_explanation(client):
 
 def test_assist_explain_rejects_missing_boards(client):
     response = client.post("/assist/explain", json={})
+
+    assert response.status_code == 400
+
+
+def test_assist_explain_rejects_too_many_boards(client):
+    boards = [{"id": f"B{i}", "length_mm": 500, "width_mm": 300} for i in range(101)]
+
+    response = client.post("/assist/explain", json={"boards": boards})
 
     assert response.status_code == 400

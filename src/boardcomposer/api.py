@@ -43,6 +43,13 @@ from boardcomposer.solver.strategies import (
     strategy_by_name,
 )
 
+# GeometrySolver's runtime grows sharply past a few hundred boards (measured:
+# 100 boards ~1s, 200 ~7s, 300+ effectively unbounded) even though the
+# combinatorial generators (horizontal/vertical) already cap themselves at 6
+# boards internally. 100 is comfortably fast and far beyond a realistic
+# real-world cutting project.
+MAX_BOARDS = 100
+
 
 def _parse_boards(boards_data) -> list[Board]:
     return [
@@ -109,6 +116,12 @@ def create_app(ai_provider: AIProvider | None = None) -> Flask:
         boards_data = payload.get("boards")
         if not isinstance(boards_data, list) or not boards_data:
             return jsonify(error="'boards' debe ser una lista no vacía."), 400
+
+        if len(boards_data) > MAX_BOARDS:
+            return (
+                jsonify(error=f"'boards' admite como máximo {MAX_BOARDS} tablas."),
+                400,
+            )
 
         try:
             boards = _parse_boards(boards_data)
@@ -182,6 +195,12 @@ def create_app(ai_provider: AIProvider | None = None) -> Flask:
         if not isinstance(boards_data, list) or not boards_data:
             return jsonify(error="'boards' debe ser una lista no vacía."), 400
 
+        if len(boards_data) > MAX_BOARDS:
+            return (
+                jsonify(error=f"'boards' admite como máximo {MAX_BOARDS} tablas."),
+                400,
+            )
+
         try:
             boards = _parse_boards(boards_data)
         except (KeyError, TypeError, ValueError) as error:
@@ -223,6 +242,12 @@ def create_app(ai_provider: AIProvider | None = None) -> Flask:
         boards_data = payload.get("boards")
         if not isinstance(boards_data, list) or not boards_data:
             return jsonify(error="'boards' debe ser una lista no vacía."), 400
+
+        if len(boards_data) > MAX_BOARDS:
+            return (
+                jsonify(error=f"'boards' admite como máximo {MAX_BOARDS} tablas."),
+                400,
+            )
 
         try:
             boards = _parse_boards(boards_data)
