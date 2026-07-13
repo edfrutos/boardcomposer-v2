@@ -8,7 +8,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 01/07/2026
+**Última revisión:** 13/07/2026
 
 ---
 
@@ -88,6 +88,9 @@ Estado
 | DT-0003 | DT-T | Mantener la cobertura de pruebas por encima del objetivo definido. | 🟢 Controlado |
 | DT-0004 | DT-C | `solver/packing_runner.py` (experimento de runner+selector genérico, commit `8feea6b`) y `solver/generator_utils.py` (adaptador `single_solution_generator`, commit `ab7b963`) quedaron sin uso tras adoptarse `CandidatePipeline`/`evaluate()` y el envoltorio manual de `generators.py`. Eliminados: sin importaciones, sin tests, sin mención en documentación. | 🟢 Resuelto |
 | DT-0005 | DT-A | `pyproject.toml` no declaraba `[build-system]` ni `[tool.setuptools.packages.find]`: el paquete `studio/` (fuera de `src/`) solo era importable "por accidente" cuando el directorio de trabajo actual estaba en `sys.path` (p. ej. `python -m pytest`), pero no con la invocación real de CI (`pytest -q`, sin `python -m`). Detectado al añadir el primer test de Studio (`test_studio_project_io.py`). Resuelto añadiendo `where = ["src", "."]` a `packages.find`; verificado con `pip install -e .` + `pytest -q` puro. | 🟢 Resuelto |
+| DT-0006 | DT-P | `GeometrySolver` no tenía ningún límite de tamaño de proyecto en la API: medido empíricamente, 100 tableros resuelven en ~1s, 200 en ~7s, 300+ no termina en un tiempo razonable (no relacionado con `generate_horizontal_permutations()`/`generate_vertical_permutations()`, que ya se autolimitan a 6 tableros). Resuelto añadiendo `MAX_BOARDS = 100` en `/solve`, `/assist/strategy` y `/assist/explain` (`api.py`). | 🟢 Resuelto |
+| DT-0007 | DT-D | `AI_CONTEXT.md`, `ROADMAP.md`, `TODO.md` y `CHANGELOG.md` de la raíz quedaron congelados en el primer día del proyecto (26/06/2026) — `AI_CONTEXT.md` llegó a afirmar "sin implementación" con el proyecto ya completo en Core/Studio/API/IA/Plugins, lo que podía desorientar a cualquier sesión de IA que lo tomara como referencia. Resuelto: `AI_CONTEXT.md` actualizado con el estado real y redirigiendo a `docs/masterplan/DOC-004-Backlog.md`; `ROADMAP.md`/`TODO.md` marcados como superados con puntero al masterplan; `CHANGELOG.md` con una entrada `0.1.0` cubriendo los hitos pendientes de registrar; `DOC-003-Roadmap.md` corregido (Fases 2, 4 y 5 daban por no hechas capacidades ya completas). | 🟢 Resuelto |
+| DT-0008 | DT-UX / DT-A | Endurecimiento para producción pendiente: sin autenticación ni rate limiting en la API, servidor de desarrollo de Flask (no WSGI de producción), sin proveedor de IA real conectado (`MockAIProvider` en todas las capacidades de `IDE-0007`), sin empaquetado/distribución de Studio. Ninguno bloquea el uso actual como herramienta interna; si se expone a tráfico externo o datos de terceros, deben abordarse antes. | 🔴 Abierto |
 
 ---
 
