@@ -18,4 +18,3 @@ Motivo: debe poder probarse desde consola y con tests unitarios.
 Cada solución deberá incluir puntuación y explicación.
 
 Motivo: el usuario debe entender por qué una composición es mejor que otra.
-
