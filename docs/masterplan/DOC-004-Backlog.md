@@ -82,16 +82,16 @@ Observaciones:
 
 ## IDE-0007 — Asistente IA
 
-**Estado:** 🟢 Completado (Fases A–F). Proveedor real todavía sin decidir — todas las capacidades funcionan con `MockAIProvider`; las que necesitan una respuesta JSON estructurada (`project_from_text()`, `suggest_strategy()`, y por tanto `/assist/project`/`/assist/strategy`) requieren un proveedor real para dar resultados útiles.
+**Estado:** 🟢 Completado (Fases A–F), incluyendo un proveedor de IA real: `AnthropicProvider` (`src/boardcomposer/ai/anthropic_provider.py`, SDK `anthropic`, modelo `claude-haiku-4-5`, API key vía variable de entorno `ANTHROPIC_API_KEY` — la resuelve el propio SDK con `Anthropic()`). `default_provider()` (`src/boardcomposer/ai/registry.py`) usa `AnthropicProvider` si hay `ANTHROPIC_API_KEY` en el entorno, si no cae a `MockAIProvider`; es el valor por defecto tanto de `create_app()` (`api.py`) como de `AssistantService` (Studio). Las capacidades que necesitan una respuesta JSON estructurada (`project_from_text()`, `suggest_strategy()`) ya dan resultados útiles con este proveedor.
 
 Alcance dividido en fases, cada una construida sobre la anterior:
 
-- **Fase A** (🟢 completada) — puerto `AIProvider` en el Core (`src/boardcomposer/ai/`) con `MockAIProvider` y `provider_by_name()`, sin proveedor real conectado.
+- **Fase A** (🟢 completada) — puerto `AIProvider` en el Core (`src/boardcomposer/ai/`) con `MockAIProvider`, `AnthropicProvider` y `provider_by_name()`/`default_provider()`.
 - **Fase B** (🟢 completada) — `project_from_text()` (`src/boardcomposer/ai/project_from_text.py`): genera un `Project` a partir de texto libre, pidiendo al `AIProvider` un JSON con la misma forma que ya valida `/solve` en la API.
 - **Fase C** (🟢 completada) — `explain_solution()` (`src/boardcomposer/ai/explain_solution.py`): pide al `AIProvider` una explicación en lenguaje natural de un `AssemblySolution`, a partir de sus métricas (tablas colocadas, dimensiones, desperdicio, puntuación) y de `SolutionExplanation` (fortalezas/debilidades/notas).
 - **Fase D** (🟢 completada) — `suggest_strategy()` (`src/boardcomposer/ai/suggest_strategy.py`): a partir de un objetivo en lenguaje natural, pide al `AIProvider` unos pesos de puntuación (`ScoringWeights`) y generadores de disposición, y construye una `OptimizationStrategy` que `GeometrySolver` ejecuta igual que `balanced`/`material`/`compact`. La IA solo ajusta parámetros del solver determinista existente — nunca genera geometría directamente, para no comprometer la validez de las disposiciones.
 - **Fase E** (🟢 completada) — `AssistantService`/`render_chat()` (`studio/assistant_service.py`, `studio/panels/chat_panel.py`): chat de ayuda contextual, nuevo dock "Asistente" en Studio. Envía la pregunta del usuario más el contexto del proyecto abierto directamente a `AIProvider.complete()` (conversación libre, sin pasar por `project_from_text()`/`explain_solution()`/`suggest_strategy()`).
-- **Fase F** (🟢 completada) — `POST /assist/project`, `POST /assist/strategy`, `POST /assist/explain` (`src/boardcomposer/api.py`): exponen las Fases B, D y C respectivamente vía HTTP, con la misma validación de `boards`/`constraints` que ya usa `/solve`. `create_app(ai_provider=None)` acepta ahora un `AIProvider` inyectable (por defecto `provider_by_name("mock")`).
+- **Fase F** (🟢 completada) — `POST /assist/project`, `POST /assist/strategy`, `POST /assist/explain` (`src/boardcomposer/api.py`): exponen las Fases B, D y C respectivamente vía HTTP, con la misma validación de `boards`/`constraints` que ya usa `/solve`. `create_app(ai_provider=None)` acepta un `AIProvider` inyectable (por defecto `default_provider()`).
 
 ---
 

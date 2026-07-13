@@ -10,7 +10,10 @@ from boardcomposer.solver.strategies import OptimizationStrategy
 
 @pytest.fixture
 def client():
-    app = create_app()
+    # Explicit MockAIProvider so this suite stays deterministic regardless of
+    # whether ANTHROPIC_API_KEY happens to be set in the environment running
+    # pytest — create_app()'s own default would pick up a real provider.
+    app = create_app(ai_provider=MockAIProvider())
     app.testing = True
     return app.test_client()
 
@@ -185,9 +188,9 @@ def test_assist_project_rejects_missing_text(client):
 
 
 def test_assist_project_returns_502_when_the_provider_reply_is_not_json(client):
-    # create_app()'s default provider is a MockAIProvider with a plain-text
-    # canned reply, not JSON — this is the real behaviour today, since
-    # there's no AIProvider that actually produces JSON wired in yet.
+    # The client fixture's MockAIProvider has a plain-text canned reply,
+    # not JSON — this exercises the 502 path any non-JSON-producing
+    # provider would hit.
     response = client.post("/assist/project", json={"text": "una tabla"})
 
     assert response.status_code == 502

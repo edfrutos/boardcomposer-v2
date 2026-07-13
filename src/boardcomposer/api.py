@@ -12,13 +12,11 @@ públicos...", "En revisión"), not as requirements for this first cut.
 
 The /assist/* routes expose boardcomposer.ai (IDE-0007) the same way:
 no AI logic of its own, just request/response translation. create_app()
-defaults to the "mock" AIProvider — there's still no real provider wired
-in (docs/masterplan/DOC-004-Backlog.md), so /assist/project and
-/assist/strategy will 502 with the default provider until one exists,
-since MockAIProvider's canned reply isn't the JSON those two expect.
-/assist/explain works today: it only needs free text back. ai_provider
-is an explicit create_app() parameter so tests (and, later, a real
-provider) can supply one without changing this module.
+defaults to default_provider(), which resolves to AnthropicProvider when
+ANTHROPIC_API_KEY is set in the environment and falls back to
+MockAIProvider otherwise. ai_provider is an explicit create_app()
+parameter so tests (and any deployment wanting a specific provider) can
+supply one without changing this module.
 """
 
 import json
@@ -29,9 +27,9 @@ from boardcomposer.ai import (
     AIProvider,
     ProjectFromTextError,
     SuggestStrategyError,
+    default_provider,
     explain_solution,
     project_from_text,
-    provider_by_name,
     suggest_strategy,
 )
 from boardcomposer.domain import Board, Project, ProjectConstraints
@@ -96,7 +94,7 @@ def _solve_response(project: Project, strategy: OptimizationStrategy, top: int):
 
 
 def create_app(ai_provider: AIProvider | None = None) -> Flask:
-    provider = ai_provider or provider_by_name("mock")
+    provider = ai_provider or default_provider()
     app = Flask(__name__)
 
     @app.get("/health")
