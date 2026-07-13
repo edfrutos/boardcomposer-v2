@@ -37,6 +37,26 @@ def test_suggest_strategy_builds_optimization_strategy():
     assert strategy.generator_names == ("skyline", "maxrects")
 
 
+def test_suggest_strategy_strips_a_markdown_json_fence():
+    # Real providers (e.g. AnthropicProvider) often wrap JSON replies in a
+    # ```json ... ``` fence even when told not to; MockAIProvider normally
+    # doesn't, so this exercises that response shape explicitly.
+    payload = {
+        "weights": {
+            "material_utilization": 70,
+            "placed_boards": 20,
+            "compactness": 5,
+            "rotation_penalty": 5,
+        },
+        "generator_names": ["skyline"],
+    }
+    provider = MockAIProvider(response=f"```json\n{json.dumps(payload)}\n```")
+
+    strategy = suggest_strategy(_project(), provider)
+
+    assert strategy.generator_names == ("skyline",)
+
+
 def test_suggest_strategy_sends_goal_and_board_count_in_the_prompt():
     provider = _provider(
         {

@@ -1,5 +1,6 @@
 from .anthropic_provider import AnthropicProvider
 from .explain_solution import explain_solution
+from .json_response import strip_json_fence
 from .mock_provider import MockAIProvider
 from .project_from_text import ProjectFromTextError, project_from_text
 from .provider import AIProvider
@@ -17,5 +18,6 @@ __all__ = [
     "explain_solution",
     "project_from_text",
     "provider_by_name",
+    "strip_json_fence",
     "suggest_strategy",
 ]
