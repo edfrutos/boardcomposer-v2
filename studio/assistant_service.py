@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from boardcomposer.ai import AIProvider, MockAIProvider
+from boardcomposer.ai import AIProvider, default_provider
 
 PROMPT_TEMPLATE = (
     "Eres el asistente de ayuda de BoardComposer Studio. Responde en "
@@ -19,7 +19,7 @@ class AssistantService:
 
     def __init__(self, services, provider: AIProvider | None = None):
         self.services = services
-        self.provider = provider or MockAIProvider()
+        self.provider = provider or default_provider()
         self.history: list[tuple[str, str]] = []
 
     def ask(self, question: str) -> str:

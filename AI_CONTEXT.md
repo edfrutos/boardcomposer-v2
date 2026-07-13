@@ -10,9 +10,9 @@ Estado actual (ver `docs/masterplan/DOC-004-Backlog.md` para el detalle vivo):
 - CLI funcional (entrada CSV, salida texto/JSON).
 - API HTTP (`/solve`, `/strategies`, `/assist/*`).
 - BoardComposer Studio (GUI PySide6): workspace interactivo, comparador, inspector, gestión de proyectos, exportación SVG/PDF.
-- Asistente IA (IDE-0007, 6 fases completas) sobre un proveedor pluggable — todavía sin proveedor real conectado (usa `MockAIProvider`).
+- Asistente IA (IDE-0007, 6 fases completas) sobre un proveedor pluggable, con `AnthropicProvider` (modelo `claude-haiku-4-5`) conectado como proveedor real. `default_provider()` usa Anthropic si hay `ANTHROPIC_API_KEY` en el entorno, si no cae a `MockAIProvider`.
 - Sistema de plugins (IDE-0008, 5 fases completas): generadores, estrategias, importadores/exportadores y paneles de Studio registrables vía entry points de Python.
-- Pendiente: importación desde Excel (RF-002), exportación DXF, conectar un proveedor de IA real, endurecimiento para producción (auth, servidor WSGI, rate limiting, empaquetado de Studio).
+- Pendiente: importación desde Excel (RF-002), exportación DXF, endurecimiento para producción (auth, servidor WSGI, rate limiting, empaquetado de Studio).
 
 Reglas:
 - No romper compatibilidad del modelo de datos.

@@ -80,7 +80,7 @@ Objetivos:
 - Recomendación automática de estrategias. 🟢 (`suggest_strategy()`, Fase D)
 - Análisis avanzado de soluciones. 🟢 (generación de proyecto desde texto, Fase B; expuesto vía API, Fase F)
 
-Con una salvedad importante: todo corre sobre `MockAIProvider` — no hay ningún proveedor de IA real conectado todavía (`docs/masterplan/DOC-004-Backlog.md`). `/assist/project` y `/assist/strategy` no dan resultados útiles sin uno.
+Proveedor de IA real conectado: `AnthropicProvider` (Claude, modelo `claude-haiku-4-5`), vía `default_provider()` — se activa automáticamente si hay `ANTHROPIC_API_KEY` en el entorno, si no cae a `MockAIProvider` (`docs/masterplan/DOC-004-Backlog.md`).
 
 ---
 
@@ -103,7 +103,6 @@ Studio, API, IA y Plugins (antes P0–P2) ya están completos — ver arriba. La
 
 ### Prioridad P0
 
-- Conectar un proveedor de IA real (hoy todo corre sobre `MockAIProvider`).
 - Endurecimiento para producción: autenticación, rate limiting, servidor WSGI de producción (hoy es el servidor de desarrollo de Flask).
 
 ### Prioridad P1
