@@ -33,10 +33,13 @@ from studio.panels import (
     render_project,
 )
 from studio.export import export_project_to_pdf, export_project_to_svg
+from studio.panel_plugins import discover_panel_plugins
 from studio.project import load_project_from_file, save_project_to_file
 from studio.workspace.board_workspace import BoardWorkspace
 from studio.commands import RotatePieceCommand
 from studio.commands import DeletePieceCommand
+
+RESERVED_PANEL_NAMES = {"Explorer", "Inspector", "Timeline", "Comparador", "Asistente"}
 
 PROJECT_FILE_FILTER = "BoardComposer Studio (*.bcstudio.json)"
 
@@ -143,6 +146,8 @@ class MainWindow(QMainWindow):
         self._actions["open"].triggered.connect(self._open_project)
         self._actions["save"].triggered.connect(self._save_project)
 
+        self._menus = menus
+
     def _build_workspace(self):
         self.workspace = BoardWorkspace(self.services)
         self.setCentralWidget(self.workspace)
@@ -211,6 +216,44 @@ class MainWindow(QMainWindow):
             assistant_dock,
         )
         self.tabifyDockWidget(inspector_dock, assistant_dock)
+
+        self._build_plugin_panels()
+
+    def _build_plugin_panels(self):
+        """Añade un QDockWidget por cada panel registrado por un plugin
+        (IDE-0008 Fase E), con su acción de mostrar/ocultar en el menú
+        "Ver". Un plugin roto (al cargarse o al construir su widget) no
+        impide que arranque el resto de Studio."""
+        plugins, errors = discover_panel_plugins()
+
+        for error in errors:
+            self.statusBar().showMessage(
+                f"Plugin de panel '{error.name}' no se pudo cargar: {error.error}",
+                5000,
+            )
+
+        for name, factory in plugins.items():
+            if name in RESERVED_PANEL_NAMES:
+                self.statusBar().showMessage(
+                    f"El plugin de panel '{name}' usa un nombre reservado y "
+                    "se ha ignorado.",
+                    5000,
+                )
+                continue
+
+            try:
+                widget = factory(self.services)
+            except Exception as error:  # noqa: BLE001 - código de terceros
+                self.statusBar().showMessage(
+                    f"El plugin de panel '{name}' falló al construirse: {error}",
+                    5000,
+                )
+                continue
+
+            dock = QDockWidget(name, self)
+            dock.setWidget(widget)
+            self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
+            self._menus["Ver"].addAction(dock.toggleViewAction())
 
     def _build_statusbar(self):
         status = QStatusBar(self)
