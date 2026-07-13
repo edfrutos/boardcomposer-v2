@@ -1,5 +1,7 @@
 # BoardComposer
 
+[![wakatime](https://wakatime.com/badge/github/edfrutos/boardcomposer-v2.svg)](https://wakatime.com/badge/github/edfrutos/boardcomposer-v2)
+
 Motor 2D para generar composiciones de tablas a partir de medidas dadas.
 
 ## Estado actual
