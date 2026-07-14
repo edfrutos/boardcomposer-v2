@@ -14,3 +14,8 @@ graphify-out/.graphify_labels.json
 
 # Claude Code: personal, machine-specific permissions
 .claude/settings.local.json
+
+# pyside6-deploy build output (IDE-0011): generated .app bundle and Nuitka's
+# intermediate build directory, never committed.
+studio/dist/
+studio/deployment/

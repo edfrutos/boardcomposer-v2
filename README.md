@@ -37,9 +37,24 @@ Por defecto (`make run`/`python -m boardcomposer.api`) la API usa el servidor de
 
 `make serve` arranca `gunicorn` sobre `boardcomposer.api:create_app()`. Con `BOARDCOMPOSER_API_KEY` configurada, todas las rutas salvo `/health` exigen esa clave en la cabecera `X-API-Key`; sin ella, no hay autenticación (igual que antes). Todas las rutas están además limitadas a 60 peticiones/minuto por IP (`/health` exenta).
 
-## CSV de entrada
+## BoardComposer Studio
 
-Columnas obligatorias:
+Interfaz gráfica (PySide6). En desarrollo:
+
+    make studio
+
+o directamente `boardcomposer-studio` una vez instalado el paquete.
+
+### Empaquetado como aplicación de macOS
+
+    pip install -e ".[package]"
+    make package
+
+Genera `studio/dist/BoardComposerStudio.app` (con `pyside6-deploy`, sin firmar ni notarizar por Apple — Gatekeeper avisará de "desarrollador no identificado" al primer arranque). Al crear un tag `v*` en GitHub, `.github/workflows/package-studio.yml` compila el `.app` y lo publica automáticamente como asset de una release.
+
+## CSV/Excel de entrada
+
+Columnas obligatorias (mismas en `--csv` y `--excel`):
 
     id,length_mm,width_mm,thickness_mm
 

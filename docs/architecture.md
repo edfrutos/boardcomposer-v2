@@ -84,6 +84,17 @@ Aplicación PySide6 (Qt) para explorar y editar proyectos visualmente. Estructur
 - **`assistant_service.py`** — **el puente explícito entre Studio y `boardcomposer.ai` (IDE-0007 Fase E).** `AssistantService.ask(question)` construye un prompt con el contexto del proyecto abierto (nombre, nº de tableros/piezas/piezas colocadas) más la pregunta del usuario, lo envía a `AIProvider.complete()` (`default_provider()` por defecto) y guarda cada par pregunta/respuesta en `history`. No reutiliza `project_from_text()`/`explain_solution()`/`suggest_strategy()` — es una conversación abierta, no una de las tareas estructuradas de esas funciones.
 - **`panel_plugins.py`** — cubre la Fase E de `IDE-0008` (`docs/masterplan/DOC-004-Backlog.md`). `discover_panel_plugins()` reutiliza `boardcomposer.plugins.discover_plugins()` sobre el grupo `boardcomposer.studio_panels`; a diferencia de generators.py/strategies.py/io.registry.py/export.registry.py, no hay nada integrado que fusionar — Explorer/Inspector/Timeline/Comparador/Asistente son parte fija de `MainWindow`, no plugins. Un plugin registra una factoría `(services: StudioServices) -> QWidget`.
 - **`main_window.py`** — ventana principal, ensambla menú, paneles y workspace. `_build_plugin_panels()` (llamado al final de `_build_panels()`) crea un `QDockWidget` por cada panel de `discover_panel_plugins()`, lo añade al área derecha y publica su `toggleViewAction()` en el menú "Ver" (antes vacío). Un plugin que use un nombre reservado (`RESERVED_PANEL_NAMES`: los 5 docks integrados), que falle al cargarse (`PluginLoadError`) o cuya factoría lance una excepción al construir el widget, se ignora con un aviso en la barra de estado — nunca impide que el resto de Studio arranque.
+- **`app.py`** — punto de entrada (`main() -> int`): construye `QApplication`, `StudioServices` y `MainWindow`, muestra la ventana y ejecuta el bucle de eventos. Expuesto como el script `boardcomposer-studio` (`pyproject.toml`).
+
+### Empaquetado (IDE-0011)
+
+Studio se distribuye como `.app` de macOS (arm64) generado con `pyside6-deploy` (herramienta oficial de PySide6, basada en Nuitka) — antes solo se ejecutaba desde código fuente (`DT-0008`, `docs/masterplan/DOC-006-DeudaTecnica.md`).
+
+- Configuración en `studio/pysidedeploy.spec`: `input_file = app.py`, `exec_directory = ./dist` (el `.app` final queda en `studio/dist/BoardComposerStudio.app`, fuera del árbol de código). `icon`/`python_path` se dejan en blanco a propósito: son rutas absolutas de la máquina que hace el build — `python_path` se sobrescribe en cada ejecución con el intérprete activo (`Config.set_or_fetch` en `pyside_deploy`), e `icon` cae al icono por defecto de PySide6 si el campo está vacío; si un build local los deja escritos, hay que volver a dejarlos en blanco antes de comitear.
+- `make package` lo genera localmente (`cd studio && pyside6-deploy -f app.py`); requiere `pip install -e ".[package]"` (dependencia opcional `nuitka`).
+- `.github/workflows/package-studio.yml` (`runs-on: macos-latest`): al crear un tag `v*`, corre los tests, compila el `.app`, lo comprime con `ditto` y lo publica como asset de una release de GitHub para ese tag.
+- macOS por defecto usa `--standalone --macos-create-app-bundle` independientemente del `mode` configurado en el `.spec` (solo relevante en Windows/Linux).
+- Fuera de alcance: sin firma ni notarización de Apple (Gatekeeper avisará de "desarrollador no identificado" al primer arranque), solo macOS/arm64 (`DT-0011`).
 
 ## Regla de dependencia
 

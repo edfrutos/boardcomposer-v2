@@ -79,6 +79,7 @@ Observaciones:
 | IDE-0008 | Sistema de plugins | 🟢 | P3 |
 | IDE-0009 | Endurecimiento para producción | 🟢 | P0 |
 | IDE-0010 | Importación desde Excel | 🟢 | P1 |
+| IDE-0011 | Empaquetado de Studio | 🟢 | P1 |
 
 ---
 
@@ -131,6 +132,20 @@ Alcance dividido en fases, cada una construida sobre la anterior:
 - CLI: nuevo flag `--excel`, mutuamente excluyente con `--csv` (`argparse.add_mutually_exclusive_group()`).
 - Fichero de muestra `data/samples/basic_boards.xlsx`, mismos datos que `basic_boards.csv`, para tests y demos.
 - Fuera de alcance (igual que CSV hoy): no está expuesto ni en la API ni en Studio — ambos solo aceptan datos inline (`/solve`) o el propio formato `.bcstudio.json` de Studio.
+
+---
+
+## IDE-0011 — Empaquetado de Studio
+
+**Estado:** 🟢 Completado. Cierra el punto P1 de `DOC-003-Roadmap.md` ("Empaquetado y distribución de Studio") y `DT-0008` (`docs/masterplan/DOC-006-DeudaTecnica.md`): Studio deja de ejecutarse exclusivamente desde código fuente.
+
+- Nuevo punto de entrada `boardcomposer-studio = "studio.app:main"` (`pyproject.toml`) — hasta ahora Studio no tenía ninguna forma documentada de lanzarse fuera de invocar `studio/app.py` directamente.
+- Empaquetado con `pyside6-deploy` (herramienta oficial de PySide6, basada en Nuitka): genera un `.app` nativo de macOS (arm64), modo `--standalone --macos-create-app-bundle` (el que usa macOS por defecto independientemente de `mode` en el `.spec`).
+- Configuración en `studio/pysidedeploy.spec`: `exec_directory = ./dist` (salida en `studio/dist/BoardComposerStudio.app`, fuera del árbol de código fuente). `icon`/`python_path` se dejan en blanco a propósito — son rutas específicas de la máquina que generó el build; `python_path` se sobrescribe en cada ejecución con el intérprete activo (`Config.set_or_fetch`), e `icon` cae al icono por defecto de PySide6 si se deja en blanco. `studio/dist/`/`studio/deployment/` (build intermedio de Nuitka) ignorados en git.
+- `make package` (Makefile) para generarlo localmente; dependencia opcional `nuitka` bajo `pip install -e ".[package]"`.
+- CI (`.github/workflows/package-studio.yml`, `runs-on: macos-latest`): al crear un tag `v*`, corre los tests, compila el `.app`, lo comprime con `ditto` y lo publica como asset de una release de GitHub (`gh release create`/`upload`) para ese tag.
+- Verificado con una compilación real (no solo el `--dry-run`): `.app` de 161 MB, arm64, lanzado con `open` y confirmado como proceso Qt vivo (sin crash reports) — no solo revisión del binario.
+- Fuera de alcance: sin firma ni notarización de Apple, solo macOS/arm64 (`DT-0011`, `docs/masterplan/DOC-006-DeudaTecnica.md`).
 
 ---
 
