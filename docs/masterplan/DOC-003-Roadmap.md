@@ -99,11 +99,7 @@ Objetivos:
 
 ## Prioridades actuales
 
-Studio, API, IA y Plugins (antes P0–P2) ya están completos — ver arriba. El endurecimiento para producción (`IDE-0009`: autenticación por clave de API, rate limiting, `gunicorn` como servidor WSGI) también está completo (`docs/masterplan/DOC-004-Backlog.md`). Las prioridades reales hoy son:
-
-### Prioridad P1
-
-- Empaquetado y distribución de Studio (hoy se ejecuta desde código fuente).
+Studio, API, IA y Plugins (antes P0–P2) ya están completos — ver arriba. El endurecimiento para producción (`IDE-0009`) y el empaquetado de Studio (`IDE-0011`, `pyside6-deploy`, `.app` de macOS) también están completos (`docs/masterplan/DOC-004-Backlog.md`). No quedan prioridades P0/P1 pendientes; las prioridades reales hoy son:
 
 ### Prioridad P2
 

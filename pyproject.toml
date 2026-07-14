@@ -23,9 +23,13 @@ dev = [
 prod = [
     "gunicorn",
 ]
+package = [
+    "nuitka",
+]
 
 [project.scripts]
 boardcomposer = "boardcomposer.cli:main"
+boardcomposer-studio = "studio.app:main"
 
 [tool.setuptools.packages.find]
 where = ["src", "."]
