@@ -1,5 +1,6 @@
 import json
 
+from boardcomposer.ai.json_response import strip_json_fence
 from boardcomposer.ai.provider import AIProvider
 from boardcomposer.domain import Project
 from boardcomposer.solver.generators import available_generators
@@ -38,7 +39,7 @@ def suggest_strategy(
     raw = provider.complete(prompt)
 
     try:
-        payload = json.loads(raw)
+        payload = json.loads(strip_json_fence(raw))
     except json.JSONDecodeError as error:
         raise SuggestStrategyError(
             f"La respuesta del asistente no es JSON válido: {error}"

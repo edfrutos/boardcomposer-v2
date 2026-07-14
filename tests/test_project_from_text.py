@@ -35,6 +35,18 @@ def test_project_from_text_builds_boards_and_constraints():
     assert project.constraints.allow_rotation is True
 
 
+def test_project_from_text_strips_a_markdown_json_fence():
+    # Real providers (e.g. AnthropicProvider) often wrap JSON replies in a
+    # ```json ... ``` fence even when told not to; MockAIProvider normally
+    # doesn't, so this exercises that response shape explicitly.
+    payload = {"boards": [{"length_mm": 100, "width_mm": 100}]}
+    provider = MockAIProvider(response=f"```json\n{json.dumps(payload)}\n```")
+
+    project = project_from_text("una tabla", provider)
+
+    assert project.boards[0].length_mm == 100
+
+
 def test_project_from_text_sends_the_input_text_in_the_prompt():
     provider = _provider({"boards": [{"length_mm": 100, "width_mm": 100}]})
 
@@ -54,6 +66,19 @@ def test_project_from_text_defaults_missing_constraints():
 
 def test_project_from_text_defaults_missing_thickness():
     provider = _provider({"boards": [{"length_mm": 100, "width_mm": 100}]})
+
+    project = project_from_text("una tabla", provider)
+
+    assert project.boards[0].thickness_mm == 1
+
+
+def test_project_from_text_defaults_explicit_null_thickness():
+    # Real providers (e.g. AnthropicProvider) often include the key with an
+    # explicit null instead of omitting it, unlike MockAIProvider's usual
+    # hand-written fixtures.
+    provider = _provider(
+        {"boards": [{"length_mm": 100, "width_mm": 100, "thickness_mm": None}]}
+    )
 
     project = project_from_text("una tabla", provider)
 

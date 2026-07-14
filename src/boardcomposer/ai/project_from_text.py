@@ -1,5 +1,6 @@
 import json
 
+from boardcomposer.ai.json_response import strip_json_fence
 from boardcomposer.ai.provider import AIProvider
 from boardcomposer.domain import Board, Project, ProjectConstraints
 
@@ -24,7 +25,7 @@ def project_from_text(text: str, provider: AIProvider) -> Project:
     raw = provider.complete(PROMPT_TEMPLATE.format(text=text))
 
     try:
-        payload = json.loads(raw)
+        payload = json.loads(strip_json_fence(raw))
     except json.JSONDecodeError as error:
         raise ProjectFromTextError(
             f"La respuesta del asistente no es JSON válido: {error}"
@@ -47,7 +48,14 @@ def project_from_text(text: str, provider: AIProvider) -> Project:
                 id=board.get("id"),
                 length_mm=float(board["length_mm"]),
                 width_mm=float(board["width_mm"]),
-                thickness_mm=float(board.get("thickness_mm", 1)),
+                # .get(..., 1) only covers a missing key: real providers (e.g.
+                # AnthropicProvider) often include the key with an explicit
+                # null when the input text doesn't mention a thickness.
+                thickness_mm=float(
+                    thickness
+                    if (thickness := board.get("thickness_mm")) is not None
+                    else 1
+                ),
             )
             for board in boards_data
         ]
