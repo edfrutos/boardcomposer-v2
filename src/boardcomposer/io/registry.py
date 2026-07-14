@@ -3,6 +3,7 @@ from pathlib import Path
 
 from boardcomposer.domain import Project
 from boardcomposer.io.csv_loader import load_project_from_csv
+from boardcomposer.io.excel_loader import load_project_from_excel
 from boardcomposer.plugins import PluginLoadError, discover_plugins
 
 IMPORTER_PLUGIN_GROUP = "boardcomposer.importers"
@@ -11,6 +12,7 @@ Importer = Callable[[str | Path], Project]
 
 IMPORTER_REGISTRY: dict[str, Importer] = {
     "csv": load_project_from_csv,
+    "xlsx": load_project_from_excel,
 }
 
 

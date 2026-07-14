@@ -78,6 +78,7 @@ Observaciones:
 | IDE-0007 | Asistente IA | 🟢 | P2 |
 | IDE-0008 | Sistema de plugins | 🟢 | P3 |
 | IDE-0009 | Endurecimiento para producción | 🟢 | P0 |
+| IDE-0010 | Importación desde Excel | 🟢 | P1 |
 
 ---
 
@@ -118,6 +119,18 @@ Alcance dividido en fases, cada una construida sobre la anterior:
 - Rate limiting con `Flask-Limiter`: `create_app(rate_limit=None)`, por defecto `"60 per minute"` por IP en todas las rutas salvo `/health` (`@limiter.exempt`); `429` con el mismo formato `jsonify(error=...)` que el resto de la API. Almacenamiento en memoria (`storage_uri="memory://"`) — no compartido entre workers de `gunicorn` (`DOC-006-DeudaTecnica.md`, DT-0010).
 - Servidor WSGI de producción: `gunicorn` como dependencia opcional (`pip install -e ".[prod]"`), invocado vía su soporte de *app factory* (`gunicorn "boardcomposer.api:create_app()"`, `make serve`) en vez del servidor de desarrollo de Flask.
 - Verificado con `gunicorn` real (no solo tests): `/health` sin clave, `/strategies` rechazado sin clave (`401`) y aceptado con la clave correcta.
+
+---
+
+## IDE-0010 — Importación desde Excel
+
+**Estado:** 🟢 Completado. Cierra RF-002 (`docs/requirements.md`), que cubría CSV y Excel pero solo tenía CSV implementado.
+
+- `load_project_from_excel()` (`src/boardcomposer/io/excel_loader.py`, SDK `openpyxl`, modo `read_only=True`): mismas columnas obligatorias que `load_project_from_csv()` (`id`/`length_mm`/`width_mm`/`thickness_mm`), primera hoja del `.xlsx`, primera fila como cabecera; ignora filas finales completamente vacías.
+- Registrado en `IMPORTER_REGISTRY` (`src/boardcomposer/io/registry.py`) como `"xlsx"`, junto a `"csv"` — `importer_by_name()`/`available_importers()` ya lo resuelven sin cambios adicionales (infraestructura de `IDE-0008` Fase D).
+- CLI: nuevo flag `--excel`, mutuamente excluyente con `--csv` (`argparse.add_mutually_exclusive_group()`).
+- Fichero de muestra `data/samples/basic_boards.xlsx`, mismos datos que `basic_boards.csv`, para tests y demos.
+- Fuera de alcance (igual que CSV hoy): no está expuesto ni en la API ni en Studio — ambos solo aceptan datos inline (`/solve`) o el propio formato `.bcstudio.json` de Studio.
 
 ---
 
