@@ -1,4 +1,6 @@
-from boardcomposer.cli import build_demo_project
+import json
+
+from boardcomposer.cli import build_demo_project, main
 
 
 def test_build_demo_project():
@@ -6,6 +8,39 @@ def test_build_demo_project():
 
     assert len(project.boards) == 2
     assert project.total_area_mm2 == 900000
+
+
+def test_excel_flag_loads_boards_from_an_excel_file(capsys, monkeypatch):
+    monkeypatch.setattr(
+        "sys.argv",
+        ["boardcomposer", "--excel", "data/samples/basic_boards.xlsx", "--json"],
+    )
+
+    main()
+
+    output = json.loads(capsys.readouterr().out)
+
+    assert output["input_boards"] == 3
+
+
+def test_csv_and_excel_flags_are_mutually_exclusive(monkeypatch):
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "boardcomposer",
+            "--csv",
+            "data/samples/basic_boards.csv",
+            "--excel",
+            "data/samples/basic_boards.xlsx",
+        ],
+    )
+
+    try:
+        main()
+    except SystemExit as exit_error:
+        assert exit_error.code != 0
+    else:
+        raise AssertionError("se esperaba SystemExit por argumentos incompatibles")
 
 
 def test_cli_project_constraints_from_cli_options():

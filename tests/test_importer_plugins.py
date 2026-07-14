@@ -6,6 +6,7 @@ from boardcomposer.io import (
     importer_by_name,
     importer_plugin_errors,
     load_project_from_csv,
+    load_project_from_excel,
 )
 from boardcomposer.plugins import PluginLoadError
 
@@ -23,6 +24,7 @@ def test_available_importers_without_plugins_matches_built_ins(monkeypatch):
     importers = available_importers()
 
     assert importers["csv"] is load_project_from_csv
+    assert importers["xlsx"] is load_project_from_excel
 
 
 def test_available_importers_includes_a_plugin_importer(monkeypatch):

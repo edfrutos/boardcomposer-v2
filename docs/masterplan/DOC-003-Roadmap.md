@@ -103,7 +103,6 @@ Studio, API, IA y Plugins (antes P0–P2) ya están completos — ver arriba. El
 
 ### Prioridad P1
 
-- Importación desde Excel (RF-002, pendiente desde el inicio).
 - Empaquetado y distribución de Studio (hoy se ejecuta desde código fuente).
 
 ### Prioridad P2

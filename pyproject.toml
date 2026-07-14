@@ -10,6 +10,7 @@ dependencies = [
     "anthropic",
     "flask",
     "flask-limiter",
+    "openpyxl",
     "pyside6",
 ]
 

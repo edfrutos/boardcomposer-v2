@@ -2,7 +2,7 @@ import argparse
 
 from boardcomposer import Board, Project, ProjectConstraints
 
-from boardcomposer.io import load_project_from_csv
+from boardcomposer.io import load_project_from_csv, load_project_from_excel
 from boardcomposer.presenters import solution_to_text, solutions_to_json
 
 from boardcomposer.solver import GeometrySolver
@@ -24,7 +24,9 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description="BoardComposer CLI")
 
-    parser.add_argument("--csv", help="Ruta a un CSV con tablas")
+    input_group = parser.add_mutually_exclusive_group()
+    input_group.add_argument("--csv", help="Ruta a un CSV con tablas")
+    input_group.add_argument("--excel", help="Ruta a un Excel (.xlsx) con tablas")
 
     parser.add_argument("--max-length", type=float, help="Largo máximo en mm")
 
@@ -44,7 +46,12 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    project = load_project_from_csv(args.csv) if args.csv else build_demo_project()
+    if args.csv:
+        project = load_project_from_csv(args.csv)
+    elif args.excel:
+        project = load_project_from_excel(args.excel)
+    else:
+        project = build_demo_project()
 
     project.constraints = ProjectConstraints(
         max_length_mm=args.max_length,
