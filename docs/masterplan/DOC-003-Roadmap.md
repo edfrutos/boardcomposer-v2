@@ -65,7 +65,7 @@ Incluye:
 - API pública. 🟢 (IDE-0006: `/health`, `/strategies`, `/solve`; ver `docs/architecture.md`)
 - Automatización. ⚪ Sin empezar.
 - Integraciones. ⚪ Sin empezar.
-- Servicios remotos. ⚪ Sin empezar — la API sigue siendo el servidor de desarrollo de Flask, sin auth, sin WSGI de producción.
+- Servicios remotos. 🟢 (IDE-0009: autenticación por clave de API vía `BOARDCOMPOSER_API_KEY`, rate limiting con Flask-Limiter, `gunicorn` como servidor WSGI de producción; ver `docs/architecture.md`)
 
 ---
 
@@ -99,11 +99,7 @@ Objetivos:
 
 ## Prioridades actuales
 
-Studio, API, IA y Plugins (antes P0–P2) ya están completos — ver arriba. Las prioridades reales hoy son:
-
-### Prioridad P0
-
-- Endurecimiento para producción: autenticación, rate limiting, servidor WSGI de producción (hoy es el servidor de desarrollo de Flask).
+Studio, API, IA y Plugins (antes P0–P2) ya están completos — ver arriba. El endurecimiento para producción (`IDE-0009`: autenticación por clave de API, rate limiting, `gunicorn` como servidor WSGI) también está completo (`docs/masterplan/DOC-004-Backlog.md`). Las prioridades reales hoy son:
 
 ### Prioridad P1
 

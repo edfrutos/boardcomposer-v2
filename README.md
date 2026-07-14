@@ -27,6 +27,16 @@ Motor 2D para generar composiciones de tablas a partir de medidas dadas.
     make demo
     make json
 
+## API en producción
+
+Por defecto (`make run`/`python -m boardcomposer.api`) la API usa el servidor de desarrollo de Flask — solo para uso local. Para producción:
+
+    pip install -e ".[prod]"
+    export BOARDCOMPOSER_API_KEY="una-clave-secreta"
+    make serve
+
+`make serve` arranca `gunicorn` sobre `boardcomposer.api:create_app()`. Con `BOARDCOMPOSER_API_KEY` configurada, todas las rutas salvo `/health` exigen esa clave en la cabecera `X-API-Key`; sin ella, no hay autenticación (igual que antes). Todas las rutas están además limitadas a 60 peticiones/minuto por IP (`/health` exenta).
+
 ## CSV de entrada
 
 Columnas obligatorias:
