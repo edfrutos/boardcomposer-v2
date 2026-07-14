@@ -5,6 +5,11 @@
 ### Añadido
 
 - Proveedor de IA real para el Asistente IA (`IDE-0007`): `AnthropicProvider` sobre el SDK `anthropic`, modelo `claude-haiku-4-5`, API key vía la variable de entorno `ANTHROPIC_API_KEY`. `default_provider()` lo activa automáticamente cuando esa variable está definida, con `MockAIProvider` como fallback; usado por defecto en la API (`create_app()`) y en el chat de Studio (`AssistantService`).
+- Endurecimiento para producción de la API (`IDE-0009`): autenticación opcional por clave (`BOARDCOMPOSER_API_KEY` vía cabecera `X-API-Key`), rate limiting con Flask-Limiter (60 peticiones/minuto por IP, `/health` exenta) y `gunicorn` como servidor WSGI de producción (dependencia opcional `pip install -e ".[prod]"`, `make serve`).
+
+### Corregido
+
+- `project_from_text()`/`suggest_strategy()` fallaban con un proveedor de IA real: Claude envuelve el JSON en un bloque ` ```json ... ``` ` pese a que el prompt pide lo contrario, y devuelve `thickness_mm: null` explícito en vez de omitir la clave. Corregido con `strip_json_fence()` y tratando el `null` explícito igual que una clave ausente.
 
 ## 0.1.0 - 2026-07-13
 

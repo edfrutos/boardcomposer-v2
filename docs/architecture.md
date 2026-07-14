@@ -58,7 +58,15 @@ Cubre `IDE-0006` y la Fase F de `IDE-0007` (`docs/masterplan/DOC-004-Backlog.md`
 
 `create_app(ai_provider=None)` acepta un `AIProvider` inyectable; por defecto usa `default_provider()`, que resuelve a `AnthropicProvider` si hay `ANTHROPIC_API_KEY` en el entorno y a `MockAIProvider` si no. Con `MockAIProvider` (texto fijo no-JSON), `/assist/project` y `/assist/strategy` responden `502` — solo `/assist/explain` funciona sin proveedor real, porque no necesita parsear la respuesta como JSON. Con `ANTHROPIC_API_KEY` configurada, los tres responden con resultados reales.
 
-`docs/masterplan/DOC-008-API.md` describe una API mucho más amplia — autenticación, versionado (`/api/v1/`), gestión de perfiles, soporte multi-cliente — pero ese documento sigue "🟡 En revisión... pendiente de: definir los contratos públicos... especificar los recursos principales". Esta primera versión implementa solo lo que el backlog pide ("API pública", sin más detalle) y deja el resto para cuando esos contratos se definan: sin auth, sin versionado, sin persistencia entre peticiones.
+`docs/masterplan/DOC-008-API.md` describe una API mucho más amplia — versionado (`/api/v1/`), gestión de perfiles, soporte multi-cliente — pero ese documento sigue "🟡 En revisión... pendiente de: definir los contratos públicos... especificar los recursos principales". Esta primera versión implementa solo lo que el backlog pide ("API pública", sin más detalle) y deja el resto para cuando esos contratos se definan: sin versionado, sin persistencia entre peticiones.
+
+### Autenticación y rate limiting (IDE-0009)
+
+`create_app(ai_provider=None, api_key=None, rate_limit=None)` acepta ahora dos parámetros más, ambos con el mismo patrón de inyección que `ai_provider`: `api_key` (por defecto `os.environ.get("BOARDCOMPOSER_API_KEY")`) y `rate_limit` (por defecto `"60 per minute"`, cadena de límite de Flask-Limiter). Con `BOARDCOMPOSER_API_KEY` sin definir, no hay autenticación — mismo comportamiento permisivo de antes de `IDE-0009`. Con ella definida, todas las rutas salvo `/health` exigen esa clave en la cabecera `X-API-Key` (`401` si falta o no coincide); `/health` queda siempre abierta, para no romper comprobaciones de infraestructura sin credenciales.
+
+Rate limiting vía `Flask-Limiter` (`storage_uri="memory://"`), un límite por IP aplicado a todas las rutas salvo `/health` (`@limiter.exempt`); al superarlo, `429` con el mismo formato `jsonify(error=...)` que el resto de la API. El almacenamiento en memoria es adecuado para un único proceso, pero no se comparte entre workers de `gunicorn` — cada worker cuenta sus propias peticiones (`DOC-006-DeudaTecnica.md`, DT-0010).
+
+Para producción, `gunicorn` es una dependencia opcional (`pip install -e ".[prod]"`) en vez de una dependencia obligatoria del paquete, porque `api.py` nunca la importa — se invoca como proceso externo vía su soporte de *app factory*: `gunicorn "boardcomposer.api:create_app()"` (`make serve`), en vez del servidor de desarrollo de Flask (`create_app().run(...)`, en el bloque `if __name__ == "__main__"`, que sigue existiendo solo para uso local).
 
 ## BoardComposer Studio (`studio/`)
 

@@ -77,6 +77,7 @@ Observaciones:
 | IDE-0006 | API pública | 🟢 | P2 |
 | IDE-0007 | Asistente IA | 🟢 | P2 |
 | IDE-0008 | Sistema de plugins | 🟢 | P3 |
+| IDE-0009 | Endurecimiento para producción | 🟢 | P0 |
 
 ---
 
@@ -106,6 +107,17 @@ Alcance dividido en fases, cada una construida sobre la anterior:
 - **Fase C** (🟢 completada) — `available_strategies()`/`strategy_plugin_errors()` (`src/boardcomposer/solver/strategies.py`): estrategias de optimización registradas por plugins (grupo `boardcomposer.strategies`) junto a `balanced`/`material`/`compact` en `STRATEGY_FACTORIES`, que siempre gana si un plugin repite un nombre. `strategy_by_name()` y `GET /strategies` en la API ya resuelven contra este conjunto ampliado.
 - **Fase D** (🟢 completada) — `available_importers()`/`importer_by_name()` (`src/boardcomposer/io/registry.py`) y `available_exporters()`/`exporter_by_name()` (`src/boardcomposer/export/registry.py`): importadores/exportadores registrados por plugins (grupos `boardcomposer.importers`/`boardcomposer.exporters`) junto a `"csv"`/`"svg"`, que siempre ganan si un plugin repite un nombre. A diferencia de B y C, no había un mecanismo existente de selección por nombre en CLI/API/Studio al que enchufarse — queda como infraestructura lista para usarse cuando se necesite.
 - **Fase E** (🟢 completada) — `discover_panel_plugins()` (`studio/panel_plugins.py`) y `MainWindow._build_plugin_panels()`: paneles de Studio registrados por plugins (grupo `boardcomposer.studio_panels`, factoría `(services) -> QWidget`). Cada panel añade un `QDockWidget` y su acción de mostrar/ocultar al menú "Ver" (antes vacío). Sin capacidad integrada que fusionar (a diferencia de B/C/D): Explorer/Inspector/Timeline/Comparador/Asistente son parte fija de `MainWindow`, no plugins; un plugin que repita uno de esos 5 nombres, falle al cargarse o falle al construir su widget se ignora con aviso en la barra de estado, sin bloquear el arranque de Studio.
+
+---
+
+## IDE-0009 — Endurecimiento para producción
+
+**Estado:** 🟢 Completado. Cierra el punto P0 de `DOC-003-Roadmap.md` ("Servicios remotos" de la Fase 3 — Plataforma): la API deja de ser exclusivamente el servidor de desarrollo de Flask sin auth ni rate limiting.
+
+- Autenticación por clave de API: `create_app(api_key=None)` (`src/boardcomposer/api.py`), por defecto `os.environ.get("BOARDCOMPOSER_API_KEY")`. Si está definida, todas las rutas salvo `/health` exigen esa clave en la cabecera `X-API-Key` (`401` si falta o no coincide, vía `@app.before_request`); si no está definida, sin autenticación — mismo comportamiento que antes de esta fase.
+- Rate limiting con `Flask-Limiter`: `create_app(rate_limit=None)`, por defecto `"60 per minute"` por IP en todas las rutas salvo `/health` (`@limiter.exempt`); `429` con el mismo formato `jsonify(error=...)` que el resto de la API. Almacenamiento en memoria (`storage_uri="memory://"`) — no compartido entre workers de `gunicorn` (`DOC-006-DeudaTecnica.md`, DT-0010).
+- Servidor WSGI de producción: `gunicorn` como dependencia opcional (`pip install -e ".[prod]"`), invocado vía su soporte de *app factory* (`gunicorn "boardcomposer.api:create_app()"`, `make serve`) en vez del servidor de desarrollo de Flask.
+- Verificado con `gunicorn` real (no solo tests): `/health` sin clave, `/strategies` rechazado sin clave (`401`) y aceptado con la clave correcta.
 
 ---
 

@@ -2,8 +2,9 @@ PYTHON := .venv/bin/python
 PYTEST := .venv/bin/pytest
 RUFF := .venv/bin/ruff
 BOARDCOMPOSER := .venv/bin/boardcomposer
+GUNICORN := .venv/bin/gunicorn
 
-.PHONY: test run demo json status check lint format
+.PHONY: test run demo json status check lint format serve
 
 test:
 	$(PYTEST)
@@ -30,3 +31,6 @@ lint:
 
 format:
 	$(RUFF) format .
+
+serve:
+	$(GUNICORN) --bind 0.0.0.0:5050 "boardcomposer.api:create_app()"
