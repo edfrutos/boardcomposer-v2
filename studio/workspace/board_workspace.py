@@ -31,6 +31,7 @@ class BoardWorkspace(QGraphicsView):
         self._last_pan_point = QPoint()
         self._board_item: QGraphicsRectItem | None = None
         self._piece_items: list[BoardPieceItem] = []
+        self._active_board_id: str | None = None
         self.selection = SelectionController(services)
         self._drag = DragController()
         self._drag_start: tuple[str, float, float] | None = None
@@ -43,11 +44,27 @@ class BoardWorkspace(QGraphicsView):
         self.setResizeAnchor(QGraphicsView.ViewportAnchor.NoAnchor)
         self.setCursor(Qt.CursorShape.OpenHandCursor)
 
+    @property
+    def active_board_id(self) -> str | None:
+        return self._active_board_id
+
+    def set_active_board(self, board_id: str) -> None:
+        self._active_board_id = board_id
+        self.reload_project()
+
     def reload_project(self) -> None:
         self._scene.clear()
         self._piece_items.clear()
         self._board_item = None
         self._scene.setSceneRect(QRectF(-5000, -5000, 13000, 11000))
+
+        project = self.services.projects.current_project
+        if project is not None and project.boards:
+            board_ids = {board.board_id for board in project.boards}
+            if self._active_board_id not in board_ids:
+                self._active_board_id = project.boards[0].board_id
+        else:
+            self._active_board_id = None
 
         add_grid(self._scene)
         self._add_board()
@@ -59,7 +76,17 @@ class BoardWorkspace(QGraphicsView):
         if project is None or not project.boards:
             return
 
-        board_model = project.boards[0]
+        board_model = next(
+            (
+                board
+                for board in project.boards
+                if board.board_id == self._active_board_id
+            ),
+            None,
+        )
+        if board_model is None:
+            return
+
         board = create_board_item(board_model)
 
         self._scene.addItem(board)
@@ -81,6 +108,9 @@ class BoardWorkspace(QGraphicsView):
             return
 
         for placement in project.placements:
+            if placement.board_id != self._active_board_id:
+                continue
+
             piece = project.piece_by_id(placement.piece_id)
             item = create_piece_item(piece, placement)
             self._scene.addItem(item)
