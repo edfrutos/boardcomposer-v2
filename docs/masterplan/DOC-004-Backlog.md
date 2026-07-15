@@ -80,6 +80,7 @@ Observaciones:
 | IDE-0009 | Endurecimiento para producción | 🟢 | P0 |
 | IDE-0010 | Importación desde Excel | 🟢 | P1 |
 | IDE-0011 | Empaquetado de Studio | 🟢 | P1 |
+| IDE-0012 | Exportación DXF | 🟢 | P2 |
 
 ---
 
@@ -146,6 +147,17 @@ Alcance dividido en fases, cada una construida sobre la anterior:
 - CI (`.github/workflows/package-studio.yml`, `runs-on: macos-latest`): al crear un tag `v*`, corre los tests, compila el `.app`, lo comprime con `ditto` y lo publica como asset de una release de GitHub (`gh release create`/`upload`) para ese tag.
 - Verificado con una compilación real (no solo el `--dry-run`): `.app` de 161 MB, arm64, lanzado con `open` y confirmado como proceso Qt vivo (sin crash reports) — no solo revisión del binario.
 - Fuera de alcance: sin firma ni notarización de Apple, solo macOS/arm64 (`DT-0011`, `docs/masterplan/DOC-006-DeudaTecnica.md`).
+
+---
+
+## IDE-0012 — Exportación DXF
+
+**Estado:** 🟢 Completado. Cierra el punto P2 de `DOC-003-Roadmap.md` ("Exportación DXF").
+
+- `solution_to_dxf()` (`src/boardcomposer/export/dxf_exporter.py`, SDK `ezdxf`): un `LWPolyline` cerrado por tabla colocada (rectángulo con las 4 esquinas de la colocación) más una etiqueta `TEXT` con el `board_id`, mismo criterio visual que `solution_to_svg()`. Escribe en un `io.StringIO()` con `doc.write()` para devolver `str`, igual que el resto de `Exporter = Callable[[AssemblySolution], str]` — sin cambiar ese contrato.
+- Registrado en `EXPORTER_REGISTRY` (`src/boardcomposer/export/registry.py`) como `"dxf"`, junto a `"svg"` — `exporter_by_name()`/`available_exporters()` ya lo resuelven sin cambios adicionales (infraestructura de `IDE-0008` Fase D).
+- Verificado con un fichero real (no solo tests): solución con 2 tablas colocadas exportada a `.dxf`, reabierta con `ezdxf.readfile()` y confirmadas las 2 polilíneas y las 2 etiquetas de texto.
+- Fuera de alcance (mismo criterio que `IDE-0010`): no está expuesto ni en la API ni en el menú "Exportar" de Studio (que hoy solo ofrece SVG/PDF, `IDE-0005`) — decisión explícita para mantener el alcance mínimo.
 
 ---
 

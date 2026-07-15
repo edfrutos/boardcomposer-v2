@@ -103,7 +103,7 @@ Studio, API, IA y Plugins (antes P0–P2) ya están completos — ver arriba. El
 
 ### Prioridad P2
 
-- Exportación DXF.
+- Exportación DXF. 🟢 Completado (`IDE-0012`, `solution_to_dxf()`, SDK `ezdxf`).
 - Marketplace, biblioteca de materiales, comunidad (Fase 5).
 - Cloud.
 

@@ -1,6 +1,7 @@
 from collections.abc import Callable
 
 from boardcomposer.domain import AssemblySolution
+from boardcomposer.export.dxf_exporter import solution_to_dxf
 from boardcomposer.export.svg_exporter import solution_to_svg
 from boardcomposer.plugins import PluginLoadError, discover_plugins
 
@@ -10,6 +11,7 @@ Exporter = Callable[[AssemblySolution], str]
 
 EXPORTER_REGISTRY: dict[str, Exporter] = {
     "svg": solution_to_svg,
+    "dxf": solution_to_dxf,
 }
 
 

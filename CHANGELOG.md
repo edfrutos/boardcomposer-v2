@@ -8,6 +8,7 @@
 - Endurecimiento para producción de la API (`IDE-0009`): autenticación opcional por clave (`BOARDCOMPOSER_API_KEY` vía cabecera `X-API-Key`), rate limiting con Flask-Limiter (60 peticiones/minuto por IP, `/health` exenta) y `gunicorn` como servidor WSGI de producción (dependencia opcional `pip install -e ".[prod]"`, `make serve`).
 - Importación desde Excel (`IDE-0010`, cierra RF-002): `load_project_from_excel()` (SDK `openpyxl`), mismas columnas que el CSV existente; registrada en `IMPORTER_REGISTRY` como `"xlsx"` y expuesta en la CLI con `--excel` (mutuamente excluyente con `--csv`).
 - Empaquetado de BoardComposer Studio como `.app` de macOS (`IDE-0011`): `pyside6-deploy` (`make package`, dependencia opcional `pip install -e ".[package]"`), nuevo punto de entrada `boardcomposer-studio`, y publicación automática como asset de release de GitHub al crear un tag `v*` (`.github/workflows/package-studio.yml`).
+- Exportación DXF (`IDE-0012`): `solution_to_dxf()` (SDK `ezdxf`), registrada en `EXPORTER_REGISTRY` como `"dxf"` junto a `"svg"`.
 
 ### Corregido
 
