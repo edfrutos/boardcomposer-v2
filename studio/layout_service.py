@@ -94,6 +94,13 @@ class LayoutService:
         if studio_project is None or solution is None:
             return False
 
+        if not studio_project.boards:
+            return False
+
+        # TODO(IDE-0013 Fase E): use the workspace's active board instead of
+        # always the first one, once BoardWorkspace tracks one.
+        target_board_id = studio_project.boards[0].board_id
+
         studio_project.placements.clear()
 
         for placement in solution.placements:
@@ -102,6 +109,7 @@ class LayoutService:
                     piece_id=placement.board_id,
                     x_mm=placement.x_mm,
                     y_mm=placement.y_mm,
+                    board_id=target_board_id,
                     rotated=placement.rotated,
                     rotation=90 if placement.rotated else 0,
                 )

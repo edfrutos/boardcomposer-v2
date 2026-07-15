@@ -8,7 +8,7 @@ def _project_with_piece() -> StudioProject:
         name="Demo",
         boards=[StudioBoard("A", 2000, 300)],
         pieces=[StudioPiece("p1", 500, 200)],
-        placements=[StudioPlacement("p1", 10, 20)],
+        placements=[StudioPlacement("p1", 10, 20, board_id="A")],
     )
 
 

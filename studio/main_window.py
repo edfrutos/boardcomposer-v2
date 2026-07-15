@@ -273,9 +273,9 @@ class MainWindow(QMainWindow):
                 StudioPiece("P-003", 820, 240),
             ],
             placements=[
-                StudioPlacement("P-001", 120, 120),
-                StudioPlacement("P-002", 900, 120),
-                StudioPlacement("P-003", 1500, 120),
+                StudioPlacement("P-001", 120, 120, board_id="TAB-001"),
+                StudioPlacement("P-002", 900, 120, board_id="TAB-001"),
+                StudioPlacement("P-003", 1500, 120, board_id="TAB-001"),
             ],
         )
 

@@ -33,7 +33,7 @@ def test_render_project_lists_counts_and_materials():
 def test_render_board_computes_utilization_and_waste():
     board = StudioBoard("A", 1000, 1000, material="MDF")
     pieces_by_id = {"p1": StudioPiece("p1", 500, 500, material="MDF")}
-    placements = [StudioPlacement("p1", 0, 0)]
+    placements = [StudioPlacement("p1", 0, 0, board_id="A")]
 
     html = render_board(board, placements, pieces_by_id)
 
@@ -52,7 +52,7 @@ def test_render_board_with_no_placements_has_zero_utilization():
 
 def test_render_piece_with_placement_shows_rotation_and_coordinates():
     piece = StudioPiece("p1", 500, 200, material="MDF")
-    placement = StudioPlacement("p1", 10, 20, rotated=True, rotation=90)
+    placement = StudioPlacement("p1", 10, 20, board_id="A", rotated=True, rotation=90)
 
     html = render_piece(piece, placement)
 

@@ -8,7 +8,7 @@ def test_studio_project_to_solution_converts_placements():
         name="Demo",
         boards=[StudioBoard("A", 2000, 300)],
         pieces=[StudioPiece("p1", 500, 200)],
-        placements=[StudioPlacement("p1", 10, 20)],
+        placements=[StudioPlacement("p1", 10, 20, board_id="A")],
     )
 
     solution = studio_project_to_solution(project)
@@ -27,7 +27,9 @@ def test_studio_project_to_solution_swaps_dimensions_when_rotated():
         project_id="proj-1",
         name="Demo",
         pieces=[StudioPiece("p1", 500, 200)],
-        placements=[StudioPlacement("p1", 0, 0, rotated=True, rotation=90)],
+        placements=[
+            StudioPlacement("p1", 0, 0, board_id="A", rotated=True, rotation=90)
+        ],
     )
 
     solution = studio_project_to_solution(project)
@@ -43,7 +45,7 @@ def test_studio_project_to_solution_skips_placements_without_a_matching_piece():
         project_id="proj-1",
         name="Demo",
         pieces=[],
-        placements=[StudioPlacement("missing", 0, 0)],
+        placements=[StudioPlacement("missing", 0, 0, board_id="A")],
     )
 
     solution = studio_project_to_solution(project)

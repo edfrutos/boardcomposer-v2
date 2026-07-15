@@ -33,6 +33,7 @@ def project_to_dict(project: StudioProject) -> dict:
                 "piece_id": placement.piece_id,
                 "x_mm": placement.x_mm,
                 "y_mm": placement.y_mm,
+                "board_id": placement.board_id,
                 "rotated": placement.rotated,
                 "rotation": placement.rotation,
             }
@@ -42,14 +43,20 @@ def project_to_dict(project: StudioProject) -> dict:
 
 
 def project_from_dict(data: dict) -> StudioProject:
+    boards = [StudioBoard(**board) for board in data.get("boards", [])]
+    default_board_id = boards[0].board_id if boards else None
+
+    placements = []
+    for placement in data.get("placements", []):
+        placement.setdefault("board_id", default_board_id)
+        placements.append(StudioPlacement(**placement))
+
     return StudioProject(
         project_id=data["project_id"],
         name=data["name"],
-        boards=[StudioBoard(**board) for board in data.get("boards", [])],
+        boards=boards,
         pieces=[StudioPiece(**piece) for piece in data.get("pieces", [])],
-        placements=[
-            StudioPlacement(**placement) for placement in data.get("placements", [])
-        ],
+        placements=placements,
     )
 
 
