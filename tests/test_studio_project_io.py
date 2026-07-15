@@ -14,7 +14,9 @@ def _sample_project() -> StudioProject:
         boards=[StudioBoard(board_id="A", length_mm=2000, width_mm=300)],
         pieces=[StudioPiece(piece_id="p1", length_mm=500, width_mm=200)],
         placements=[
-            StudioPlacement(piece_id="p1", x_mm=10, y_mm=20, rotated=True, rotation=90)
+            StudioPlacement(
+                piece_id="p1", x_mm=10, y_mm=20, board_id="A", rotated=True, rotation=90
+            )
         ],
     )
 
@@ -35,3 +37,32 @@ def test_save_and_load_project_round_trips(tmp_path):
     restored = load_project_from_file(path)
 
     assert restored == project
+
+
+def test_project_from_dict_defaults_missing_board_id_to_the_first_board():
+    # Legacy .bcstudio.json files predate IDE-0013 (multi-board support) and
+    # have no "board_id" key on placements at all.
+    legacy_data = {
+        "project_id": "proj-1",
+        "name": "Demo",
+        "boards": [{"board_id": "A", "length_mm": 2000, "width_mm": 300}],
+        "pieces": [{"piece_id": "p1", "length_mm": 500, "width_mm": 200}],
+        "placements": [{"piece_id": "p1", "x_mm": 10, "y_mm": 20}],
+    }
+
+    project = project_from_dict(legacy_data)
+
+    assert project.placements[0].board_id == "A"
+
+
+def test_project_from_dict_leaves_board_id_none_without_any_boards():
+    legacy_data = {
+        "project_id": "proj-1",
+        "name": "Demo",
+        "pieces": [{"piece_id": "p1", "length_mm": 500, "width_mm": 200}],
+        "placements": [{"piece_id": "p1", "x_mm": 10, "y_mm": 20}],
+    }
+
+    project = project_from_dict(legacy_data)
+
+    assert project.placements[0].board_id is None

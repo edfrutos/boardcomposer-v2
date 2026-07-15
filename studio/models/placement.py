@@ -10,5 +10,6 @@ class StudioPlacement:
     piece_id: str
     x_mm: float
     y_mm: float
+    board_id: str
     rotated: bool = False
     rotation: int = 0
