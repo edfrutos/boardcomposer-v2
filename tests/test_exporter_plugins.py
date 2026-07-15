@@ -5,6 +5,7 @@ from boardcomposer.export import (
     available_exporters,
     exporter_by_name,
     exporter_plugin_errors,
+    solution_to_dxf,
     solution_to_svg,
 )
 from boardcomposer.plugins import PluginLoadError
@@ -23,6 +24,7 @@ def test_available_exporters_without_plugins_matches_built_ins(monkeypatch):
     exporters = available_exporters()
 
     assert exporters["svg"] is solution_to_svg
+    assert exporters["dxf"] is solution_to_dxf
 
 
 def test_available_exporters_includes_a_plugin_exporter(monkeypatch):
