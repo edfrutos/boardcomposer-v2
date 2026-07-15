@@ -1,5 +1,10 @@
 # Estructura del Proyecto
 
+> **Superado.** Andamiaje del primer día del proyecto (26/06/2026) — ni
+> siquiera llegó a crearse `docs/masterplan/sprints/`. La estructura real y
+> mantenida está en `docs/architecture.md`. Se conserva aquí como registro
+> histórico.
+
 boardcomposer/│
 ├── docs/
 │   │

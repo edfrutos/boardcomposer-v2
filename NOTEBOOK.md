@@ -40,3 +40,13 @@ De lo que "quedaba fuera por ahora" en la sesión inicial, dos puntos ya están 
 - **IA integrada**: Asistente IA (IDE-0007, 6 fases) sobre un proveedor de IA pluggable — todavía sin conectar un proveedor real (usa `MockAIProvider`).
 
 Modelado 3D, muebles completos y uniones complejas de carpintería siguen fuera de alcance. Ver `docs/masterplan/DOC-004-Backlog.md` para el estado vivo de cada funcionalidad.
+
+## 2026-07-14 - Cierre de las prioridades P0/P1
+
+La IA integrada (2026-07-13) pasa de proveedor simulado a proveedor real: `AnthropicProvider` (SDK `anthropic`, modelo `claude-haiku-4-5`) conectado y verificado con una clave real (IDE-0007). Además:
+
+- Endurecimiento para producción de la API: autenticación por clave (`BOARDCOMPOSER_API_KEY`), rate limiting (Flask-Limiter) y `gunicorn` como servidor WSGI (IDE-0009).
+- Importación desde Excel, junto al CSV ya existente (IDE-0010).
+- BoardComposer Studio empaquetado como `.app` de macOS con `pyside6-deploy` (IDE-0011).
+
+Con esto no quedan prioridades P0/P1 pendientes en `docs/masterplan/DOC-003-Roadmap.md`; solo P2 (exportación DXF, marketplace/comunidad, cloud).

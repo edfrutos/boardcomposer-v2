@@ -1,5 +1,11 @@
 # Estructura del proyecto
 
+> **Superado.** Snapshot del primer día del proyecto (26/06/2026): no
+> menciona `studio/`, `src/boardcomposer/api.py`, `ai/`, `plugins/`,
+> `export/`, `presenters/` ni nada construido después. La estructura real y
+> mantenida está en `docs/architecture.md`. Se conserva aquí como registro
+> histórico.
+
 ## Raíz
 
 - `pyproject.toml`: configuración Python.
