@@ -1,11 +1,13 @@
 """Main window for BoardComposer Studio."""
 
+import dataclasses
 import uuid
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QCloseEvent
 
 from PySide6.QtWidgets import (
+    QDialog,
     QDockWidget,
     QFileDialog,
     QLineEdit,
@@ -20,6 +22,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from studio.dialogs import BoardDialog, PieceDialog
 from studio.models import (
     StudioBoard,
     StudioPiece,
@@ -38,8 +41,14 @@ from studio.export import export_project_to_pdf, export_project_to_svg
 from studio.panel_plugins import discover_panel_plugins
 from studio.project import load_project_from_file, save_project_to_file
 from studio.workspace.board_workspace import BoardWorkspace
-from studio.commands import RotatePieceCommand
-from studio.commands import DeletePieceCommand
+from studio.commands import (
+    AddBoardCommand,
+    AddPieceCommand,
+    DeletePieceCommand,
+    EditBoardCommand,
+    EditPieceCommand,
+    RotatePieceCommand,
+)
 
 RESERVED_PANEL_NAMES = {"Explorer", "Inspector", "Timeline", "Comparador", "Asistente"}
 
@@ -102,6 +111,22 @@ class MainWindow(QMainWindow):
         menus["Editar"].addAction(self._actions["delete_piece"])
         self._actions["delete_piece"].triggered.connect(self._delete_selected_piece)
         self._actions["rotate_piece"].triggered.connect(self._rotate_selected_piece)
+
+        menus["Editar"].addSeparator()
+        self._actions["add_piece"] = QAction("Añadir pieza…", self)
+        menus["Editar"].addAction(self._actions["add_piece"])
+        self._actions["add_piece"].triggered.connect(self._add_piece)
+        self._actions["edit_piece"] = QAction("Editar pieza…", self)
+        menus["Editar"].addAction(self._actions["edit_piece"])
+        self._actions["edit_piece"].triggered.connect(self._edit_piece)
+
+        self._actions["add_board"] = QAction("Añadir tablero…", self)
+        menus["Proyecto"].addAction(self._actions["add_board"])
+        self._actions["add_board"].triggered.connect(self._add_board)
+        self._actions["edit_board"] = QAction("Editar tablero…", self)
+        menus["Proyecto"].addAction(self._actions["edit_board"])
+        self._actions["edit_board"].triggered.connect(self._edit_board)
+
         self._actions["solve_layout"] = QAction("Calcular layout", self)
         menus["Herramientas"].addAction(self._actions["solve_layout"])
         self._actions["solve_layout"].triggered.connect(self._solve_layout)
@@ -558,6 +583,152 @@ class MainWindow(QMainWindow):
         self.services.projects.mark_modified()
         self._update_window_title()
         self._update_undo_redo()
+
+    def _add_board(self):
+        project = self.services.projects.current_project
+        if project is None:
+            return
+
+        dialog = BoardDialog(self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        board_id, length_mm, width_mm = dialog.values()
+        if not board_id:
+            self.statusBar().showMessage("El tablero necesita un id.", 5000)
+            return
+
+        if any(board.board_id == board_id for board in project.boards):
+            self.statusBar().showMessage(
+                f"Ya existe un tablero con id '{board_id}'.", 5000
+            )
+            return
+
+        command = AddBoardCommand(
+            self.services, StudioBoard(board_id, length_mm, width_mm)
+        )
+        self.services.commands.execute(command)
+        self.services.projects.mark_modified()
+
+        self.workspace.set_active_board(board_id)
+        self._reload_explorer()
+        self._update_window_title()
+        self._update_undo_redo()
+        self.statusBar().showMessage(f"Tablero '{board_id}' añadido.", 3000)
+
+    def _edit_board(self):
+        project = self.services.projects.current_project
+        active_board_id = self.workspace.active_board_id
+        if project is None or active_board_id is None:
+            self.statusBar().showMessage("No hay ningún tablero que editar.", 5000)
+            return
+
+        old_board = next(
+            (board for board in project.boards if board.board_id == active_board_id),
+            None,
+        )
+        if old_board is None:
+            return
+
+        dialog = BoardDialog(
+            self,
+            board_id=old_board.board_id,
+            length_mm=old_board.length_mm,
+            width_mm=old_board.width_mm,
+            id_editable=False,
+        )
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        _, length_mm, width_mm = dialog.values()
+        new_board = dataclasses.replace(
+            old_board, length_mm=length_mm, width_mm=width_mm
+        )
+
+        command = EditBoardCommand(self.services, old_board, new_board)
+        self.services.commands.execute(command)
+        self.services.projects.mark_modified()
+
+        self.workspace.reload_project()
+        self._reload_explorer()
+        self._update_window_title()
+        self._update_undo_redo()
+        self.statusBar().showMessage(
+            f"Tablero '{new_board.board_id}' actualizado.", 3000
+        )
+
+    def _add_piece(self):
+        project = self.services.projects.current_project
+        active_board_id = self.workspace.active_board_id
+        if project is None or active_board_id is None:
+            self.statusBar().showMessage("Añade primero un tablero.", 5000)
+            return
+
+        dialog = PieceDialog(self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        piece_id, length_mm, width_mm = dialog.values()
+        if not piece_id:
+            self.statusBar().showMessage("La pieza necesita un id.", 5000)
+            return
+
+        if any(piece.piece_id == piece_id for piece in project.pieces):
+            self.statusBar().showMessage(
+                f"Ya existe una pieza con id '{piece_id}'.", 5000
+            )
+            return
+
+        piece = StudioPiece(piece_id, length_mm, width_mm)
+        placement = StudioPlacement(piece_id, 0, 0, board_id=active_board_id)
+        command = AddPieceCommand(self.services, piece, placement)
+        self.services.commands.execute(command)
+        self.services.projects.mark_modified()
+
+        self.workspace.reload_project()
+        self._reload_explorer()
+        self._update_window_title()
+        self._update_undo_redo()
+        self.statusBar().showMessage(f"Pieza '{piece_id}' añadida.", 3000)
+
+    def _edit_piece(self):
+        project = self.services.projects.current_project
+        piece_id = self.workspace.selection.current()
+        if project is None or piece_id is None:
+            self.statusBar().showMessage("Selecciona una pieza primero.", 5000)
+            return
+
+        old_piece = next(
+            (piece for piece in project.pieces if piece.piece_id == piece_id),
+            None,
+        )
+        if old_piece is None:
+            return
+
+        dialog = PieceDialog(
+            self,
+            piece_id=old_piece.piece_id,
+            length_mm=old_piece.length_mm,
+            width_mm=old_piece.width_mm,
+            id_editable=False,
+        )
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        _, length_mm, width_mm = dialog.values()
+        new_piece = dataclasses.replace(
+            old_piece, length_mm=length_mm, width_mm=width_mm
+        )
+
+        command = EditPieceCommand(self.services, old_piece, new_piece)
+        self.services.commands.execute(command)
+        self.services.projects.mark_modified()
+
+        self.workspace.reload_project()
+        self._reload_explorer()
+        self._update_window_title()
+        self._update_undo_redo()
+        self.statusBar().showMessage(f"Pieza '{new_piece.piece_id}' actualizada.", 3000)
 
     def _solve_layout(self):
         solution = self.services.layout.solve_current_project()
