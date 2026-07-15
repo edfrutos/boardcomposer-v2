@@ -13,6 +13,11 @@
 ### Corregido
 
 - `project_from_text()`/`suggest_strategy()` fallaban con un proveedor de IA real: Claude envuelve el JSON en un bloque ` ```json ... ``` ` pese a que el prompt pide lo contrario, y devuelve `thickness_mm: null` explícito en vez de omitir la clave. Corregido con `strip_json_fence()` y tratando el `null` explícito igual que una clave ausente.
+- `MainWindow._new_project()` (Studio) llamaba a `_load_demo_project()` — "Nuevo proyecto" nunca creaba un proyecto vacío, siempre recargaba la demo. Detectado probando datos reales tras el empaquetado. Corregido: crea un `StudioProject` vacío con un `project_id` nuevo.
+
+### Deuda técnica conocida
+
+- Studio no permite todavía crear ni editar tablas o piezas desde la interfaz (`DT-0013`, `docs/masterplan/DOC-006-DeudaTecnica.md`) — solo mover/rotar/eliminar las que ya vienen en el proyecto abierto. Pendiente de acotar alcance antes de implementarlo.
 
 ## 0.1.0 - 2026-07-13
 
