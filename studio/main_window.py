@@ -1,5 +1,7 @@
 """Main window for BoardComposer Studio."""
 
+import uuid
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QCloseEvent
 
@@ -359,7 +361,14 @@ class MainWindow(QMainWindow):
             self.workspace.select_piece(object_id)
 
     def _new_project(self):
-        self._load_demo_project()
+        project = StudioProject(
+            project_id=str(uuid.uuid4()),
+            name="Nuevo proyecto",
+        )
+
+        self.services.projects.new_project(project)
+        self.workspace.reload_project()
+        self._reload_explorer()
         self.statusBar().showMessage("Nuevo proyecto creado", 3000)
         self._update_window_title()
 

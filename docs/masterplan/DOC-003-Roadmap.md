@@ -54,6 +54,8 @@ Entregables principales:
 - Gestión de proyectos. 🟢 (IDE-0004)
 - Exportación visual. 🟢 (SVG/PDF, IDE-0005)
 
+Con una salvedad importante: Studio no permite todavía crear ni editar tablas o piezas desde la interfaz — solo mover/rotar/eliminar las que ya vienen en el proyecto abierto (`DT-0013`, `docs/masterplan/DOC-006-DeudaTecnica.md`). La única forma de introducir datos reales hoy es escribir a mano un `.bcstudio.json`.
+
 ---
 
 ## Fase 3 — Plataforma
