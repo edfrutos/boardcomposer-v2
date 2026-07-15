@@ -15,6 +15,9 @@ graphify-out/.graphify_labels.json
 # Claude Code: personal, machine-specific permissions
 .claude/settings.local.json
 
+# Flake8: personal editor config, not the project's linter (ruff)
+.flake8
+
 # Codegraph: local machine-specific state and extraction cache
 .codegraph/
 
