@@ -351,9 +351,13 @@ class MainWindow(QMainWindow):
                 board for board in project.boards if board.board_id == object_id
             )
             pieces_by_id = {piece.piece_id: piece for piece in project.pieces}
-            self.inspector.setHtml(
-                render_board(board, project.placements, pieces_by_id)
-            )
+            board_placements = [
+                placement
+                for placement in project.placements
+                if placement.board_id == object_id
+            ]
+            self.inspector.setHtml(render_board(board, board_placements, pieces_by_id))
+            self.workspace.set_active_board(object_id)
             return
 
         if kind == "piece":
