@@ -48,9 +48,9 @@
 
 ## Más adelante
 
-- [ ] Añadir importación desde Excel.
+- [x] Añadir importación desde Excel.
 - [x] Añadir visualización gráfica.
 - [x] Añadir exportación a PDF.
 - [ ] Añadir exportación DXF.
 - [x] Añadir interfaz macOS con PySide6.
-- [x] Explorar integración con IA (sin proveedor real conectado todavía).
+- [x] Explorar integración con IA (`AnthropicProvider` conectado como proveedor real).

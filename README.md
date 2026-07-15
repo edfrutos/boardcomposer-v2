@@ -7,12 +7,15 @@ Motor 2D para generar composiciones de tablas a partir de medidas dadas.
 ## Estado actual
 
 - Python 3.13
-- CLI funcional
-- Entrada CSV
-- Salida texto y JSON
-- Solver geométrico inicial
-- Layout free-space inicial
-- Tests automatizados
+- Core: varios algoritmos de layout (skyline, MaxRects, beam search, permutaciones), puntuación y explicación de soluciones
+- CLI: entrada CSV/Excel, salida texto/JSON
+- API HTTP (`/solve`, `/strategies`, `/assist/*`) con autenticación por clave y rate limiting opcionales, servidor WSGI de producción (`gunicorn`)
+- BoardComposer Studio (GUI PySide6): workspace interactivo, comparador, inspector, gestión de proyectos, exportación SVG/PDF, empaquetado como `.app` de macOS
+- Asistente IA (proveedor real conectado: Anthropic Claude)
+- Sistema de plugins: generadores, estrategias, importadores/exportadores y paneles de Studio de terceros
+- Tests automatizados (300+)
+
+Ver `docs/masterplan/DOC-004-Backlog.md` para el estado vivo, funcionalidad por funcionalidad.
 
 ## Instalación
 

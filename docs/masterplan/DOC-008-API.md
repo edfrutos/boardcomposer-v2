@@ -97,6 +97,8 @@ La especificación definitiva contemplará:
 - limitación de uso cuando proceda;
 - trazabilidad de operaciones.
 
+Nota: ya existe una primera versión mínima de autenticación (clave de API por cabecera, opcional) y limitación de uso (rate limiting por IP) — `IDE-0009`, ver `docs/architecture.md`. No sustituye la especificación definitiva de este documento (sin autorización, sin trazabilidad de operaciones).
+
 ---
 
 ## Relación con otros documentos

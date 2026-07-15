@@ -29,7 +29,7 @@
 ## Fase 2 - Datos
 
 - [x] CSV.
-- [ ] Excel.
+- [x] Excel.
 - [x] JSON.
 - [x] Formato .bcstudio.json (equivalente al `.bcproj` previsto).
 
@@ -48,5 +48,7 @@
 ## Fases no previstas originalmente, añadidas después
 
 - [x] API HTTP pública.
-- [x] Asistente IA (sobre proveedor simulado; sin proveedor real conectado).
+- [x] Asistente IA (proveedor pluggable; `AnthropicProvider` conectado como proveedor real).
 - [x] Sistema de plugins (generadores, estrategias, importadores/exportadores, paneles de Studio).
+- [x] Endurecimiento para producción (autenticación por clave, rate limiting, servidor WSGI).
+- [x] Empaquetado de Studio como `.app` de macOS.
