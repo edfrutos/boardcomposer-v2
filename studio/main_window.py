@@ -112,20 +112,20 @@ class MainWindow(QMainWindow):
         self._actions["delete_piece"].triggered.connect(self._delete_selected_piece)
         self._actions["rotate_piece"].triggered.connect(self._rotate_selected_piece)
 
-        menus["Editar"].addSeparator()
-        self._actions["add_piece"] = QAction("Añadir pieza…", self)
-        menus["Editar"].addAction(self._actions["add_piece"])
-        self._actions["add_piece"].triggered.connect(self._add_piece)
-        self._actions["edit_piece"] = QAction("Editar pieza…", self)
-        menus["Editar"].addAction(self._actions["edit_piece"])
-        self._actions["edit_piece"].triggered.connect(self._edit_piece)
-
         self._actions["add_board"] = QAction("Añadir tablero…", self)
         menus["Proyecto"].addAction(self._actions["add_board"])
         self._actions["add_board"].triggered.connect(self._add_board)
         self._actions["edit_board"] = QAction("Editar tablero…", self)
         menus["Proyecto"].addAction(self._actions["edit_board"])
         self._actions["edit_board"].triggered.connect(self._edit_board)
+
+        menus["Proyecto"].addSeparator()
+        self._actions["add_piece"] = QAction("Añadir pieza…", self)
+        menus["Proyecto"].addAction(self._actions["add_piece"])
+        self._actions["add_piece"].triggered.connect(self._add_piece)
+        self._actions["edit_piece"] = QAction("Editar pieza…", self)
+        menus["Proyecto"].addAction(self._actions["edit_piece"])
+        self._actions["edit_piece"].triggered.connect(self._edit_piece)
 
         self._actions["solve_layout"] = QAction("Calcular layout", self)
         menus["Herramientas"].addAction(self._actions["solve_layout"])
@@ -187,6 +187,7 @@ class MainWindow(QMainWindow):
         explorer_dock = QDockWidget("Explorer", self)
         explorer_dock.setWidget(self.explorer)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, explorer_dock)
+        self._menus["Ver"].addAction(explorer_dock.toggleViewAction())
 
         self.inspector = QTextEdit()
         self.inspector.setReadOnly(True)
@@ -198,6 +199,7 @@ class MainWindow(QMainWindow):
             Qt.DockWidgetArea.RightDockWidgetArea,
             inspector_dock,
         )
+        self._menus["Ver"].addAction(inspector_dock.toggleViewAction())
 
         console = QTextEdit()
         console.setReadOnly(True)
@@ -209,6 +211,7 @@ class MainWindow(QMainWindow):
             Qt.DockWidgetArea.BottomDockWidgetArea,
             console_dock,
         )
+        self._menus["Ver"].addAction(console_dock.toggleViewAction())
 
         self.comparator = QTextEdit()
         self.comparator.setReadOnly(True)
@@ -221,6 +224,7 @@ class MainWindow(QMainWindow):
             comparator_dock,
         )
         self.tabifyDockWidget(console_dock, comparator_dock)
+        self._menus["Ver"].addAction(comparator_dock.toggleViewAction())
 
         self.assistant_history = QTextEdit()
         self.assistant_history.setReadOnly(True)
@@ -243,6 +247,7 @@ class MainWindow(QMainWindow):
             assistant_dock,
         )
         self.tabifyDockWidget(inspector_dock, assistant_dock)
+        self._menus["Ver"].addAction(assistant_dock.toggleViewAction())
 
         self._build_plugin_panels()
 
@@ -581,6 +586,7 @@ class MainWindow(QMainWindow):
         self.workspace.selection.sync_inspector(self)
 
         self.services.projects.mark_modified()
+        self._reload_explorer()
         self._update_window_title()
         self._update_undo_redo()
 
@@ -589,11 +595,12 @@ class MainWindow(QMainWindow):
         if project is None:
             return
 
-        dialog = BoardDialog(self)
+        existing_ids = frozenset(board.board_id for board in project.boards)
+        dialog = BoardDialog(self, existing_ids=existing_ids)
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
-        board_id, length_mm, width_mm = dialog.values()
+        board_id, length_mm, width_mm, material = dialog.values()
         if not board_id:
             self.statusBar().showMessage("El tablero necesita un id.", 5000)
             return
@@ -605,7 +612,7 @@ class MainWindow(QMainWindow):
             return
 
         command = AddBoardCommand(
-            self.services, StudioBoard(board_id, length_mm, width_mm)
+            self.services, StudioBoard(board_id, length_mm, width_mm, material)
         )
         self.services.commands.execute(command)
         self.services.projects.mark_modified()
@@ -635,14 +642,15 @@ class MainWindow(QMainWindow):
             board_id=old_board.board_id,
             length_mm=old_board.length_mm,
             width_mm=old_board.width_mm,
+            material=old_board.material,
             id_editable=False,
         )
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
-        _, length_mm, width_mm = dialog.values()
+        _, length_mm, width_mm, material = dialog.values()
         new_board = dataclasses.replace(
-            old_board, length_mm=length_mm, width_mm=width_mm
+            old_board, length_mm=length_mm, width_mm=width_mm, material=material
         )
 
         command = EditBoardCommand(self.services, old_board, new_board)
@@ -664,11 +672,12 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage("Añade primero un tablero.", 5000)
             return
 
-        dialog = PieceDialog(self)
+        existing_ids = frozenset(piece.piece_id for piece in project.pieces)
+        dialog = PieceDialog(self, existing_ids=existing_ids)
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
-        piece_id, length_mm, width_mm = dialog.values()
+        piece_id, length_mm, width_mm, material = dialog.values()
         if not piece_id:
             self.statusBar().showMessage("La pieza necesita un id.", 5000)
             return
@@ -679,7 +688,7 @@ class MainWindow(QMainWindow):
             )
             return
 
-        piece = StudioPiece(piece_id, length_mm, width_mm)
+        piece = StudioPiece(piece_id, length_mm, width_mm, material)
         placement = StudioPlacement(piece_id, 0, 0, board_id=active_board_id)
         command = AddPieceCommand(self.services, piece, placement)
         self.services.commands.execute(command)
@@ -710,14 +719,15 @@ class MainWindow(QMainWindow):
             piece_id=old_piece.piece_id,
             length_mm=old_piece.length_mm,
             width_mm=old_piece.width_mm,
+            material=old_piece.material,
             id_editable=False,
         )
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
-        _, length_mm, width_mm = dialog.values()
+        _, length_mm, width_mm, material = dialog.values()
         new_piece = dataclasses.replace(
-            old_piece, length_mm=length_mm, width_mm=width_mm
+            old_piece, length_mm=length_mm, width_mm=width_mm, material=material
         )
 
         command = EditPieceCommand(self.services, old_piece, new_piece)
@@ -757,6 +767,17 @@ class MainWindow(QMainWindow):
 
         self.inspector.setText("\n".join(lines))
 
+    def _unplaced_piece_ids(self) -> list[str]:
+        project = self.services.projects.current_project
+        if project is None:
+            return []
+
+        return [
+            piece.piece_id
+            for piece in project.pieces
+            if project.placement_by_piece_id(piece.piece_id) is None
+        ]
+
     def _apply_layout(self):
         if not self.services.layout.apply_last_solution_to_current_project(
             self.workspace.active_board_id
@@ -771,7 +792,15 @@ class MainWindow(QMainWindow):
         self._update_undo_redo()
         self._update_window_title()
 
-        self.statusBar().showMessage("Layout aplicado al proyecto", 3000)
+        unplaced = self._unplaced_piece_ids()
+        if unplaced:
+            self.statusBar().showMessage(
+                f"Layout aplicado — {len(unplaced)} pieza(s) sin colocar: "
+                f"{', '.join(unplaced)}",
+                6000,
+            )
+        else:
+            self.statusBar().showMessage("Layout aplicado al proyecto", 3000)
 
     def _compare_solutions(self):
         solutions = self.services.layout.compare_solutions(
@@ -804,7 +833,16 @@ class MainWindow(QMainWindow):
         self._reload_explorer()
         self._update_window_title()
         self._update_undo_redo()
-        self.statusBar().showMessage(f"Solución {index + 1} aplicada", 3000)
+
+        unplaced = self._unplaced_piece_ids()
+        if unplaced:
+            self.statusBar().showMessage(
+                f"Solución {index + 1} aplicada — {len(unplaced)} pieza(s) sin "
+                f"colocar: {', '.join(unplaced)}",
+                6000,
+            )
+        else:
+            self.statusBar().showMessage(f"Solución {index + 1} aplicada", 3000)
 
     def _ask_assistant(self):
         question = self.assistant_input.text()
