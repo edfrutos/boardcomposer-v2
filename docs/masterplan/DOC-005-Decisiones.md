@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 13/07/2026
+**Última revisión:** 16/07/2026
 
 ---
 
@@ -66,6 +66,10 @@ Documentos relacionados
 | DEC-0006 | El Asistente IA (`IDE-0007`) solo ajusta parámetros del solver determinista (pesos de puntuación, generadores a usar) — nunca genera geometría/colocaciones directamente | ✅ Vigente |
 | DEC-0007 | Los plugins (`IDE-0008`) se registran vía *entry points* estándar de Python (`importlib.metadata`), no un cargador propio | ✅ Vigente |
 | DEC-0008 | Ante una colisión de nombre, las capacidades integradas (generadores, estrategias, importadores, exportadores) siempre ganan sobre un plugin | ✅ Vigente |
+| DEC-0009 | "Automatización" (Fase 3 del Roadmap) se considera cubierta por el sistema de plugins (`IDE-0008`) — no recibe una entrega propia | ✅ Vigente |
+| DEC-0010 | "Integraciones" (Fase 3 del Roadmap) se considera cubierta por los importadores/exportadores de plugins (`IDE-0008` Fase D) — no recibe una entrega propia | ✅ Vigente |
+| DEC-0011 | De las candidatas de Marketplace/Comunidad en `DOC-999-Ideas.md`, se empieza por la guía para desarrolladores de plugins (`IDE-0013`), la más acotada y sin decisión de producto pendiente | ✅ Vigente |
+| DEC-0012 | De las candidatas de Cloud en `DOC-999-Ideas.md`, se empieza por la receta de despliegue — Dockerfile + guía (`IDE-0014`), la más acotada y sin decisión de producto pendiente | ✅ Vigente |
 
 ---
 

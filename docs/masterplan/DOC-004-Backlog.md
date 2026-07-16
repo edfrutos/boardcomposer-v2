@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 01/07/2026
+**Última revisión:** 16/07/2026
 
 ---
 
@@ -81,6 +81,8 @@ Observaciones:
 | IDE-0010 | Importación desde Excel | 🟢 | P1 |
 | IDE-0011 | Empaquetado de Studio | 🟢 | P1 |
 | IDE-0012 | Exportación DXF | 🟢 | P2 |
+| IDE-0013 | Guía para desarrolladores de plugins | 🔵 | P2 |
+| IDE-0014 | Receta de despliegue Cloud | 🔵 | P2 |
 
 ---
 
@@ -158,6 +160,36 @@ Alcance dividido en fases, cada una construida sobre la anterior:
 - Registrado en `EXPORTER_REGISTRY` (`src/boardcomposer/export/registry.py`) como `"dxf"`, junto a `"svg"` — `exporter_by_name()`/`available_exporters()` ya lo resuelven sin cambios adicionales (infraestructura de `IDE-0008` Fase D).
 - Verificado con un fichero real (no solo tests): solución con 2 tablas colocadas exportada a `.dxf`, reabierta con `ezdxf.readfile()` y confirmadas las 2 polilíneas y las 2 etiquetas de texto.
 - Fuera de alcance (mismo criterio que `IDE-0010`): no está expuesto ni en la API ni en el menú "Exportar" de Studio (que hoy solo ofrece SVG/PDF, `IDE-0005`) — decisión explícita para mantener el alcance mínimo.
+
+---
+
+## IDE-0013 — Guía para desarrolladores de plugins
+
+**Estado:** 🔵 Planificada. Cierra el punto P2 de `DOC-003-Roadmap.md` ("Marketplace, biblioteca de materiales, comunidad" de la Fase 5 — Ecosistema), primer paso concreto según `DOC-999-Ideas.md`. Decisión `DEC-0011` (`docs/masterplan/DOC-005-Decisiones.md`).
+
+**Descripción:** `IDE-0008` (Fases A–E) ya deja instalar generadores, estrategias, importadores/exportadores y paneles de Studio de terceros vía *entry points* de Python, pero hoy no hay ninguna guía pública que explique el mecanismo — solo existe implícito en el propio código fuente. `docs/plugins.md`: cómo crear y publicar un plugin para cada uno de los 4 tipos (grupo de entry point, forma exacta de la función/factoría esperada, ejemplo mínimo end-to-end, cómo se resuelven colisiones de nombre con las capacidades integradas — `DEC-0008`).
+
+**Criterios de aceptación:**
+- Un ejemplo mínimo funcional por tipo de plugin (generador, estrategia, importador/exportador, panel de Studio), cada uno instalable y verificable con `pip install -e .` + entry points reales.
+- Documenta explícitamente la regla de `DEC-0008` (las capacidades integradas siempre ganan ante colisión de nombre).
+- Enlazada desde `README.md`/`docs/architecture.md`.
+
+**Fuera de alcance:** visibilidad de plugins instalados vía CLI/API (candidata siguiente en `DOC-999-Ideas.md`, aún sin promover) y marketplace público real (requiere decisión de producto previa).
+
+---
+
+## IDE-0014 — Receta de despliegue Cloud
+
+**Estado:** 🔵 Planificada. Cierra el punto P2 de `DOC-003-Roadmap.md` ("Cloud"), primer paso concreto según `DOC-999-Ideas.md`. Decisión `DEC-0012` (`docs/masterplan/DOC-005-Decisiones.md`).
+
+**Descripción:** `IDE-0009` ya deja la API lista para producción (auth por clave, rate limiting, `gunicorn`), pero no existe ninguna receta documentada de cómo desplegarla. `Dockerfile` + guía de despliegue para un PaaS habitual (Fly.io/Railway/Render) o un VPS con Caddy como proxy inverso — sin infraestructura propia que mantener ni decisión de producto adicional.
+
+**Criterios de aceptación:**
+- `Dockerfile` que construye y sirve la API vía `gunicorn` (reutilizando `create_app()`), verificado con una build y arranque local reales.
+- Guía de despliegue a al menos una opción concreta (PaaS o VPS+Caddy), incluyendo cómo configurar `BOARDCOMPOSER_API_KEY` y `ANTHROPIC_API_KEY` como secretos.
+- No incluye Studio (aplicación de escritorio, fuera de alcance de un despliegue Cloud).
+
+**Fuera de alcance:** instancia demo pública mantenida (implica coste de infraestructura recurrente) y SaaS real (proyectos persistentes por usuario, cuentas, facturación — requiere decisión de producto previa).
 
 ---
 

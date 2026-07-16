@@ -59,13 +59,13 @@ Entregables principales:
 
 ## Fase 3 — Plataforma
 
-**Estado:** 🟡 En curso
+**Estado:** 🟢 Completada
 
 Incluye:
 
 - API pública. 🟢 (IDE-0006: `/health`, `/strategies`, `/solve`; ver `docs/architecture.md`)
-- Automatización. ⚪ Sin empezar.
-- Integraciones. ⚪ Sin empezar.
+- Automatización. 🟢 (DEC-0009: cubierta por el mecanismo de plugins de `IDE-0008` — generadores, estrategias, importadores/exportadores instalables vía entry points; sin entrega nueva propia)
+- Integraciones. 🟢 (DEC-0010: cubierta por los importadores/exportadores registrables de `IDE-0008` Fase D; sin entrega nueva propia)
 - Servicios remotos. 🟢 (IDE-0009: autenticación por clave de API vía `BOARDCOMPOSER_API_KEY`, rate limiting con Flask-Limiter, `gunicorn` como servidor WSGI de producción; ver `docs/architecture.md`)
 
 ---
@@ -92,7 +92,7 @@ Proveedor de IA real conectado: `AnthropicProvider` (Claude, modelo `claude-haik
 Objetivos:
 
 - Plugins. 🟢 (IDE-0008, Fases A–E completas: generadores, estrategias, importadores/exportadores y paneles de Studio registrables vía entry points de Python)
-- Marketplace. ⚪ Sin empezar.
+- Marketplace. 🔵 (DEC-0011: guía para desarrolladores de plugins planificada como `IDE-0013`)
 - Biblioteca de materiales. ⚪ Sin empezar.
 - Comunidad. ⚪ Sin empezar.
 
@@ -100,13 +100,13 @@ Objetivos:
 
 ## Prioridades actuales
 
-Studio, API, IA y Plugins (antes P0–P2) ya están completos — ver arriba. El endurecimiento para producción (`IDE-0009`) y el empaquetado de Studio (`IDE-0011`, `pyside6-deploy`, `.app` de macOS) también están completos (`docs/masterplan/DOC-004-Backlog.md`). No quedan prioridades P0/P1 pendientes; las prioridades reales hoy son:
+Studio, API, IA, Plugins y Plataforma (antes P0–P2) ya están completos — ver arriba. El endurecimiento para producción (`IDE-0009`) y el empaquetado de Studio (`IDE-0011`, `pyside6-deploy`, `.app` de macOS) también están completos (`docs/masterplan/DOC-004-Backlog.md`). No quedan prioridades P0/P1 pendientes; las prioridades reales hoy son:
 
 ### Prioridad P2
 
 - Exportación DXF. 🟢 Completado (`IDE-0012`, `solution_to_dxf()`, SDK `ezdxf`).
-- Marketplace, biblioteca de materiales, comunidad (Fase 5).
-- Cloud.
+- Guía para desarrolladores de plugins. 🔵 Planificada (`IDE-0013`, `DEC-0011`) — primer paso concreto de Marketplace/Comunidad (Fase 5); biblioteca de materiales y marketplace público siguen sin acotar (`DOC-999-Ideas.md`).
+- Receta de despliegue Cloud. 🔵 Planificada (`IDE-0014`, `DEC-0012`) — Dockerfile + guía de despliegue; instancia demo pública y SaaS real siguen sin acotar (`DOC-999-Ideas.md`).
 
 ---
 
