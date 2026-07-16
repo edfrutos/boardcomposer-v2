@@ -1,6 +1,7 @@
 from studio.commands import (
     AddBoardCommand,
     AddPieceCommand,
+    DeletePieceCommand,
     EditBoardCommand,
     EditPieceCommand,
 )
@@ -119,3 +120,40 @@ def test_edit_piece_command_undo_restores_the_old_piece():
     command.undo()
 
     assert services.projects.current_project.pieces == [old_piece]
+
+
+def test_delete_piece_command_removes_the_piece_and_its_placement():
+    piece = StudioPiece("p1", 500, 200)
+    placement = StudioPlacement("p1", 0, 0, board_id="B1")
+    services = _services_with_project(pieces=[piece], placements=[placement])
+    command = DeletePieceCommand(services, "p1")
+
+    command.execute()
+
+    project = services.projects.current_project
+    assert project.pieces == []
+    assert project.placements == []
+
+
+def test_delete_piece_command_undo_restores_both():
+    piece = StudioPiece("p1", 500, 200)
+    placement = StudioPlacement("p1", 0, 0, board_id="B1")
+    services = _services_with_project(pieces=[piece], placements=[placement])
+    command = DeletePieceCommand(services, "p1")
+    command.execute()
+
+    command.undo()
+
+    project = services.projects.current_project
+    assert project.pieces == [piece]
+    assert project.placements == [placement]
+
+
+def test_delete_piece_command_on_an_unknown_piece_does_nothing():
+    piece = StudioPiece("p1", 500, 200)
+    services = _services_with_project(pieces=[piece])
+    command = DeletePieceCommand(services, "does-not-exist")
+
+    command.execute()
+
+    assert services.projects.current_project.pieces == [piece]

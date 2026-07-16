@@ -30,7 +30,8 @@ class _FakeDialog:
 
 def test_add_board_appends_a_new_board_and_makes_it_active(window, monkeypatch):
     monkeypatch.setattr(
-        "studio.main_window.BoardDialog", lambda *a, **k: _FakeDialog(("B2", 1500, 400))
+        "studio.main_window.BoardDialog",
+        lambda *a, **k: _FakeDialog(("B2", 1500, 400, "Demo")),
     )
 
     window._add_board()
@@ -43,7 +44,8 @@ def test_add_board_appends_a_new_board_and_makes_it_active(window, monkeypatch):
 def test_add_board_is_undoable(window, monkeypatch):
     boards_before = len(window.services.projects.current_project.boards)
     monkeypatch.setattr(
-        "studio.main_window.BoardDialog", lambda *a, **k: _FakeDialog(("B2", 1500, 400))
+        "studio.main_window.BoardDialog",
+        lambda *a, **k: _FakeDialog(("B2", 1500, 400, "Demo")),
     )
     window._add_board()
 
@@ -56,7 +58,7 @@ def test_add_board_rejects_a_duplicate_id(window, monkeypatch):
     existing_id = window.services.projects.current_project.boards[0].board_id
     monkeypatch.setattr(
         "studio.main_window.BoardDialog",
-        lambda *a, **k: _FakeDialog((existing_id, 1000, 1000)),
+        lambda *a, **k: _FakeDialog((existing_id, 1000, 1000, "Demo")),
     )
 
     window._add_board()
@@ -68,7 +70,7 @@ def test_add_board_does_nothing_when_the_dialog_is_cancelled(window, monkeypatch
     boards_before = len(window.services.projects.current_project.boards)
     monkeypatch.setattr(
         "studio.main_window.BoardDialog",
-        lambda *a, **k: _FakeDialog(("B2", 1500, 400), accepted=False),
+        lambda *a, **k: _FakeDialog(("B2", 1500, 400, "Demo"), accepted=False),
     )
 
     window._add_board()
@@ -80,7 +82,7 @@ def test_edit_board_replaces_the_active_boards_dimensions(window, monkeypatch):
     board_id = window.workspace.active_board_id
     monkeypatch.setattr(
         "studio.main_window.BoardDialog",
-        lambda *a, **k: _FakeDialog((board_id, 5000, 900)),
+        lambda *a, **k: _FakeDialog((board_id, 5000, 900, "Demo")),
     )
 
     window._edit_board()
@@ -95,7 +97,7 @@ def test_add_piece_appends_a_piece_visible_on_the_active_board(window, monkeypat
     active_board_id = window.workspace.active_board_id
     monkeypatch.setattr(
         "studio.main_window.PieceDialog",
-        lambda *a, **k: _FakeDialog(("p-new", 300, 150)),
+        lambda *a, **k: _FakeDialog(("p-new", 300, 150, "Demo")),
     )
 
     window._add_piece()
@@ -112,7 +114,7 @@ def test_add_piece_rejects_a_duplicate_id(window, monkeypatch):
     pieces_before = len(window.services.projects.current_project.pieces)
     monkeypatch.setattr(
         "studio.main_window.PieceDialog",
-        lambda *a, **k: _FakeDialog((existing_id, 300, 150)),
+        lambda *a, **k: _FakeDialog((existing_id, 300, 150, "Demo")),
     )
 
     window._add_piece()
@@ -123,7 +125,7 @@ def test_add_piece_rejects_a_duplicate_id(window, monkeypatch):
 def test_edit_piece_requires_a_selection(window, monkeypatch):
     monkeypatch.setattr(
         "studio.main_window.PieceDialog",
-        lambda *a, **k: _FakeDialog(("P-001", 999, 999)),
+        lambda *a, **k: _FakeDialog(("P-001", 999, 999, "Demo")),
     )
 
     window._edit_piece()
@@ -137,7 +139,7 @@ def test_edit_piece_replaces_the_selected_pieces_dimensions(window, monkeypatch)
     window.workspace.selection.select_many(["P-001"])
     monkeypatch.setattr(
         "studio.main_window.PieceDialog",
-        lambda *a, **k: _FakeDialog(("P-001", 800, 400)),
+        lambda *a, **k: _FakeDialog(("P-001", 800, 400, "Demo")),
     )
 
     window._edit_piece()
@@ -146,3 +148,21 @@ def test_edit_piece_replaces_the_selected_pieces_dimensions(window, monkeypatch)
     piece = next(p for p in project.pieces if p.piece_id == "P-001")
     assert piece.length_mm == 800
     assert piece.width_mm == 400
+
+
+def _explorer_piece_texts(window) -> list[str]:
+    root = window.explorer.topLevelItem(0)
+    pieces_root = next(
+        root.child(i)
+        for i in range(root.childCount())
+        if root.child(i).text(0) == "Piezas"
+    )
+    return [pieces_root.child(i).text(0) for i in range(pieces_root.childCount())]
+
+
+def test_delete_selected_piece_removes_it_from_the_explorer(window):
+    window.workspace.selection.select_many(["P-001"])
+
+    window._delete_selected_piece()
+
+    assert not any(text.startswith("P-001") for text in _explorer_piece_texts(window))
