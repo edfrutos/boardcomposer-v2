@@ -40,6 +40,13 @@ Por defecto (`make run`/`python -m boardcomposer.api`) la API usa el servidor de
 
 `make serve` arranca `gunicorn` sobre `boardcomposer.api:create_app()`. Con `BOARDCOMPOSER_API_KEY` configurada, todas las rutas salvo `/health` exigen esa clave en la cabecera `X-API-Key`; sin ella, no hay autenticación (igual que antes). Todas las rutas están además limitadas a 60 peticiones/minuto por IP (`/health` exenta).
 
+### Despliegue en la nube
+
+    docker build -t boardcomposer-api .
+    docker run -d -p 5050:5050 -e BOARDCOMPOSER_API_KEY="..." boardcomposer-api
+
+Ver `docs/deploy.md` para Fly.io o un VPS con Caddy.
+
 ## BoardComposer Studio
 
 Interfaz gráfica (PySide6). En desarrollo:

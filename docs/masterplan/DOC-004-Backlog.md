@@ -82,7 +82,7 @@ Observaciones:
 | IDE-0011 | Empaquetado de Studio | 🟢 | P1 |
 | IDE-0012 | Exportación DXF | 🟢 | P2 |
 | IDE-0013 | Guía para desarrolladores de plugins | 🟢 | P2 |
-| IDE-0014 | Receta de despliegue Cloud | 🔵 | P2 |
+| IDE-0014 | Receta de despliegue Cloud | 🟢 | P2 |
 
 ---
 
@@ -177,16 +177,14 @@ Alcance dividido en fases, cada una construida sobre la anterior:
 
 ## IDE-0014 — Receta de despliegue Cloud
 
-**Estado:** 🔵 Planificada. Cierra el punto P2 de `DOC-003-Roadmap.md` ("Cloud"), primer paso concreto según `DOC-999-Ideas.md`. Decisión `DEC-0012` (`docs/masterplan/DOC-005-Decisiones.md`).
+**Estado:** 🟢 Completado. Cierra el punto P2 de `DOC-003-Roadmap.md` ("Cloud"), primer paso concreto según `DOC-999-Ideas.md`. Decisión `DEC-0012` (`docs/masterplan/DOC-005-Decisiones.md`).
 
-**Descripción:** `IDE-0009` ya deja la API lista para producción (auth por clave, rate limiting, `gunicorn`), pero no existe ninguna receta documentada de cómo desplegarla. `Dockerfile` + guía de despliegue para un PaaS habitual (Fly.io/Railway/Render) o un VPS con Caddy como proxy inverso — sin infraestructura propia que mantener ni decisión de producto adicional.
+- `Dockerfile` (raíz del repo, `python:3.13-slim`): instala `boardcomposer[prod]`, corre como usuario sin privilegios (`appuser`), sirve vía `gunicorn "boardcomposer.api:create_app()"` en el puerto `5050`. No incluye Studio en tiempo de ejecución (solo el paquete `boardcomposer`, aunque `pyside6` se instala igualmente por ser dependencia obligatoria del paquete — ver aviso de tamaño en `docs/deploy.md`).
+- `docs/deploy.md`: build/prueba local con Docker, despliegue en Fly.io (PaaS, `fly launch --dockerfile Dockerfile` + `fly secrets set`) y alternativa VPS + Caddy (proxy inverso con TLS automático vía Let's Encrypt), configuración de `BOARDCOMPOSER_API_KEY`/`ANTHROPIC_API_KEY` como secretos, y troubleshooting (401/429/fallback a `MockAIProvider`).
+- Verificado con una build y despliegue local reales (no solo revisión del `Dockerfile`): imagen construida, contenedor arrancado con `BOARDCOMPOSER_API_KEY`, `/health` sin clave (`200`), `/strategies` sin clave o con clave incorrecta (`401`), con la clave correcta (`200`), `/solve` con una solución real de vuelta, y logs de `gunicorn` confirmando que corre como `appuser`.
+- Enlazada desde `README.md` y `docs/architecture.md`.
 
-**Criterios de aceptación:**
-- `Dockerfile` que construye y sirve la API vía `gunicorn` (reutilizando `create_app()`), verificado con una build y arranque local reales.
-- Guía de despliegue a al menos una opción concreta (PaaS o VPS+Caddy), incluyendo cómo configurar `BOARDCOMPOSER_API_KEY` y `ANTHROPIC_API_KEY` como secretos.
-- No incluye Studio (aplicación de escritorio, fuera de alcance de un despliegue Cloud).
-
-**Fuera de alcance:** instancia demo pública mantenida (implica coste de infraestructura recurrente) y SaaS real (proyectos persistentes por usuario, cuentas, facturación — requiere decisión de producto previa).
+**Fuera de alcance:** instancia demo pública mantenida (implica coste de infraestructura recurrente) y SaaS real (proyectos persistentes por usuario, cuentas, facturación — requiere decisión de producto previa). No se ha ejecutado un despliegue real contra Fly.io ni un VPS (crearía recursos facturables en una cuenta externa) — los pasos de la Opción A/B están verificados contra la documentación oficial de cada herramienta, no contra una cuenta real.
 
 ---
 

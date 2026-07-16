@@ -68,6 +68,8 @@ Rate limiting vía `Flask-Limiter` (`storage_uri="memory://"`), un límite por I
 
 Para producción, `gunicorn` es una dependencia opcional (`pip install -e ".[prod]"`) en vez de una dependencia obligatoria del paquete, porque `api.py` nunca la importa — se invoca como proceso externo vía su soporte de *app factory*: `gunicorn "boardcomposer.api:create_app()"` (`make serve`), en vez del servidor de desarrollo de Flask (`create_app().run(...)`, en el bloque `if __name__ == "__main__"`, que sigue existiendo solo para uso local).
 
+Receta de despliegue en la nube (`IDE-0014`), `Dockerfile` en la raíz del repo más Fly.io o VPS+Caddy: `docs/deploy.md`.
+
 ## BoardComposer Studio (`studio/`)
 
 Aplicación PySide6 (Qt) para explorar y editar proyectos visualmente. Estructura interna:
