@@ -18,7 +18,7 @@ class LayoutService:
         self.last_solution = None
         self.last_solutions: list[AssemblySolution] = []
 
-    def to_core_project(self) -> Project | None:
+    def to_core_project(self, active_board_id: str | None = None) -> Project | None:
         studio_project = self.services.projects.current_project
         if studio_project is None:
             return None
@@ -30,7 +30,7 @@ class LayoutService:
             )
         )
 
-        source_board = studio_project.boards[0] if studio_project.boards else None
+        source_board = self._resolve_board(studio_project, active_board_id)
 
         if source_board is not None:
             core_project.constraints = ProjectConstraints(
@@ -52,8 +52,20 @@ class LayoutService:
 
         return core_project
 
-    def solve_current_project(self):
-        project = self.to_core_project()
+    @staticmethod
+    def _resolve_board(studio_project, active_board_id: str | None):
+        if not studio_project.boards:
+            return None
+
+        if active_board_id is not None:
+            for board in studio_project.boards:
+                if board.board_id == active_board_id:
+                    return board
+
+        return studio_project.boards[0]
+
+    def solve_current_project(self, active_board_id: str | None = None):
+        project = self.to_core_project(active_board_id)
         if project is None:
             return None
 
@@ -64,10 +76,12 @@ class LayoutService:
         self.last_solution = solutions[0]
         return self.last_solution
 
-    def compare_solutions(self) -> list[AssemblySolution]:
+    def compare_solutions(
+        self, active_board_id: str | None = None
+    ) -> list[AssemblySolution]:
         """Run a richer strategy and keep up to MAX_COMPARISON_SOLUTIONS ranked
         candidates for side-by-side comparison (IDE-0002)."""
-        project = self.to_core_project()
+        project = self.to_core_project(active_board_id)
         if project is None:
             self.last_solutions = []
             return self.last_solutions
@@ -80,26 +94,31 @@ class LayoutService:
 
         return self.last_solutions
 
-    def apply_last_solution_to_current_project(self) -> bool:
-        return self._apply_solution(self.last_solution)
+    def apply_last_solution_to_current_project(
+        self, active_board_id: str | None = None
+    ) -> bool:
+        return self._apply_solution(self.last_solution, active_board_id)
 
-    def apply_comparison_solution(self, index: int) -> bool:
+    def apply_comparison_solution(
+        self, index: int, active_board_id: str | None = None
+    ) -> bool:
         if index < 0 or index >= len(self.last_solutions):
             return False
 
-        return self._apply_solution(self.last_solutions[index])
+        return self._apply_solution(self.last_solutions[index], active_board_id)
 
-    def _apply_solution(self, solution: AssemblySolution | None) -> bool:
+    def _apply_solution(
+        self, solution: AssemblySolution | None, active_board_id: str | None = None
+    ) -> bool:
         studio_project = self.services.projects.current_project
         if studio_project is None or solution is None:
             return False
 
-        if not studio_project.boards:
+        target_board = self._resolve_board(studio_project, active_board_id)
+        if target_board is None:
             return False
 
-        # TODO(IDE-0013 Fase E): use the workspace's active board instead of
-        # always the first one, once BoardWorkspace tracks one.
-        target_board_id = studio_project.boards[0].board_id
+        target_board_id = target_board.board_id
 
         studio_project.placements.clear()
 
