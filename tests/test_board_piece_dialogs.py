@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QApplication
 
-from studio.dialogs import BoardDialog, PieceDialog
+from studio.dialogs import BoardDialog, MoveToBoardDialog, PieceDialog
 
 
 def _app():
@@ -114,3 +114,23 @@ def test_piece_dialog_accepts_a_unique_id():
     dialog._try_accept()
 
     assert dialog.result() == int(dialog.DialogCode.Accepted)
+
+
+def test_move_to_board_dialog_lists_the_given_boards():
+    _app()
+    dialog = MoveToBoardDialog(board_ids=["A", "B"])
+
+    assert [
+        dialog.board_combo.itemText(i) for i in range(dialog.board_combo.count())
+    ] == [
+        "A",
+        "B",
+    ]
+
+
+def test_move_to_board_dialog_returns_the_selected_board():
+    _app()
+    dialog = MoveToBoardDialog(board_ids=["A", "B"])
+    dialog.board_combo.setCurrentText("B")
+
+    assert dialog.selected_board_id() == "B"

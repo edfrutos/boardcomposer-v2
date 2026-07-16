@@ -166,3 +166,62 @@ def test_delete_selected_piece_removes_it_from_the_explorer(window):
     window._delete_selected_piece()
 
     assert not any(text.startswith("P-001") for text in _explorer_piece_texts(window))
+
+
+class _FakeMoveDialog:
+    def __init__(self, board_id, accepted=True):
+        self._board_id = board_id
+        self._accepted = accepted
+
+    def exec(self):
+        return (
+            QDialog.DialogCode.Accepted
+            if self._accepted
+            else QDialog.DialogCode.Rejected
+        )
+
+    def selected_board_id(self):
+        return self._board_id
+
+
+def test_move_piece_to_board_reassigns_the_placement(window, monkeypatch):
+    project = window.services.projects.current_project
+    from studio.models import StudioBoard
+
+    project.boards.append(StudioBoard("TAB-002", 1000, 500))
+    window.workspace.selection.select_many(["P-001"])
+    monkeypatch.setattr(
+        "studio.main_window.MoveToBoardDialog",
+        lambda *a, **k: _FakeMoveDialog("TAB-002"),
+    )
+
+    window._move_piece_to_board()
+
+    placement = project.placement_by_piece_id("P-001")
+    assert placement.board_id == "TAB-002"
+
+
+def test_move_piece_to_board_requires_a_selection(window, monkeypatch):
+    project = window.services.projects.current_project
+    from studio.models import StudioBoard
+
+    project.boards.append(StudioBoard("TAB-002", 1000, 500))
+    monkeypatch.setattr(
+        "studio.main_window.MoveToBoardDialog",
+        lambda *a, **k: _FakeMoveDialog("TAB-002"),
+    )
+
+    window._move_piece_to_board()
+
+    placement = project.placement_by_piece_id("P-001")
+    assert placement.board_id == "TAB-001"
+
+
+def test_move_piece_to_board_with_a_single_board_shows_a_message(window, monkeypatch):
+    window.workspace.selection.select_many(["P-001"])
+
+    window._move_piece_to_board()
+
+    placement = window.services.projects.current_project.placement_by_piece_id("P-001")
+    assert placement.board_id == "TAB-001"
+    assert "otro tablero" in window.statusBar().currentMessage()

@@ -22,7 +22,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from studio.dialogs import BoardDialog, PieceDialog
+from studio.dialogs import BoardDialog, MoveToBoardDialog, PieceDialog
 from studio.models import (
     StudioBoard,
     StudioPiece,
@@ -47,6 +47,7 @@ from studio.commands import (
     DeletePieceCommand,
     EditBoardCommand,
     EditPieceCommand,
+    MoveToBoardCommand,
     RotatePieceCommand,
 )
 
@@ -126,6 +127,11 @@ class MainWindow(QMainWindow):
         self._actions["edit_piece"] = QAction("Editar pieza…", self)
         menus["Proyecto"].addAction(self._actions["edit_piece"])
         self._actions["edit_piece"].triggered.connect(self._edit_piece)
+        self._actions["move_piece_to_board"] = QAction("Mover a tablero…", self)
+        menus["Proyecto"].addAction(self._actions["move_piece_to_board"])
+        self._actions["move_piece_to_board"].triggered.connect(
+            self._move_piece_to_board
+        )
 
         self._actions["solve_layout"] = QAction("Calcular layout", self)
         menus["Herramientas"].addAction(self._actions["solve_layout"])
@@ -739,6 +745,48 @@ class MainWindow(QMainWindow):
         self._update_window_title()
         self._update_undo_redo()
         self.statusBar().showMessage(f"Pieza '{new_piece.piece_id}' actualizada.", 3000)
+
+    def _move_piece_to_board(self):
+        project = self.services.projects.current_project
+        piece_id = self.workspace.selection.current()
+        if project is None or piece_id is None:
+            self.statusBar().showMessage("Selecciona una pieza primero.", 5000)
+            return
+
+        placement = project.placement_by_piece_id(piece_id)
+        if placement is None:
+            self.statusBar().showMessage("Esa pieza no tiene una colocación.", 5000)
+            return
+
+        other_board_ids = [
+            board.board_id
+            for board in project.boards
+            if board.board_id != placement.board_id
+        ]
+        if not other_board_ids:
+            self.statusBar().showMessage(
+                "No hay otro tablero al que mover la pieza.", 5000
+            )
+            return
+
+        dialog = MoveToBoardDialog(self, board_ids=other_board_ids)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        new_board_id = dialog.selected_board_id()
+        command = MoveToBoardCommand(
+            self.services, piece_id, placement.board_id, new_board_id
+        )
+        self.services.commands.execute(command)
+        self.services.projects.mark_modified()
+
+        self.workspace.reload_project()
+        self._reload_explorer()
+        self._update_window_title()
+        self._update_undo_redo()
+        self.statusBar().showMessage(
+            f"Pieza '{piece_id}' movida al tablero '{new_board_id}'.", 3000
+        )
 
     def _solve_layout(self):
         solution = self.services.layout.solve_current_project(
