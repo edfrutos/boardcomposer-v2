@@ -81,7 +81,7 @@ Observaciones:
 | IDE-0010 | Importación desde Excel | 🟢 | P1 |
 | IDE-0011 | Empaquetado de Studio | 🟢 | P1 |
 | IDE-0012 | Exportación DXF | 🟢 | P2 |
-| IDE-0013 | Guía para desarrolladores de plugins | 🔵 | P2 |
+| IDE-0013 | Guía para desarrolladores de plugins | 🟢 | P2 |
 | IDE-0014 | Receta de despliegue Cloud | 🔵 | P2 |
 
 ---
@@ -165,14 +165,11 @@ Alcance dividido en fases, cada una construida sobre la anterior:
 
 ## IDE-0013 — Guía para desarrolladores de plugins
 
-**Estado:** 🔵 Planificada. Cierra el punto P2 de `DOC-003-Roadmap.md` ("Marketplace, biblioteca de materiales, comunidad" de la Fase 5 — Ecosistema), primer paso concreto según `DOC-999-Ideas.md`. Decisión `DEC-0011` (`docs/masterplan/DOC-005-Decisiones.md`).
+**Estado:** 🟢 Completado. Cierra el punto P2 de `DOC-003-Roadmap.md` ("Marketplace, biblioteca de materiales, comunidad" de la Fase 5 — Ecosistema), primer paso concreto según `DOC-999-Ideas.md`. Decisión `DEC-0011` (`docs/masterplan/DOC-005-Decisiones.md`).
 
-**Descripción:** `IDE-0008` (Fases A–E) ya deja instalar generadores, estrategias, importadores/exportadores y paneles de Studio de terceros vía *entry points* de Python, pero hoy no hay ninguna guía pública que explique el mecanismo — solo existe implícito en el propio código fuente. `docs/plugins.md`: cómo crear y publicar un plugin para cada uno de los 4 tipos (grupo de entry point, forma exacta de la función/factoría esperada, ejemplo mínimo end-to-end, cómo se resuelven colisiones de nombre con las capacidades integradas — `DEC-0008`).
-
-**Criterios de aceptación:**
-- Un ejemplo mínimo funcional por tipo de plugin (generador, estrategia, importador/exportador, panel de Studio), cada uno instalable y verificable con `pip install -e .` + entry points reales.
-- Documenta explícitamente la regla de `DEC-0008` (las capacidades integradas siempre ganan ante colisión de nombre).
-- Enlazada desde `README.md`/`docs/architecture.md`.
+- `docs/plugins.md`: cómo crear y publicar un plugin para cada uno de los 5 grupos de entry point (`boardcomposer.generators`/`.strategies`/`.importers`/`.exporters`/`.studio_panels`) — forma exacta de la función/factoría esperada, ejemplo mínimo end-to-end por tipo, y cómo se resuelven colisiones de nombre con las capacidades integradas (`DEC-0008`).
+- Los 5 ejemplos verificados con una instalación real (no solo revisión del markdown): paquete `mi-paquete` con los 5 entry points, instalado con `uv pip install -e .` en el entorno del proyecto, y cada plugin resuelto vía `available_generators()`/`strategy_by_name()`/`importer_by_name()`/`exporter_by_name()`/`discover_panel_plugins()` (este último instanciando un `MainWindow` real). Detectado y corregido en el proceso: una clave de entry point con tilde (`Métricas`) debe ir entre comillas en TOML o `pip install` falla con `TOMLDecodeError` antes de llegar a BoardComposer — documentado en `docs/plugins.md`.
+- Enlazada desde `README.md` y `docs/architecture.md`.
 
 **Fuera de alcance:** visibilidad de plugins instalados vía CLI/API (candidata siguiente en `DOC-999-Ideas.md`, aún sin promover) y marketplace público real (requiere decisión de producto previa).
 

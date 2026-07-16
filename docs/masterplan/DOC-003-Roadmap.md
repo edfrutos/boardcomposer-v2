@@ -92,7 +92,7 @@ Proveedor de IA real conectado: `AnthropicProvider` (Claude, modelo `claude-haik
 Objetivos:
 
 - Plugins. 🟢 (IDE-0008, Fases A–E completas: generadores, estrategias, importadores/exportadores y paneles de Studio registrables vía entry points de Python)
-- Marketplace. 🔵 (DEC-0011: guía para desarrolladores de plugins planificada como `IDE-0013`)
+- Marketplace. 🟡 (DEC-0011: guía para desarrolladores de plugins completada, `IDE-0013`, `docs/plugins.md`; visibilidad de plugins instalados y marketplace público siguen sin acotar, `DOC-999-Ideas.md`)
 - Biblioteca de materiales. ⚪ Sin empezar.
 - Comunidad. ⚪ Sin empezar.
 
@@ -105,7 +105,7 @@ Studio, API, IA, Plugins y Plataforma (antes P0–P2) ya están completos — ve
 ### Prioridad P2
 
 - Exportación DXF. 🟢 Completado (`IDE-0012`, `solution_to_dxf()`, SDK `ezdxf`).
-- Guía para desarrolladores de plugins. 🔵 Planificada (`IDE-0013`, `DEC-0011`) — primer paso concreto de Marketplace/Comunidad (Fase 5); biblioteca de materiales y marketplace público siguen sin acotar (`DOC-999-Ideas.md`).
+- Guía para desarrolladores de plugins. 🟢 Completado (`IDE-0013`, `DEC-0011`, `docs/plugins.md`) — primer paso concreto de Marketplace/Comunidad (Fase 5); biblioteca de materiales y marketplace público siguen sin acotar (`DOC-999-Ideas.md`).
 - Receta de despliegue Cloud. 🔵 Planificada (`IDE-0014`, `DEC-0012`) — Dockerfile + guía de despliegue; instancia demo pública y SaaS real siguen sin acotar (`DOC-999-Ideas.md`).
 
 ---
