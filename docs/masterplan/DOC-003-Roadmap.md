@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 13/07/2026
+**Última revisión:** 16/07/2026
 
 ---
 
@@ -53,8 +53,7 @@ Entregables principales:
 - Panel de propiedades. 🟢 (cubierto por el Inspector, IDE-0003)
 - Gestión de proyectos. 🟢 (IDE-0004)
 - Exportación visual. 🟢 (SVG/PDF, IDE-0005)
-
-Con una salvedad importante: Studio no permite todavía crear ni editar tablas o piezas desde la interfaz — solo mover/rotar/eliminar las que ya vienen en el proyecto abierto (`DT-0013`, `docs/masterplan/DOC-006-DeudaTecnica.md`). La única forma de introducir datos reales hoy es escribir a mano un `.bcstudio.json`.
+- Alta/edición de tableros y piezas, y soporte multi-tablero. 🟢 (`DT-0013`, `docs/masterplan/DOC-006-DeudaTecnica.md`)
 
 ---
 
