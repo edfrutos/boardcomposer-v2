@@ -731,7 +731,9 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"Pieza '{new_piece.piece_id}' actualizada.", 3000)
 
     def _solve_layout(self):
-        solution = self.services.layout.solve_current_project()
+        solution = self.services.layout.solve_current_project(
+            self.workspace.active_board_id
+        )
 
         if solution is None:
             self.statusBar().showMessage("No se pudo calcular layout", 3000)
@@ -756,7 +758,9 @@ class MainWindow(QMainWindow):
         self.inspector.setText("\n".join(lines))
 
     def _apply_layout(self):
-        if not self.services.layout.apply_last_solution_to_current_project():
+        if not self.services.layout.apply_last_solution_to_current_project(
+            self.workspace.active_board_id
+        ):
             self.statusBar().showMessage("Primero calcula un layout", 3000)
             return
 
@@ -770,7 +774,9 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("Layout aplicado al proyecto", 3000)
 
     def _compare_solutions(self):
-        solutions = self.services.layout.compare_solutions()
+        solutions = self.services.layout.compare_solutions(
+            self.workspace.active_board_id
+        )
         self.comparator.setHtml(render_comparison(solutions))
 
         if not solutions:
@@ -784,7 +790,9 @@ class MainWindow(QMainWindow):
         )
 
     def _apply_comparison_solution(self, index: int):
-        if not self.services.layout.apply_comparison_solution(index):
+        if not self.services.layout.apply_comparison_solution(
+            index, self.workspace.active_board_id
+        ):
             self.statusBar().showMessage(
                 "No hay una solución generada en esa posición", 3000
             )
