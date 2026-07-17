@@ -46,6 +46,7 @@ from boardcomposer.ai import (
     suggest_strategy,
 )
 from boardcomposer.domain import Board, Project, ProjectConstraints
+from boardcomposer.plugin_visibility import plugin_summary
 from boardcomposer.presenters import solutions_to_json
 from boardcomposer.solver import GeometrySolver
 from boardcomposer.solver.strategies import (
@@ -149,6 +150,10 @@ def create_app(
     @app.get("/strategies")
     def strategies():
         return jsonify(strategies=list(available_strategies()))
+
+    @app.get("/plugins")
+    def plugins():
+        return jsonify(plugin_summary())
 
     @app.post("/solve")
     def solve():

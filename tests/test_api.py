@@ -54,6 +54,40 @@ def test_strategies_includes_plugin_strategies(client, monkeypatch):
     assert "custom" in response.get_json()["strategies"]
 
 
+def test_plugins_lists_the_four_core_groups(client):
+    response = client.get("/plugins")
+
+    assert response.status_code == 200
+    body = response.get_json()
+    assert set(body) == {"generators", "strategies", "importers", "exporters"}
+    for group in body.values():
+        assert group["installed"] == []
+        assert group["errors"] == []
+
+
+def test_plugins_reflects_installed_plugins_and_errors(client, monkeypatch):
+    from boardcomposer.plugins import PluginLoadError
+
+    error = PluginLoadError(name="broken", error="boom")
+
+    for module in (
+        "boardcomposer.solver.generators",
+        "boardcomposer.solver.strategies",
+        "boardcomposer.io.registry",
+        "boardcomposer.export.registry",
+    ):
+        monkeypatch.setattr(
+            f"{module}.discover_plugins",
+            lambda group: ({"custom": lambda *a, **k: None}, [error]),
+        )
+
+    response = client.get("/plugins")
+
+    body = response.get_json()
+    assert body["generators"]["installed"] == ["custom"]
+    assert body["generators"]["errors"] == [{"name": "broken", "error": "boom"}]
+
+
 def test_solve_with_valid_boards_returns_solutions(client):
     response = client.post(
         "/solve",

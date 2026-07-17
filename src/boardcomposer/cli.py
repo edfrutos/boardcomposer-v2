@@ -1,8 +1,10 @@
 import argparse
+import json
 
 from boardcomposer import Board, Project, ProjectConstraints
 
 from boardcomposer.io import load_project_from_csv, load_project_from_excel
+from boardcomposer.plugin_visibility import plugin_summary
 from boardcomposer.presenters import solution_to_text, solutions_to_json
 
 from boardcomposer.solver import GeometrySolver
@@ -20,9 +22,37 @@ def build_demo_project() -> Project:
     return project
 
 
+def print_plugin_summary(as_json: bool = False) -> None:
+    summary = plugin_summary()
+
+    if as_json:
+        print(json.dumps(summary, indent=2, ensure_ascii=False))
+        return
+
+    for group, data in summary.items():
+        print(f"{group}:")
+
+        if data["installed"]:
+            for name in data["installed"]:
+                print(f"  - {name}")
+        else:
+            print("  (ninguno instalado)")
+
+        for error in data["errors"]:
+            print(f"  ! {error['name']}: {error['error']}")
+
+
 def main() -> None:
 
     parser = argparse.ArgumentParser(description="BoardComposer CLI")
+
+    subparsers = parser.add_subparsers(dest="command")
+    plugins_parser = subparsers.add_parser(
+        "plugins", help="Lista los plugins instalados y sus errores de carga"
+    )
+    plugins_parser.add_argument(
+        "--json", action="store_true", help="Mostrar salida JSON"
+    )
 
     input_group = parser.add_mutually_exclusive_group()
     input_group.add_argument("--csv", help="Ruta a un CSV con tablas")
@@ -45,6 +75,10 @@ def main() -> None:
     )
 
     args = parser.parse_args()
+
+    if args.command == "plugins":
+        print_plugin_summary(as_json=args.json)
+        return
 
     if args.csv:
         project = load_project_from_csv(args.csv)

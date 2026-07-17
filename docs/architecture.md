@@ -41,6 +41,8 @@ BoardComposer Studio (studio/)    CLI (cli.py)   API (api.py)
 
 Consume el Core directamente: carga un `Project` (desde CSV, Excel o `build_demo_project()`; `--csv`/`--excel` son mutuamente excluyentes), construye una `OptimizationStrategy` por nombre y llama a `GeometrySolver(project, strategy).solve()`. Sin lógica propia de negocio — es una interfaz fina sobre el Core, tal como exige el principio arquitectónico.
 
+Subcomando `boardcomposer plugins` (`--json` opcional): visibilidad de plugins instalados, misma fuente que `GET /plugins` en la API (`plugin_visibility.plugin_summary()`). Opcional (`add_subparsers(dest="command")`, no `required`), así que no rompe la invocación sin subcomando que ya usan `--csv`/`--excel`/etc.
+
 ## API (`src/boardcomposer/api.py`)
 
 Cubre `IDE-0006` y la Fase F de `IDE-0007` (`docs/masterplan/DOC-004-Backlog.md`). Primer contrato HTTP mínimo sobre el Core (Flask, ya declarado en `pyproject.toml`) — mismo papel que `cli.py`, sin lógica propia: traduce peticiones a las mismas llamadas que ya usan CLI y Studio (`Project`/`ProjectConstraints`/`GeometrySolver`/`solutions_to_json`, y ahora también `boardcomposer.ai`). `_parse_boards()`/`_parse_constraints()`/`_parse_top()`/`_solve_response()` son helpers internos que factorizan la validación que `/solve` y los `/assist/*` comparten.
@@ -51,6 +53,7 @@ Cubre `IDE-0006` y la Fase F de `IDE-0007` (`docs/masterplan/DOC-004-Backlog.md`
 |---|---|---|
 | `/health` | GET | Comprobación trivial de que el servicio responde. |
 | `/strategies` | GET | Lista las estrategias registradas: `balanced`/`material`/`compact` más las que aporten plugins instalados (`IDE-0008` Fase C). |
+| `/plugins` | GET | Visibilidad de plugins instalados (`DOC-999-Ideas.md`, Marketplace/Comunidad): plugins de terceros detectados y errores de carga, por cada uno de los 4 grupos de entry point del Core (generadores, estrategias, importadores, exportadores) — `plugin_visibility.plugin_summary()`, misma lógica que `boardcomposer plugins` en la CLI. Los paneles de Studio quedan fuera, solo importan dentro de la app de escritorio. |
 | `/solve` | POST | Recibe `boards`/`constraints`/`strategy`/`top` en JSON, ejecuta `GeometrySolver` y devuelve el mismo JSON que ya genera `solutions_to_json()` para el CLI. |
 | `/assist/project` | POST | Recibe `text`, llama a `project_from_text()` (Fase B) y devuelve `boards`/`constraints` en la misma forma que acepta `/solve`. |
 | `/assist/strategy` | POST | Recibe `boards`/`constraints`/`goal`/`top`, llama a `suggest_strategy()` (Fase D) y resuelve con la estrategia sugerida — misma respuesta que `/solve`, pero con la estrategia elegida por la IA en vez de por nombre. |

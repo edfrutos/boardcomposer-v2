@@ -23,6 +23,40 @@ def test_excel_flag_loads_boards_from_an_excel_file(capsys, monkeypatch):
     assert output["input_boards"] == 3
 
 
+def test_plugins_subcommand_prints_a_summary_per_group(capsys, monkeypatch):
+    monkeypatch.setattr("sys.argv", ["boardcomposer", "plugins"])
+
+    main()
+
+    output = capsys.readouterr().out
+
+    assert "generators:" in output
+    assert "strategies:" in output
+    assert "importers:" in output
+    assert "exporters:" in output
+
+
+def test_plugins_subcommand_json_output_is_valid_json(capsys, monkeypatch):
+    monkeypatch.setattr("sys.argv", ["boardcomposer", "plugins", "--json"])
+
+    main()
+
+    output = json.loads(capsys.readouterr().out)
+
+    assert set(output) == {"generators", "strategies", "importers", "exporters"}
+
+
+def test_plugins_subcommand_does_not_run_the_default_solve_flow(capsys, monkeypatch):
+    monkeypatch.setattr("sys.argv", ["boardcomposer", "plugins"])
+
+    main()
+
+    output = capsys.readouterr().out
+
+    assert "input_boards" not in output
+    assert "No hay soluciones" not in output
+
+
 def test_csv_and_excel_flags_are_mutually_exclusive(monkeypatch):
     monkeypatch.setattr(
         "sys.argv",

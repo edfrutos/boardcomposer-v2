@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 16/07/2026
+**Última revisión:** 17/07/2026
 
 ---
 
@@ -83,6 +83,7 @@ Observaciones:
 | IDE-0012 | Exportación DXF | 🟢 | P2 |
 | IDE-0013 | Guía para desarrolladores de plugins | 🟢 | P2 |
 | IDE-0014 | Receta de despliegue Cloud | 🟢 | P2 |
+| IDE-0015 | Visibilidad de plugins instalados | 🟢 | P2 |
 
 ---
 
@@ -185,6 +186,19 @@ Alcance dividido en fases, cada una construida sobre la anterior:
 - Enlazada desde `README.md` y `docs/architecture.md`.
 
 **Fuera de alcance:** instancia demo pública mantenida (implica coste de infraestructura recurrente) y SaaS real (proyectos persistentes por usuario, cuentas, facturación — requiere decisión de producto previa). No se ha ejecutado un despliegue real contra Fly.io ni un VPS (crearía recursos facturables en una cuenta externa) — los pasos de la Opción A/B están verificados contra la documentación oficial de cada herramienta, no contra una cuenta real.
+
+---
+
+## IDE-0015 — Visibilidad de plugins instalados
+
+**Estado:** 🟢 Completado. Cierra el siguiente punto P2 de `DOC-003-Roadmap.md` ("Marketplace, biblioteca de materiales, comunidad" de la Fase 5 — Ecosistema), segunda candidata de `DOC-999-Ideas.md` para ese grupo. Decisión `DEC-0013` (`docs/masterplan/DOC-005-Decisiones.md`).
+
+- `boardcomposer.plugin_visibility.plugin_summary()` (nuevo, `src/boardcomposer/plugin_visibility.py`): plugins de terceros instalados y errores de carga para cada uno de los 4 grupos de entry point del Core (`boardcomposer.generators`/`.strategies`/`.importers`/`.exporters`) — reutiliza `available_*()`/`*_plugin_errors()` ya existentes, sin cargador propio. Los paneles de Studio (`boardcomposer.studio_panels`) quedan fuera a propósito: solo importan dentro de la app de escritorio, no en un contexto CLI/API.
+- CLI: subcomando `boardcomposer plugins` (`--json` opcional), vía `argparse.add_subparsers(dest="command")` opcional — no rompe la invocación existente sin subcomando (`--csv`/`--excel`/etc.).
+- API: `GET /plugins`, mismo formato de respuesta que la CLI, sujeta a la misma autenticación/rate limiting que el resto de rutas salvo `/health` (`IDE-0009`).
+- Verificado con el binario/servidor reales, no solo tests: `boardcomposer plugins` y `boardcomposer plugins --json` contra el entorno instalado; `GET /plugins` y `GET /health` contra `python -m boardcomposer.api` arrancado de verdad (`200` en ambos).
+
+**Fuera de alcance:** marketplace público real (requiere decisión de producto previa, sin cambios). Paneles de Studio (grupo `boardcomposer.studio_panels`) no incluidos en esta visibilidad CLI/API.
 
 ---
 

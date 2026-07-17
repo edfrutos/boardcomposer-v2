@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 16/07/2026
+**Última revisión:** 17/07/2026
 
 ---
 
@@ -92,7 +92,7 @@ Proveedor de IA real conectado: `AnthropicProvider` (Claude, modelo `claude-haik
 Objetivos:
 
 - Plugins. 🟢 (IDE-0008, Fases A–E completas: generadores, estrategias, importadores/exportadores y paneles de Studio registrables vía entry points de Python)
-- Marketplace. 🟡 (DEC-0011: guía para desarrolladores de plugins completada, `IDE-0013`, `docs/plugins.md`; visibilidad de plugins instalados y marketplace público siguen sin acotar, `DOC-999-Ideas.md`)
+- Marketplace. 🟡 (guía para desarrolladores de plugins completada — `IDE-0013`, `DEC-0011`, `docs/plugins.md`; visibilidad de plugins instalados completada — `IDE-0015`, `DEC-0013`, CLI `boardcomposer plugins` + API `GET /plugins`; marketplace público sigue sin acotar, `DOC-999-Ideas.md`)
 - Biblioteca de materiales. ⚪ Sin empezar.
 - Comunidad. ⚪ Sin empezar.
 
@@ -107,6 +107,7 @@ Studio, API, IA, Plugins y Plataforma (antes P0–P2) ya están completos — ve
 - Exportación DXF. 🟢 Completado (`IDE-0012`, `solution_to_dxf()`, SDK `ezdxf`).
 - Guía para desarrolladores de plugins. 🟢 Completado (`IDE-0013`, `DEC-0011`, `docs/plugins.md`) — primer paso concreto de Marketplace/Comunidad (Fase 5); biblioteca de materiales y marketplace público siguen sin acotar (`DOC-999-Ideas.md`).
 - Receta de despliegue Cloud. 🟢 Completado (`IDE-0014`, `DEC-0012`, `Dockerfile` + `docs/deploy.md`, Fly.io o VPS+Caddy); instancia demo pública y SaaS real siguen sin acotar (`DOC-999-Ideas.md`).
+- Visibilidad de plugins instalados. 🟢 Completado (`IDE-0015`, `DEC-0013`, CLI `boardcomposer plugins` + API `GET /plugins`) — segundo paso de Marketplace/Comunidad (Fase 5); biblioteca de materiales y marketplace público siguen sin acotar (`DOC-999-Ideas.md`).
 
 ---
 

@@ -4,7 +4,7 @@
 
 **Código:** DOC-999
 **Estado:** En revisión
-**Última revisión:** 16/07/2026
+**Última revisión:** 17/07/2026
 
 ---
 
@@ -19,7 +19,7 @@ Capturar ideas mencionadas en `docs/masterplan/DOC-003-Roadmap.md` que todavía 
 El sistema de plugins (`IDE-0008`) ya deja instalar generadores, estrategias, importadores/exportadores y paneles de Studio de terceros vía *entry points* de Python. Eso es la base técnica; "comunidad"/"marketplace" describe qué se construye encima, y hoy no hay nada decidido. Candidatas, de menor a mayor alcance:
 
 - **Guía para desarrolladores de plugins** (`docs/plugins.md`): cómo crear y publicar un plugin (grupo de entry point, forma de la función, ejemplo mínimo end-to-end para cada uno de los 4 tipos). Sin esto, nadie fuera de este repo sabe que el mecanismo existe. **Promovida a `IDE-0013`** (`DEC-0011`, `docs/masterplan/DOC-004-Backlog.md`).
-- **Visibilidad de los plugins instalados**: `generator_plugin_errors()`/`strategy_plugin_errors()`/`importer_plugin_errors()`/`exporter_plugin_errors()` ya existen en el Core, pero hoy no los consume nada salvo el equivalente de paneles en Studio (aviso en la barra de estado). No hay forma de ver, desde la CLI o la API, qué plugins están instalados o cuáles fallaron al cargar. Un comando `boardcomposer plugins` o una ruta `GET /plugins` sería el primer paso concreto y programable — sin visibilidad no hay ecosistema que gestionar.
+- **Visibilidad de los plugins instalados**: `generator_plugin_errors()`/`strategy_plugin_errors()`/`importer_plugin_errors()`/`exporter_plugin_errors()` ya existen en el Core, pero hoy no los consume nada salvo el equivalente de paneles en Studio (aviso en la barra de estado). No hay forma de ver, desde la CLI o la API, qué plugins están instalados o cuáles fallaron al cargar. Un comando `boardcomposer plugins` o una ruta `GET /plugins` sería el primer paso concreto y programable — sin visibilidad no hay ecosistema que gestionar. **Promovida a `IDE-0015`** (`DEC-0013`, `docs/masterplan/DOC-004-Backlog.md`).
 - **Marketplace real** (sitio o índice público listando plugins de terceros): esto sí requiere infraestructura externa (hosting, moderación, proceso de publicación) y una decisión de producto previa — ¿quiere BoardComposer un ecosistema público de plugins de terceros, o el mecanismo de plugins es solo para uso interno/empresarial? Sin esa decisión no hay nada que programar todavía.
 
 ## Cloud (Fase 5 / Manifiesto)
