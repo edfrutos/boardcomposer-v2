@@ -83,3 +83,50 @@ def test_render_comparison_includes_strengths_and_weaknesses():
 
     assert "Muy buen aprovechamiento del material" in html
     assert "Composición alargada o poco compacta" in html
+
+
+def test_render_comparison_shows_piece_order():
+    html = render_comparison([_solution("A", 500, 500, 10.0, ["skyline"])])
+
+    assert "Orden de piezas" in html
+    assert "A" in html
+
+
+def test_render_comparison_distinguishes_tied_solutions_by_piece_order():
+    # Same aggregate metrics (score, algorithm), different stacking order —
+    # exactly the DT-0016 scenario: two genuinely different solutions that
+    # would otherwise look identical in the table.
+    tied_score = 92.4
+    solution_1 = AssemblySolution(
+        placements=[
+            BoardPlacement(board_id="p1", x_mm=0, y_mm=0, length_mm=700, width_mm=300),
+            BoardPlacement(
+                board_id="p2", x_mm=0, y_mm=300, length_mm=520, width_mm=360
+            ),
+        ],
+        score=SolutionScore(waste_score=tied_score),
+        explanation=SolutionExplanation(notes=["vertical_permutation"]),
+    )
+    solution_2 = AssemblySolution(
+        placements=[
+            BoardPlacement(board_id="p2", x_mm=0, y_mm=0, length_mm=520, width_mm=360),
+            BoardPlacement(
+                board_id="p1", x_mm=0, y_mm=360, length_mm=700, width_mm=300
+            ),
+        ],
+        score=SolutionScore(waste_score=tied_score),
+        explanation=SolutionExplanation(notes=["vertical_permutation"]),
+    )
+
+    html = render_comparison([solution_1, solution_2])
+
+    assert "p1 → p2" in html
+    assert "p2 → p1" in html
+
+
+def test_render_comparison_piece_order_handles_no_placements():
+    solution = AssemblySolution(placements=[])
+
+    html = render_comparison([solution])
+
+    assert "Orden de piezas" in html

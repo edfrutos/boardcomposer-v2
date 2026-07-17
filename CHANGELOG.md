@@ -18,6 +18,7 @@
 - Atajos de teclado para las acciones más usadas del menú "Proyecto"/"Herramientas"/"Comparar": Añadir/Editar tablero (`Ctrl+Alt+B`/`Ctrl+Alt+Shift+B`), Añadir/Editar pieza (`Ctrl+Alt+P`/`Ctrl+Alt+Shift+P`), Calcular/Aplicar layout (`Ctrl+Alt+L`/`Ctrl+Alt+Shift+L`), Generar comparación (`Ctrl+Alt+C`).
 - Ancho de sierra configurable (menú "Proyecto" → "Ancho de sierra…"): `kerf_mm` nuevo en `StudioProject` (persistido, por defecto `0.0`), `KerfDialog` + `SetKerfCommand` (deshacible) para fijarlo. Representa el desperdicio de madera que se lleva cada corte.
 - Efecto imán al arrastrar piezas en el workspace: si el borde de la pieza arrastrada queda a menos de 20 mm del borde de otra ya colocada (con solape en el eje perpendicular), `PlacementValidator` la sitúa justo al lado, separada por el ancho de sierra configurado, en vez de dejarla montarse encima o quedar colocada a ojo.
+- Fila "Orden de piezas" en el Comparador de soluciones (`DT-0016`): varias candidatas pueden empatar en las 5 métricas agregadas (mismo aprovechamiento/puntuación) aunque sean geométricamente distintas — la nueva fila muestra el orden real de apilado de cada una, la única diferencia que antes no se veía en ningún sitio.
 
 ### Corregido
 

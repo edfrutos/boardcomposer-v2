@@ -7,6 +7,13 @@ spec also lists número de cortes, tiempo de cálculo, fragmentación del
 material and tiempo estimado de mecanizado, none of which the domain
 model tracks yet, so they're called out as not-yet-available instead of
 being filled with invented numbers.
+
+Also shows "Orden de piezas" (DT-0016): several candidates from the same
+generator family can tie on every aggregate metric above (e.g. stacking
+the same pieces in a different order occupies the same total footprint),
+which otherwise makes genuinely distinct solutions look identical in the
+table. This row surfaces the one thing that actually differs between
+them — the piece arrangement, read top-to-bottom then left-to-right.
 """
 
 from boardcomposer.domain import AssemblySolution
@@ -24,6 +31,7 @@ def render_comparison(solutions: list[AssemblySolution]) -> str:
     rows = [
         _row("Algoritmo", [" / ".join(s.explanation.notes) or "—" for s in solutions]),
         _row("Piezas colocadas", [str(len(s.placements)) for s in solutions]),
+        _row("Orden de piezas", [_piece_order(s) for s in solutions]),
         _row("Aprovechamiento", [f"{1 - s.waste_ratio:.1%}" for s in solutions]),
         _row("Desperdicio", [f"{s.waste_ratio:.1%}" for s in solutions]),
         _row("Puntuación", [f"{s.score.total:.1f}" for s in solutions]),
@@ -61,3 +69,11 @@ def render_comparison(solutions: list[AssemblySolution]) -> str:
 def _row(label: str, values: list[str]) -> str:
     cells = "".join(f"<td>{value}</td>" for value in values)
     return f"<tr><td><b>{label}</b></td>{cells}</tr>"
+
+
+def _piece_order(solution: AssemblySolution) -> str:
+    if not solution.placements:
+        return "—"
+
+    ordered = sorted(solution.placements, key=lambda p: (p.y_mm, p.x_mm))
+    return " → ".join(placement.board_id for placement in ordered)
