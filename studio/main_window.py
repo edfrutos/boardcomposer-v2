@@ -56,6 +56,23 @@ RESERVED_PANEL_NAMES = {"Explorer", "Inspector", "Timeline", "Comparador", "Asis
 PROJECT_FILE_FILTER = "BoardComposer Studio (*.bcstudio.json)"
 
 
+def _generate_ids(
+    base_id: str, quantity: int, existing_ids: frozenset[str]
+) -> list[str]:
+    """Returns `quantity` unique ids starting with `base_id` — the first one
+    unchanged, the rest suffixed (`base_id-2`, `base_id-3`, ...) so a single
+    dialog submission can create several identical boards/pieces at once."""
+    ids = [base_id]
+    suffix = 2
+    while len(ids) < quantity:
+        candidate = f"{base_id}-{suffix}"
+        suffix += 1
+        if candidate in existing_ids or candidate in ids:
+            continue
+        ids.append(candidate)
+    return ids
+
+
 class MainWindow(QMainWindow):
     """Main application window."""
 
@@ -331,7 +348,6 @@ class MainWindow(QMainWindow):
         root.setData(0, Qt.ItemDataRole.UserRole, f"project:{project.project_id}")
         boards_root = QTreeWidgetItem(["Tableros"])
         pieces_root = QTreeWidgetItem(["Piezas"])
-        solutions_root = QTreeWidgetItem(["Soluciones"])
 
         for board in project.boards:
             item = QTreeWidgetItem(
@@ -357,7 +373,6 @@ class MainWindow(QMainWindow):
 
         root.addChild(boards_root)
         root.addChild(pieces_root)
-        root.addChild(solutions_root)
         self.explorer.addTopLevelItem(root)
         self.explorer.expandAll()
 
@@ -606,7 +621,7 @@ class MainWindow(QMainWindow):
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
-        board_id, length_mm, width_mm, material = dialog.values()
+        board_id, length_mm, width_mm, material, thickness_mm = dialog.values()
         if not board_id:
             self.statusBar().showMessage("El tablero necesita un id.", 5000)
             return
@@ -617,17 +632,25 @@ class MainWindow(QMainWindow):
             )
             return
 
-        command = AddBoardCommand(
-            self.services, StudioBoard(board_id, length_mm, width_mm, material)
-        )
-        self.services.commands.execute(command)
+        board_ids = _generate_ids(board_id, dialog.quantity(), existing_ids)
+        for new_board_id in board_ids:
+            command = AddBoardCommand(
+                self.services,
+                StudioBoard(new_board_id, length_mm, width_mm, material, thickness_mm),
+            )
+            self.services.commands.execute(command)
         self.services.projects.mark_modified()
 
-        self.workspace.set_active_board(board_id)
+        self.workspace.set_active_board(board_ids[0])
         self._reload_explorer()
         self._update_window_title()
         self._update_undo_redo()
-        self.statusBar().showMessage(f"Tablero '{board_id}' añadido.", 3000)
+        if len(board_ids) == 1:
+            self.statusBar().showMessage(f"Tablero '{board_id}' añadido.", 3000)
+        else:
+            self.statusBar().showMessage(
+                f"{len(board_ids)} tableros añadidos: {', '.join(board_ids)}.", 4000
+            )
 
     def _edit_board(self):
         project = self.services.projects.current_project
@@ -649,14 +672,19 @@ class MainWindow(QMainWindow):
             length_mm=old_board.length_mm,
             width_mm=old_board.width_mm,
             material=old_board.material,
+            thickness_mm=old_board.thickness_mm,
             id_editable=False,
         )
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
-        _, length_mm, width_mm, material = dialog.values()
+        _, length_mm, width_mm, material, thickness_mm = dialog.values()
         new_board = dataclasses.replace(
-            old_board, length_mm=length_mm, width_mm=width_mm, material=material
+            old_board,
+            length_mm=length_mm,
+            width_mm=width_mm,
+            material=material,
+            thickness_mm=thickness_mm,
         )
 
         command = EditBoardCommand(self.services, old_board, new_board)
@@ -683,7 +711,7 @@ class MainWindow(QMainWindow):
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
-        piece_id, length_mm, width_mm, material = dialog.values()
+        piece_id, length_mm, width_mm, material, thickness_mm = dialog.values()
         if not piece_id:
             self.statusBar().showMessage("La pieza necesita un id.", 5000)
             return
@@ -694,17 +722,26 @@ class MainWindow(QMainWindow):
             )
             return
 
-        piece = StudioPiece(piece_id, length_mm, width_mm, material)
-        placement = StudioPlacement(piece_id, 0, 0, board_id=active_board_id)
-        command = AddPieceCommand(self.services, piece, placement)
-        self.services.commands.execute(command)
+        piece_ids = _generate_ids(piece_id, dialog.quantity(), existing_ids)
+        for new_piece_id in piece_ids:
+            piece = StudioPiece(
+                new_piece_id, length_mm, width_mm, material, thickness_mm
+            )
+            placement = StudioPlacement(new_piece_id, 0, 0, board_id=active_board_id)
+            command = AddPieceCommand(self.services, piece, placement)
+            self.services.commands.execute(command)
         self.services.projects.mark_modified()
 
         self.workspace.reload_project()
         self._reload_explorer()
         self._update_window_title()
         self._update_undo_redo()
-        self.statusBar().showMessage(f"Pieza '{piece_id}' añadida.", 3000)
+        if len(piece_ids) == 1:
+            self.statusBar().showMessage(f"Pieza '{piece_id}' añadida.", 3000)
+        else:
+            self.statusBar().showMessage(
+                f"{len(piece_ids)} piezas añadidas: {', '.join(piece_ids)}.", 4000
+            )
 
     def _edit_piece(self):
         project = self.services.projects.current_project
@@ -726,14 +763,19 @@ class MainWindow(QMainWindow):
             length_mm=old_piece.length_mm,
             width_mm=old_piece.width_mm,
             material=old_piece.material,
+            thickness_mm=old_piece.thickness_mm,
             id_editable=False,
         )
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
-        _, length_mm, width_mm, material = dialog.values()
+        _, length_mm, width_mm, material, thickness_mm = dialog.values()
         new_piece = dataclasses.replace(
-            old_piece, length_mm=length_mm, width_mm=width_mm, material=material
+            old_piece,
+            length_mm=length_mm,
+            width_mm=width_mm,
+            material=material,
+            thickness_mm=thickness_mm,
         )
 
         command = EditPieceCommand(self.services, old_piece, new_piece)

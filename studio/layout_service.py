@@ -46,7 +46,7 @@ class LayoutService:
                     id=piece.piece_id,
                     length_mm=piece.length_mm,
                     width_mm=piece.width_mm,
-                    thickness_mm=19,
+                    thickness_mm=piece.thickness_mm,
                 )
             )
 

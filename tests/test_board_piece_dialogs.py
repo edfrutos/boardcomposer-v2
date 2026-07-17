@@ -11,7 +11,7 @@ def test_board_dialog_defaults_and_values():
     _app()
     dialog = BoardDialog(board_id="B1", length_mm=2000, width_mm=300)
 
-    assert dialog.values() == ("B1", 2000.0, 300.0, "Demo")
+    assert dialog.values() == ("B1", 2000.0, 300.0, "Demo", 19.0)
 
 
 def test_board_dialog_id_editable_flag_disables_the_field():
@@ -26,7 +26,7 @@ def test_board_dialog_strips_whitespace_from_the_id():
     dialog = BoardDialog()
     dialog.id_edit.setText("  B2  ")
 
-    board_id, _, _, _ = dialog.values()
+    board_id, _, _, _, _ = dialog.values()
 
     assert board_id == "B2"
 
@@ -35,16 +35,43 @@ def test_board_dialog_accepts_a_custom_material():
     _app()
     dialog = BoardDialog(board_id="B1", material="Melamina")
 
-    _, _, _, material = dialog.values()
+    _, _, _, material, _ = dialog.values()
 
     assert material == "Melamina"
+
+
+def test_board_dialog_accepts_a_custom_thickness():
+    _app()
+    dialog = BoardDialog(board_id="B1", thickness_mm=25.0)
+
+    _, _, _, _, thickness_mm = dialog.values()
+
+    assert thickness_mm == 25.0
+
+
+def test_board_dialog_quantity_defaults_to_one_and_creates_more():
+    _app()
+    dialog = BoardDialog()
+
+    assert dialog.quantity() == 1
+
+    dialog.quantity_spin.setValue(5)
+
+    assert dialog.quantity() == 5
+
+
+def test_board_dialog_hides_quantity_when_editing():
+    _app()
+    dialog = BoardDialog(board_id="B1", id_editable=False)
+
+    assert dialog.quantity_spin.isVisibleTo(dialog) is False
 
 
 def test_piece_dialog_defaults_and_values():
     _app()
     dialog = PieceDialog(piece_id="p1", length_mm=500, width_mm=200)
 
-    assert dialog.values() == ("p1", 500.0, 200.0, "Demo")
+    assert dialog.values() == ("p1", 500.0, 200.0, "Demo", 19.0)
 
 
 def test_piece_dialog_id_editable_flag_disables_the_field():
@@ -58,9 +85,36 @@ def test_piece_dialog_accepts_a_custom_material():
     _app()
     dialog = PieceDialog(piece_id="p1", material="MDF")
 
-    _, _, _, material = dialog.values()
+    _, _, _, material, _ = dialog.values()
 
     assert material == "MDF"
+
+
+def test_piece_dialog_accepts_a_custom_thickness():
+    _app()
+    dialog = PieceDialog(piece_id="p1", thickness_mm=16.0)
+
+    _, _, _, _, thickness_mm = dialog.values()
+
+    assert thickness_mm == 16.0
+
+
+def test_piece_dialog_quantity_defaults_to_one_and_creates_more():
+    _app()
+    dialog = PieceDialog()
+
+    assert dialog.quantity() == 1
+
+    dialog.quantity_spin.setValue(3)
+
+    assert dialog.quantity() == 3
+
+
+def test_piece_dialog_hides_quantity_when_editing():
+    _app()
+    dialog = PieceDialog(piece_id="p1", id_editable=False)
+
+    assert dialog.quantity_spin.isVisibleTo(dialog) is False
 
 
 def test_board_dialog_rejects_a_duplicate_id_without_closing():

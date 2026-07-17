@@ -14,12 +14,14 @@
 - Receta de despliegue Cloud (`IDE-0014`): `Dockerfile` (`python:3.13-slim`, `gunicorn`, usuario sin privilegios) y `docs/deploy.md` con despliegue en Fly.io o VPS+Caddy, verificado con una build y arranque de contenedor reales.
 - Campo Material en `BoardDialog`/`PieceDialog` (ya existía en `StudioBoard`/`StudioPiece`, no se pedía en el formulario).
 - Mover una pieza existente a otro tablero (menú "Proyecto" → "Mover a tablero…"): `MoveToBoardDialog` + `MoveToBoardCommand` (deshacible), reasigna `placement.board_id`. Hasta ahora la única forma de meter una pieza en el segundo tablero era crear una pieza nueva con ese tablero activo.
+- Grosor y cantidad en `BoardDialog`/`PieceDialog` (`DT-0014`): campo "Grosor" (`thickness_mm`, nuevo en `StudioBoard`/`StudioPiece`, persistido con migración retrocompatible) y campo "Cantidad" (solo al añadir) que crea N tableros/piezas idénticos de una vez con ids derivados (`p1`, `p1-2`, `p1-3`…). `LayoutService.to_core_project()` usa ahora el grosor real de cada pieza en vez de un `19` fijo.
 
 ### Corregido
 
 - `project_from_text()`/`suggest_strategy()` fallaban con un proveedor de IA real: Claude envuelve el JSON en un bloque ` ```json ... ``` ` pese a que el prompt pide lo contrario, y devuelve `thickness_mm: null` explícito en vez de omitir la clave. Corregido con `strip_json_fence()` y tratando el `null` explícito igual que una clave ausente.
 - `MainWindow._new_project()` (Studio) llamaba a `_load_demo_project()` — "Nuevo proyecto" nunca creaba un proyecto vacío, siempre recargaba la demo. Detectado probando datos reales tras el empaquetado. Corregido: crea un `StudioProject` vacío con un `project_id` nuevo.
 - Seis gaps de usabilidad detectados probando Studio a mano tras `DT-0013` (PR #36): "Añadir/Editar pieza" movidos del menú "Editar" al "Proyecto"; los 5 paneles integrados (Explorer/Inspector/Timeline/Comparador/Asistente) ahora tienen su acción de mostrar/ocultar en el menú "Ver" (antes solo los paneles de plugins la tenían, así que cerrar uno lo dejaba irrecuperable); `DeletePieceCommand` solo quitaba la colocación, nunca la pieza de `project.pieces` — asimétrico respecto a `AddPieceCommand`, ahora quita (y el undo restaura) ambas; `BoardDialog`/`PieceDialog` cerraban con un id vacío o repetido dependiendo de un aviso fugaz en la barra de estado, ahora validan antes de `accept()` y se quedan abiertos con un error inline; aplicar una solución que no coloca todas las piezas las hacía desaparecer del lienzo sin aviso (siguen en el inventario, solo pierden su colocación) — `_apply_layout`/`_apply_comparison_solution` ahora informan cuáles quedaron sin colocar.
+- El nodo "Soluciones" del Explorer (`DT-0015`) se creaba y se añadía al árbol pero nunca se rellenaba — permanecía vacío siempre. Quitado del Explorer hasta que se acote qué debe mostrar realmente.
 
 ## 0.1.0 - 2026-07-13
 

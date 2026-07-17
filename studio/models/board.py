@@ -11,3 +11,4 @@ class StudioBoard:
     length_mm: float
     width_mm: float
     material: str = "Demo"
+    thickness_mm: float = 19.0

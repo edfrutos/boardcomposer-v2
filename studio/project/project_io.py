@@ -16,6 +16,7 @@ def project_to_dict(project: StudioProject) -> dict:
                 "length_mm": board.length_mm,
                 "width_mm": board.width_mm,
                 "material": board.material,
+                "thickness_mm": board.thickness_mm,
             }
             for board in project.boards
         ],
@@ -25,6 +26,7 @@ def project_to_dict(project: StudioProject) -> dict:
                 "length_mm": piece.length_mm,
                 "width_mm": piece.width_mm,
                 "material": piece.material,
+                "thickness_mm": piece.thickness_mm,
             }
             for piece in project.pieces
         ],

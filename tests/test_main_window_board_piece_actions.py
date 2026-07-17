@@ -12,9 +12,10 @@ def window():
 
 
 class _FakeDialog:
-    def __init__(self, values, accepted=True):
+    def __init__(self, values, accepted=True, quantity=1):
         self._values = values
         self._accepted = accepted
+        self._quantity = quantity
 
     def exec(self):
         code = (
@@ -27,11 +28,14 @@ class _FakeDialog:
     def values(self):
         return self._values
 
+    def quantity(self):
+        return self._quantity
+
 
 def test_add_board_appends_a_new_board_and_makes_it_active(window, monkeypatch):
     monkeypatch.setattr(
         "studio.main_window.BoardDialog",
-        lambda *a, **k: _FakeDialog(("B2", 1500, 400, "Demo")),
+        lambda *a, **k: _FakeDialog(("B2", 1500, 400, "Demo", 19.0)),
     )
 
     window._add_board()
@@ -45,7 +49,7 @@ def test_add_board_is_undoable(window, monkeypatch):
     boards_before = len(window.services.projects.current_project.boards)
     monkeypatch.setattr(
         "studio.main_window.BoardDialog",
-        lambda *a, **k: _FakeDialog(("B2", 1500, 400, "Demo")),
+        lambda *a, **k: _FakeDialog(("B2", 1500, 400, "Demo", 19.0)),
     )
     window._add_board()
 
@@ -58,7 +62,7 @@ def test_add_board_rejects_a_duplicate_id(window, monkeypatch):
     existing_id = window.services.projects.current_project.boards[0].board_id
     monkeypatch.setattr(
         "studio.main_window.BoardDialog",
-        lambda *a, **k: _FakeDialog((existing_id, 1000, 1000, "Demo")),
+        lambda *a, **k: _FakeDialog((existing_id, 1000, 1000, "Demo", 19.0)),
     )
 
     window._add_board()
@@ -70,7 +74,7 @@ def test_add_board_does_nothing_when_the_dialog_is_cancelled(window, monkeypatch
     boards_before = len(window.services.projects.current_project.boards)
     monkeypatch.setattr(
         "studio.main_window.BoardDialog",
-        lambda *a, **k: _FakeDialog(("B2", 1500, 400, "Demo"), accepted=False),
+        lambda *a, **k: _FakeDialog(("B2", 1500, 400, "Demo", 19.0), accepted=False),
     )
 
     window._add_board()
@@ -78,11 +82,24 @@ def test_add_board_does_nothing_when_the_dialog_is_cancelled(window, monkeypatch
     assert len(window.services.projects.current_project.boards) == boards_before
 
 
+def test_add_board_with_a_quantity_creates_several_boards(window, monkeypatch):
+    monkeypatch.setattr(
+        "studio.main_window.BoardDialog",
+        lambda *a, **k: _FakeDialog(("B2", 1500, 400, "Demo", 19.0), quantity=3),
+    )
+
+    window._add_board()
+
+    project = window.services.projects.current_project
+    ids = {board.board_id for board in project.boards}
+    assert {"B2", "B2-2", "B2-3"} <= ids
+
+
 def test_edit_board_replaces_the_active_boards_dimensions(window, monkeypatch):
     board_id = window.workspace.active_board_id
     monkeypatch.setattr(
         "studio.main_window.BoardDialog",
-        lambda *a, **k: _FakeDialog((board_id, 5000, 900, "Demo")),
+        lambda *a, **k: _FakeDialog((board_id, 5000, 900, "Demo", 19.0)),
     )
 
     window._edit_board()
@@ -97,7 +114,7 @@ def test_add_piece_appends_a_piece_visible_on_the_active_board(window, monkeypat
     active_board_id = window.workspace.active_board_id
     monkeypatch.setattr(
         "studio.main_window.PieceDialog",
-        lambda *a, **k: _FakeDialog(("p-new", 300, 150, "Demo")),
+        lambda *a, **k: _FakeDialog(("p-new", 300, 150, "Demo", 19.0)),
     )
 
     window._add_piece()
@@ -114,7 +131,7 @@ def test_add_piece_rejects_a_duplicate_id(window, monkeypatch):
     pieces_before = len(window.services.projects.current_project.pieces)
     monkeypatch.setattr(
         "studio.main_window.PieceDialog",
-        lambda *a, **k: _FakeDialog((existing_id, 300, 150, "Demo")),
+        lambda *a, **k: _FakeDialog((existing_id, 300, 150, "Demo", 19.0)),
     )
 
     window._add_piece()
@@ -122,10 +139,30 @@ def test_add_piece_rejects_a_duplicate_id(window, monkeypatch):
     assert len(window.services.projects.current_project.pieces) == pieces_before
 
 
+def test_add_piece_with_a_quantity_creates_several_pieces_all_placed(
+    window, monkeypatch
+):
+    active_board_id = window.workspace.active_board_id
+    monkeypatch.setattr(
+        "studio.main_window.PieceDialog",
+        lambda *a, **k: _FakeDialog(("p-new", 300, 150, "Demo", 19.0), quantity=3),
+    )
+
+    window._add_piece()
+
+    project = window.services.projects.current_project
+    ids = {piece.piece_id for piece in project.pieces}
+    assert {"p-new", "p-new-2", "p-new-3"} <= ids
+    for piece_id in ("p-new", "p-new-2", "p-new-3"):
+        placement = project.placement_by_piece_id(piece_id)
+        assert placement is not None
+        assert placement.board_id == active_board_id
+
+
 def test_edit_piece_requires_a_selection(window, monkeypatch):
     monkeypatch.setattr(
         "studio.main_window.PieceDialog",
-        lambda *a, **k: _FakeDialog(("P-001", 999, 999, "Demo")),
+        lambda *a, **k: _FakeDialog(("P-001", 999, 999, "Demo", 19.0)),
     )
 
     window._edit_piece()
@@ -139,7 +176,7 @@ def test_edit_piece_replaces_the_selected_pieces_dimensions(window, monkeypatch)
     window.workspace.selection.select_many(["P-001"])
     monkeypatch.setattr(
         "studio.main_window.PieceDialog",
-        lambda *a, **k: _FakeDialog(("P-001", 800, 400, "Demo")),
+        lambda *a, **k: _FakeDialog(("P-001", 800, 400, "Demo", 19.0)),
     )
 
     window._edit_piece()

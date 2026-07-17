@@ -66,3 +66,20 @@ def test_project_from_dict_leaves_board_id_none_without_any_boards():
     project = project_from_dict(legacy_data)
 
     assert project.placements[0].board_id is None
+
+
+def test_project_from_dict_defaults_missing_thickness_to_19mm():
+    # Legacy .bcstudio.json files predate the thickness_mm field and have no
+    # "thickness_mm" key on boards/pieces at all.
+    legacy_data = {
+        "project_id": "proj-1",
+        "name": "Demo",
+        "boards": [{"board_id": "A", "length_mm": 2000, "width_mm": 300}],
+        "pieces": [{"piece_id": "p1", "length_mm": 500, "width_mm": 200}],
+        "placements": [],
+    }
+
+    project = project_from_dict(legacy_data)
+
+    assert project.boards[0].thickness_mm == 19.0
+    assert project.pieces[0].thickness_mm == 19.0

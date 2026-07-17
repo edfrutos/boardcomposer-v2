@@ -81,6 +81,21 @@ def test_to_core_project_falls_back_to_first_board_without_active_board():
     assert core_project.constraints.max_length_mm == 2000
 
 
+def test_to_core_project_uses_each_pieces_own_thickness():
+    services = StudioServices()
+    project = StudioProject(
+        project_id="proj-3",
+        name="Demo",
+        boards=[StudioBoard("A", 2000, 300)],
+        pieces=[StudioPiece("p1", 700, 300, thickness_mm=25.0)],
+    )
+    services.projects.new_project(project)
+
+    core_project = services.layout.to_core_project()
+
+    assert core_project.boards[0].thickness_mm == 25.0
+
+
 def test_apply_last_solution_assigns_placements_to_active_board():
     services = StudioServices()
     services.projects.new_project(_project_with_two_boards())
