@@ -262,3 +262,51 @@ def test_move_piece_to_board_with_a_single_board_shows_a_message(window, monkeyp
     placement = window.services.projects.current_project.placement_by_piece_id("P-001")
     assert placement.board_id == "TAB-001"
     assert "otro tablero" in window.statusBar().currentMessage()
+
+
+class _FakeKerfDialog:
+    def __init__(self, kerf_mm, accepted=True):
+        self._kerf_mm = kerf_mm
+        self._accepted = accepted
+
+    def exec(self):
+        return (
+            QDialog.DialogCode.Accepted
+            if self._accepted
+            else QDialog.DialogCode.Rejected
+        )
+
+    def kerf_mm(self):
+        return self._kerf_mm
+
+
+def test_configure_kerf_updates_the_project(window, monkeypatch):
+    monkeypatch.setattr(
+        "studio.main_window.KerfDialog", lambda *a, **k: _FakeKerfDialog(3.5)
+    )
+
+    window._configure_kerf()
+
+    assert window.services.projects.current_project.kerf_mm == 3.5
+
+
+def test_configure_kerf_is_undoable(window, monkeypatch):
+    monkeypatch.setattr(
+        "studio.main_window.KerfDialog", lambda *a, **k: _FakeKerfDialog(3.5)
+    )
+    window._configure_kerf()
+
+    window.services.commands.undo()
+
+    assert window.services.projects.current_project.kerf_mm == 0.0
+
+
+def test_configure_kerf_does_nothing_when_cancelled(window, monkeypatch):
+    monkeypatch.setattr(
+        "studio.main_window.KerfDialog",
+        lambda *a, **k: _FakeKerfDialog(3.5, accepted=False),
+    )
+
+    window._configure_kerf()
+
+    assert window.services.projects.current_project.kerf_mm == 0.0

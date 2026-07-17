@@ -124,7 +124,10 @@ class BoardWorkspace(QGraphicsView):
         if self._validator is None:
             return new_pos
 
-        return self._validator.constrain_position(item, new_pos)
+        project = self.services.projects.current_project
+        gap_mm = project.kerf_mm if project is not None else 0.0
+
+        return self._validator.constrain_position(item, new_pos, gap_mm)
 
     def select_piece(self, piece_id: str) -> None:
         self.selection.select(piece_id)

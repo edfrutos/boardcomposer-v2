@@ -10,6 +10,7 @@ from studio.commands.edit_piece_command import EditPieceCommand
 from studio.commands.move_piece_command import MovePieceCommand
 from studio.commands.move_to_board_command import MoveToBoardCommand
 from studio.commands.rotate_piece_command import RotatePieceCommand
+from studio.commands.set_kerf_command import SetKerfCommand
 
 __all__ = [
     "AddBoardCommand",
@@ -22,4 +23,5 @@ __all__ = [
     "MovePieceCommand",
     "MoveToBoardCommand",
     "RotatePieceCommand",
+    "SetKerfCommand",
 ]

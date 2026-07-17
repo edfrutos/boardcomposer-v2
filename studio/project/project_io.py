@@ -41,6 +41,7 @@ def project_to_dict(project: StudioProject) -> dict:
             }
             for placement in project.placements
         ],
+        "kerf_mm": project.kerf_mm,
     }
 
 
@@ -59,6 +60,7 @@ def project_from_dict(data: dict) -> StudioProject:
         boards=boards,
         pieces=[StudioPiece(**piece) for piece in data.get("pieces", [])],
         placements=placements,
+        kerf_mm=data.get("kerf_mm", 0.0),
     )
 
 

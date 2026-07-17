@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QApplication
 
-from studio.dialogs import BoardDialog, MoveToBoardDialog, PieceDialog
+from studio.dialogs import BoardDialog, KerfDialog, MoveToBoardDialog, PieceDialog
 
 
 def _app():
@@ -188,3 +188,25 @@ def test_move_to_board_dialog_returns_the_selected_board():
     dialog.board_combo.setCurrentText("B")
 
     assert dialog.selected_board_id() == "B"
+
+
+def test_kerf_dialog_defaults_to_zero():
+    _app()
+    dialog = KerfDialog()
+
+    assert dialog.kerf_mm() == 0.0
+
+
+def test_kerf_dialog_shows_the_current_kerf():
+    _app()
+    dialog = KerfDialog(kerf_mm=3.2)
+
+    assert dialog.kerf_mm() == 3.2
+
+
+def test_kerf_dialog_returns_the_new_value():
+    _app()
+    dialog = KerfDialog()
+    dialog.kerf_spin.setValue(4.5)
+
+    assert dialog.kerf_mm() == 4.5

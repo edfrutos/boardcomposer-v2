@@ -15,6 +15,9 @@
 - Campo Material en `BoardDialog`/`PieceDialog` (ya existía en `StudioBoard`/`StudioPiece`, no se pedía en el formulario).
 - Mover una pieza existente a otro tablero (menú "Proyecto" → "Mover a tablero…"): `MoveToBoardDialog` + `MoveToBoardCommand` (deshacible), reasigna `placement.board_id`. Hasta ahora la única forma de meter una pieza en el segundo tablero era crear una pieza nueva con ese tablero activo.
 - Grosor y cantidad en `BoardDialog`/`PieceDialog` (`DT-0014`): campo "Grosor" (`thickness_mm`, nuevo en `StudioBoard`/`StudioPiece`, persistido con migración retrocompatible) y campo "Cantidad" (solo al añadir) que crea N tableros/piezas idénticos de una vez con ids derivados (`p1`, `p1-2`, `p1-3`…). `LayoutService.to_core_project()` usa ahora el grosor real de cada pieza en vez de un `19` fijo.
+- Atajos de teclado para las acciones más usadas del menú "Proyecto"/"Herramientas"/"Comparar": Añadir/Editar tablero (`Ctrl+Alt+B`/`Ctrl+Alt+Shift+B`), Añadir/Editar pieza (`Ctrl+Alt+P`/`Ctrl+Alt+Shift+P`), Calcular/Aplicar layout (`Ctrl+Alt+L`/`Ctrl+Alt+Shift+L`), Generar comparación (`Ctrl+Alt+C`).
+- Ancho de sierra configurable (menú "Proyecto" → "Ancho de sierra…"): `kerf_mm` nuevo en `StudioProject` (persistido, por defecto `0.0`), `KerfDialog` + `SetKerfCommand` (deshacible) para fijarlo. Representa el desperdicio de madera que se lleva cada corte.
+- Efecto imán al arrastrar piezas en el workspace: si el borde de la pieza arrastrada queda a menos de 20 mm del borde de otra ya colocada (con solape en el eje perpendicular), `PlacementValidator` la sitúa justo al lado, separada por el ancho de sierra configurado, en vez de dejarla montarse encima o quedar colocada a ojo.
 
 ### Corregido
 

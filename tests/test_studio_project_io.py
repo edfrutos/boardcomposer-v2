@@ -83,3 +83,27 @@ def test_project_from_dict_defaults_missing_thickness_to_19mm():
 
     assert project.boards[0].thickness_mm == 19.0
     assert project.pieces[0].thickness_mm == 19.0
+
+
+def test_project_to_dict_and_back_round_trips_a_custom_kerf():
+    project = _sample_project()
+    project.kerf_mm = 3.5
+
+    restored = project_from_dict(project_to_dict(project))
+
+    assert restored.kerf_mm == 3.5
+
+
+def test_project_from_dict_defaults_missing_kerf_to_zero():
+    # Legacy .bcstudio.json files predate the kerf_mm field.
+    legacy_data = {
+        "project_id": "proj-1",
+        "name": "Demo",
+        "boards": [],
+        "pieces": [],
+        "placements": [],
+    }
+
+    project = project_from_dict(legacy_data)
+
+    assert project.kerf_mm == 0.0

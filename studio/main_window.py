@@ -22,7 +22,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from studio.dialogs import BoardDialog, MoveToBoardDialog, PieceDialog
+from studio.dialogs import BoardDialog, KerfDialog, MoveToBoardDialog, PieceDialog
 from studio.models import (
     StudioBoard,
     StudioPiece,
@@ -49,6 +49,7 @@ from studio.commands import (
     EditPieceCommand,
     MoveToBoardCommand,
     RotatePieceCommand,
+    SetKerfCommand,
 )
 
 RESERVED_PANEL_NAMES = {"Explorer", "Inspector", "Timeline", "Comparador", "Asistente"}
@@ -131,17 +132,21 @@ class MainWindow(QMainWindow):
         self._actions["rotate_piece"].triggered.connect(self._rotate_selected_piece)
 
         self._actions["add_board"] = QAction("Añadir tablero…", self)
+        self._actions["add_board"].setShortcut("Ctrl+Alt+B")
         menus["Proyecto"].addAction(self._actions["add_board"])
         self._actions["add_board"].triggered.connect(self._add_board)
         self._actions["edit_board"] = QAction("Editar tablero…", self)
+        self._actions["edit_board"].setShortcut("Ctrl+Alt+Shift+B")
         menus["Proyecto"].addAction(self._actions["edit_board"])
         self._actions["edit_board"].triggered.connect(self._edit_board)
 
         menus["Proyecto"].addSeparator()
         self._actions["add_piece"] = QAction("Añadir pieza…", self)
+        self._actions["add_piece"].setShortcut("Ctrl+Alt+P")
         menus["Proyecto"].addAction(self._actions["add_piece"])
         self._actions["add_piece"].triggered.connect(self._add_piece)
         self._actions["edit_piece"] = QAction("Editar pieza…", self)
+        self._actions["edit_piece"].setShortcut("Ctrl+Alt+Shift+P")
         menus["Proyecto"].addAction(self._actions["edit_piece"])
         self._actions["edit_piece"].triggered.connect(self._edit_piece)
         self._actions["move_piece_to_board"] = QAction("Mover a tablero…", self)
@@ -150,15 +155,23 @@ class MainWindow(QMainWindow):
             self._move_piece_to_board
         )
 
+        menus["Proyecto"].addSeparator()
+        self._actions["configure_kerf"] = QAction("Ancho de sierra…", self)
+        menus["Proyecto"].addAction(self._actions["configure_kerf"])
+        self._actions["configure_kerf"].triggered.connect(self._configure_kerf)
+
         self._actions["solve_layout"] = QAction("Calcular layout", self)
+        self._actions["solve_layout"].setShortcut("Ctrl+Alt+L")
         menus["Herramientas"].addAction(self._actions["solve_layout"])
         self._actions["solve_layout"].triggered.connect(self._solve_layout)
 
         self._actions["apply_layout"] = QAction("Aplicar layout calculado", self)
+        self._actions["apply_layout"].setShortcut("Ctrl+Alt+Shift+L")
         menus["Herramientas"].addAction(self._actions["apply_layout"])
         self._actions["apply_layout"].triggered.connect(self._apply_layout)
 
         self._actions["compare_solutions"] = QAction("Generar comparación", self)
+        self._actions["compare_solutions"].setShortcut("Ctrl+Alt+C")
         menus["Comparar"].addAction(self._actions["compare_solutions"])
         self._actions["compare_solutions"].triggered.connect(self._compare_solutions)
 
@@ -828,6 +841,25 @@ class MainWindow(QMainWindow):
         self._update_undo_redo()
         self.statusBar().showMessage(
             f"Pieza '{piece_id}' movida al tablero '{new_board_id}'.", 3000
+        )
+
+    def _configure_kerf(self):
+        project = self.services.projects.current_project
+        if project is None:
+            return
+
+        dialog = KerfDialog(self, kerf_mm=project.kerf_mm)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        new_kerf_mm = dialog.kerf_mm()
+        command = SetKerfCommand(self.services, project.kerf_mm, new_kerf_mm)
+        self.services.commands.execute(command)
+        self.services.projects.mark_modified()
+
+        self._update_undo_redo()
+        self.statusBar().showMessage(
+            f"Ancho de sierra fijado a {new_kerf_mm:g} mm.", 3000
         )
 
     def _solve_layout(self):
