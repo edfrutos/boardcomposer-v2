@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 17/07/2026
+**Última revisión:** 18/07/2026
 
 ---
 
@@ -84,6 +84,7 @@ Observaciones:
 | IDE-0013 | Guía para desarrolladores de plugins | 🟢 | P2 |
 | IDE-0014 | Receta de despliegue Cloud | 🟢 | P2 |
 | IDE-0015 | Visibilidad de plugins instalados | 🟢 | P2 |
+| IDE-0016 | Tema visual, iconos y toolbar de Studio | 🟢 | P2 |
 
 ---
 
@@ -199,6 +200,19 @@ Alcance dividido en fases, cada una construida sobre la anterior:
 - Verificado con el binario/servidor reales, no solo tests: `boardcomposer plugins` y `boardcomposer plugins --json` contra el entorno instalado; `GET /plugins` y `GET /health` contra `python -m boardcomposer.api` arrancado de verdad (`200` en ambos).
 
 **Fuera de alcance:** marketplace público real (requiere decisión de producto previa, sin cambios). Paneles de Studio (grupo `boardcomposer.studio_panels`) no incluidos en esta visibilidad CLI/API.
+
+---
+
+## IDE-0016 — Tema visual, iconos y toolbar de Studio
+
+**Estado:** 🟢 Completado (PR #37). Cierra un gap de UX de `DOC-007-UX-Studio.md`: Studio no tenía identidad visual propia (estilo por defecto de Qt, sin iconos, sin toolbar) ni ningún atajo visual para las acciones más usadas.
+
+- Tema claro/oscuro (`studio/theme.py`): paleta (`Palette`, `LIGHT`/`DARK`) aplicada como hoja de estilos Qt (`build_stylesheet()`/`apply_theme()`); detección automática del modo del sistema vía `QStyleHints.colorScheme()` (`detect_color_scheme()`), y menú "Ver" → "Tema" (`Automático`/`Claro`/`Oscuro`) para forzarlo manualmente.
+- Acento complementario ámbar (`accent2`/`accent2_hover`, complementario del azul original en el círculo cromático): degradado de 3 paradas azul→turquesa→ámbar en la toolbar y los botones primarios, y franja de color distintiva en el título de los docks "Asistente"/"Comparador" (el resto de paneles se queda en la franja azul) — feedback directo tras revisar la primera versión, percibida como plana y con poco color.
+- Sombra de elevación (`apply_elevation()`, `QGraphicsDropShadowEffect`) en la toolbar y en cada panel acoplado, para dar sensación de profundidad frente al borde de 1px plano anterior. Limitación conocida: Qt recorta la mayor parte de la sombra mientras el panel permanece acoplado — se aprecia sobre todo en la toolbar y de forma completa si un panel se "flota" como ventana propia.
+- Set de iconos de línea (`studio/icons.py`): trazado SVG por acción, renderizado en tiempo de ejecución a `QPixmap` vía `QSvgRenderer` (sin pipeline de assets binarios), coloreado según el tema activo; aplicado a las acciones del menú y a una nueva toolbar principal (`_build_toolbar()`, `studio/main_window.py`) con las acciones más usadas agrupadas por bloques.
+- Entrada del Asistente (`studio/prompt_input.py`, `PromptTextEdit`): sustituye al `QLineEdit` de una sola línea por una caja multilínea con altura mínima cómoda; Intro envía la pregunta, Mayús+Intro inserta un salto de línea; pegar o arrastrar un archivo (o elegirlo con un botón de clip vía `QFileDialog`) lo adjunta en vez de volcar su ruta como texto — se incluye como contenido en la pregunta si es un archivo de texto legible (`.txt`/`.md`/`.json`/`.csv`/`.py`/`.log`), o solo referenciado por nombre si no lo es (el `AIProvider` es solo texto, sin soporte multimodal). `chat_panel.py` renderiza los saltos de línea como `<br>` para que las preguntas multilínea y los adjuntos se lean bien en el historial.
+- Verificado con la app real (no solo tests): capturas de la toolbar, la franja de color de los docks y la nueva entrada del Asistente con los botones de adjuntar/enviar.
 
 ---
 

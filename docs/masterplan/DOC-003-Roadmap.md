@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 17/07/2026
+**Última revisión:** 18/07/2026
 
 ---
 
@@ -54,6 +54,7 @@ Entregables principales:
 - Gestión de proyectos. 🟢 (IDE-0004)
 - Exportación visual. 🟢 (SVG/PDF, IDE-0005)
 - Alta/edición de tableros y piezas, y soporte multi-tablero. 🟢 (`DT-0013`, `docs/masterplan/DOC-006-DeudaTecnica.md`)
+- Tema visual, iconos y toolbar. 🟢 (`IDE-0016`)
 
 ---
 
