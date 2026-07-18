@@ -1,21 +1,26 @@
 """Main window for BoardComposer Studio."""
 
 import dataclasses
+import pathlib
 import uuid
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QCloseEvent
+from PySide6.QtGui import QAction, QActionGroup, QCloseEvent
 
 from PySide6.QtWidgets import (
+    QApplication,
     QDialog,
     QDockWidget,
     QFileDialog,
-    QLineEdit,
+    QHBoxLayout,
+    QLabel,
     QMainWindow,
     QMenuBar,
     QMessageBox,
     QStatusBar,
     QTextEdit,
+    QToolBar,
+    QToolButton,
     QTreeWidget,
     QTreeWidgetItem,
     QVBoxLayout,
@@ -23,6 +28,9 @@ from PySide6.QtWidgets import (
 )
 
 from studio.dialogs import BoardDialog, KerfDialog, MoveToBoardDialog, PieceDialog
+from studio.icons import build_icons
+from studio.prompt_input import PromptTextEdit
+from studio.theme import ICON_COLOR, apply_elevation, apply_theme
 from studio.models import (
     StudioBoard,
     StudioPiece,
@@ -56,6 +64,28 @@ RESERVED_PANEL_NAMES = {"Explorer", "Inspector", "Timeline", "Comparador", "Asis
 
 PROJECT_FILE_FILTER = "BoardComposer Studio (*.bcstudio.json)"
 
+# Extensions read as plain text when attached to an assistant question — the
+# AI provider is text-only (studio/assistant_service.py), so anything else
+# (images, PDFs, binaries) is referenced by name only, not by content.
+ASSISTANT_ATTACHMENT_TEXT_SUFFIXES = {".txt", ".md", ".json", ".csv", ".py", ".log"}
+ASSISTANT_ATTACHMENT_MAX_CHARS = 4000
+
+
+def _read_attachment_text(path: pathlib.Path) -> str | None:
+    """Returns `path`'s content for inlining into an assistant question, or
+    None if it isn't a text extension we know how to read."""
+    if path.suffix.lower() not in ASSISTANT_ATTACHMENT_TEXT_SUFFIXES:
+        return None
+
+    try:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return None
+
+    if len(text) > ASSISTANT_ATTACHMENT_MAX_CHARS:
+        text = text[:ASSISTANT_ATTACHMENT_MAX_CHARS] + "\n[...truncado...]"
+    return text
+
 
 def _generate_ids(
     base_id: str, quantity: int, existing_ids: frozenset[str]
@@ -84,6 +114,7 @@ class MainWindow(QMainWindow):
         self.resize(1400, 900)
 
         self._build_menu()
+        self._build_toolbar()
         self._build_workspace()
         self._build_panels()
         self._build_statusbar()
@@ -197,6 +228,8 @@ class MainWindow(QMainWindow):
         self._actions["undo"].triggered.connect(self._undo)
         self._actions["redo"].triggered.connect(self._redo)
 
+        self._apply_action_icons()
+
         menus["Archivo"].addAction(self._actions["new_project"])
         menus["Archivo"].addSeparator()
         menus["Archivo"].addAction(self._actions["open"])
@@ -211,6 +244,81 @@ class MainWindow(QMainWindow):
 
         self._menus = menus
 
+        self._build_theme_menu(menus["Ver"])
+
+    def _build_theme_menu(self, ver_menu):
+        theme_menu = ver_menu.addMenu("Tema")
+        theme_group = QActionGroup(self)
+        theme_group.setExclusive(True)
+
+        self._theme_actions = {}
+        for key, label in (
+            ("auto", "Automático (sistema)"),
+            ("light", "Claro"),
+            ("dark", "Oscuro"),
+        ):
+            action = QAction(label, self)
+            action.setCheckable(True)
+            theme_menu.addAction(action)
+            theme_group.addAction(action)
+            action.triggered.connect(lambda checked=False, k=key: self._set_theme(k))
+            self._theme_actions[key] = action
+
+        self._theme_actions["auto"].setChecked(True)
+
+    def _set_theme(self, key: str):
+        scheme = None if key == "auto" else key
+        apply_theme(QApplication.instance(), scheme)
+
+    def _apply_action_icons(self):
+        icons = build_icons(ICON_COLOR)
+
+        action_icons = {
+            "new_project": "new_project",
+            "open": "open",
+            "save": "save",
+            "undo": "undo",
+            "redo": "redo",
+            "rotate_piece": "rotate",
+            "delete_piece": "delete",
+            "add_board": "add_board",
+            "edit_board": "edit_board",
+            "add_piece": "add_piece",
+            "edit_piece": "edit_piece",
+            "move_piece_to_board": "move_to_board",
+            "configure_kerf": "kerf",
+            "solve_layout": "solve",
+            "apply_layout": "apply",
+            "compare_solutions": "compare",
+            "export_svg": "export_svg",
+            "export_pdf": "export_pdf",
+        }
+
+        for action_name, icon_name in action_icons.items():
+            self._actions[action_name].setIcon(icons[icon_name])
+
+    def _build_toolbar(self):
+        toolbar = QToolBar("Herramientas principales", self)
+        toolbar.setMovable(False)
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
+        self.addToolBar(toolbar)
+        apply_elevation(toolbar, blur_radius=20, y_offset=4, alpha=70)
+
+        for action_name in ("new_project", "open", "save"):
+            toolbar.addAction(self._actions[action_name])
+        toolbar.addSeparator()
+        for action_name in ("undo", "redo"):
+            toolbar.addAction(self._actions[action_name])
+        toolbar.addSeparator()
+        for action_name in ("add_board", "add_piece", "move_piece_to_board"):
+            toolbar.addAction(self._actions[action_name])
+        toolbar.addSeparator()
+        for action_name in ("solve_layout", "apply_layout", "compare_solutions"):
+            toolbar.addAction(self._actions[action_name])
+        toolbar.addSeparator()
+        for action_name in ("rotate_piece", "delete_piece"):
+            toolbar.addAction(self._actions[action_name])
+
     def _build_workspace(self):
         self.workspace = BoardWorkspace(self.services)
         self.setCentralWidget(self.workspace)
@@ -221,39 +329,47 @@ class MainWindow(QMainWindow):
         self.explorer.itemSelectionChanged.connect(self._on_explorer_selection_changed)
 
         explorer_dock = QDockWidget("Explorer", self)
+        explorer_dock.setObjectName("Explorer")
         explorer_dock.setWidget(self.explorer)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, explorer_dock)
         self._menus["Ver"].addAction(explorer_dock.toggleViewAction())
+        apply_elevation(explorer_dock)
 
         self.inspector = QTextEdit()
         self.inspector.setReadOnly(True)
         self.inspector.setHtml(render_empty())
 
         inspector_dock = QDockWidget("Inspector", self)
+        inspector_dock.setObjectName("Inspector")
         inspector_dock.setWidget(self.inspector)
         self.addDockWidget(
             Qt.DockWidgetArea.RightDockWidgetArea,
             inspector_dock,
         )
         self._menus["Ver"].addAction(inspector_dock.toggleViewAction())
+        apply_elevation(inspector_dock)
+        self._inspector_dock = inspector_dock
 
         console = QTextEdit()
         console.setReadOnly(True)
         console.setText("Timeline / Consola / Eventos")
 
         console_dock = QDockWidget("Timeline", self)
+        console_dock.setObjectName("Timeline")
         console_dock.setWidget(console)
         self.addDockWidget(
             Qt.DockWidgetArea.BottomDockWidgetArea,
             console_dock,
         )
         self._menus["Ver"].addAction(console_dock.toggleViewAction())
+        apply_elevation(console_dock)
 
         self.comparator = QTextEdit()
         self.comparator.setReadOnly(True)
         self.comparator.setHtml(render_comparison([]))
 
         comparator_dock = QDockWidget("Comparador", self)
+        comparator_dock.setObjectName("Comparador")
         comparator_dock.setWidget(self.comparator)
         self.addDockWidget(
             Qt.DockWidgetArea.BottomDockWidgetArea,
@@ -261,31 +377,85 @@ class MainWindow(QMainWindow):
         )
         self.tabifyDockWidget(console_dock, comparator_dock)
         self._menus["Ver"].addAction(comparator_dock.toggleViewAction())
+        apply_elevation(comparator_dock)
 
+        self._build_assistant_panel()
+        self._build_plugin_panels()
+
+    def _build_assistant_panel(self):
         self.assistant_history = QTextEdit()
         self.assistant_history.setReadOnly(True)
         self.assistant_history.setHtml(render_chat([]))
 
-        self.assistant_input = QLineEdit()
-        self.assistant_input.setPlaceholderText("Pregunta al asistente…")
-        self.assistant_input.returnPressed.connect(self._ask_assistant)
+        self._assistant_attachment_path: str | None = None
+
+        self.assistant_attachment_chip = QLabel()
+        self.assistant_attachment_chip.setObjectName("assistantAttachmentChip")
+        self.assistant_attachment_chip.setVisible(False)
+
+        self.assistant_attachment_clear = QToolButton()
+        self.assistant_attachment_clear.setText("✕")
+        self.assistant_attachment_clear.setAutoRaise(True)
+        self.assistant_attachment_clear.setVisible(False)
+        self.assistant_attachment_clear.setToolTip("Quitar archivo adjunto")
+        self.assistant_attachment_clear.clicked.connect(
+            self._clear_assistant_attachment
+        )
+
+        attachment_row = QWidget()
+        attachment_row_layout = QHBoxLayout(attachment_row)
+        attachment_row_layout.setContentsMargins(0, 0, 0, 0)
+        attachment_row_layout.addWidget(self.assistant_attachment_chip)
+        attachment_row_layout.addStretch()
+        attachment_row_layout.addWidget(self.assistant_attachment_clear)
+
+        self.assistant_input = PromptTextEdit()
+        self.assistant_input.setObjectName("assistantInput")
+        self.assistant_input.setPlaceholderText(
+            "Pregunta al asistente… (Intro para enviar, Mayús+Intro para nueva línea)"
+        )
+        self.assistant_input.submitted.connect(self._ask_assistant)
+        self.assistant_input.files_attached.connect(self._attach_assistant_files)
+
+        icons = build_icons(ICON_COLOR)
+
+        self.assistant_attach_button = QToolButton()
+        self.assistant_attach_button.setObjectName("assistantAttachButton")
+        self.assistant_attach_button.setIcon(icons["attach"])
+        self.assistant_attach_button.setToolTip("Adjuntar archivo…")
+        self.assistant_attach_button.clicked.connect(self._choose_assistant_attachment)
+
+        self.assistant_send_button = QToolButton()
+        self.assistant_send_button.setObjectName("assistantSendButton")
+        self.assistant_send_button.setIcon(icons["send"])
+        self.assistant_send_button.setToolTip("Enviar")
+        self.assistant_send_button.clicked.connect(self._ask_assistant)
+
+        input_buttons = QVBoxLayout()
+        input_buttons.addWidget(self.assistant_attach_button)
+        input_buttons.addWidget(self.assistant_send_button)
+
+        input_row = QHBoxLayout()
+        input_row.addWidget(self.assistant_input, 1)
+        input_row.addLayout(input_buttons)
 
         assistant_widget = QWidget()
         assistant_layout = QVBoxLayout(assistant_widget)
         assistant_layout.setContentsMargins(0, 0, 0, 0)
-        assistant_layout.addWidget(self.assistant_history)
-        assistant_layout.addWidget(self.assistant_input)
+        assistant_layout.addWidget(self.assistant_history, 1)
+        assistant_layout.addWidget(attachment_row)
+        assistant_layout.addLayout(input_row)
 
         assistant_dock = QDockWidget("Asistente", self)
+        assistant_dock.setObjectName("Asistente")
         assistant_dock.setWidget(assistant_widget)
         self.addDockWidget(
             Qt.DockWidgetArea.RightDockWidgetArea,
             assistant_dock,
         )
-        self.tabifyDockWidget(inspector_dock, assistant_dock)
+        self.tabifyDockWidget(self._inspector_dock, assistant_dock)
         self._menus["Ver"].addAction(assistant_dock.toggleViewAction())
-
-        self._build_plugin_panels()
+        apply_elevation(assistant_dock)
 
     def _build_plugin_panels(self):
         """Añade un QDockWidget por cada panel registrado por un plugin
@@ -967,13 +1137,49 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage(f"Solución {index + 1} aplicada", 3000)
 
     def _ask_assistant(self):
-        question = self.assistant_input.text()
-        if not question.strip():
+        question = self.assistant_input.toPlainText().strip()
+        if not question:
             return
+
+        if self._assistant_attachment_path:
+            question = self._question_with_assistant_attachment(question)
 
         self.services.assistant.ask(question)
         self.assistant_history.setHtml(render_chat(self.services.assistant.history))
         self.assistant_input.clear()
+        self._clear_assistant_attachment()
+
+    def _question_with_assistant_attachment(self, question: str) -> str:
+        path = pathlib.Path(self._assistant_attachment_path)
+        content = _read_attachment_text(path)
+        if content is None:
+            return (
+                f"{question}\n\n[Archivo adjunto: {path.name} — contenido no "
+                "legible como texto]"
+            )
+        return f"{question}\n\n[Archivo adjunto: {path.name}]\n{content}"
+
+    def _choose_assistant_attachment(self):
+        path, _ = QFileDialog.getOpenFileName(self, "Adjuntar archivo")
+        if path:
+            self._attach_assistant_files([path])
+
+    def _attach_assistant_files(self, paths: list[str]):
+        if not paths:
+            return
+        self._set_assistant_attachment(paths[0])
+
+    def _set_assistant_attachment(self, path: str):
+        self._assistant_attachment_path = path
+        self.assistant_attachment_chip.setText(f"📎 {pathlib.Path(path).name}")
+        self.assistant_attachment_chip.setVisible(True)
+        self.assistant_attachment_clear.setVisible(True)
+
+    def _clear_assistant_attachment(self):
+        self._assistant_attachment_path = None
+        self.assistant_attachment_chip.clear()
+        self.assistant_attachment_chip.setVisible(False)
+        self.assistant_attachment_clear.setVisible(False)
 
     def _export_svg(self):
         project = self.services.projects.current_project

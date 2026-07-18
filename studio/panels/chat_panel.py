@@ -25,4 +25,8 @@ def render_chat(history: list[tuple[str, str]]) -> str:
 
 
 def _escape(text: str) -> str:
-    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    escaped = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    # The multi-line prompt input (Shift+Enter) and attached-file content can
+    # carry newlines; HTML collapses them, so turn them into <br> to keep
+    # multi-line questions and attachments readable in the chat history.
+    return escaped.replace("\n", "<br>")

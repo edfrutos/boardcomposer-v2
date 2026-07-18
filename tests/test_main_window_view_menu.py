@@ -37,3 +37,35 @@ def test_ver_menu_action_reopens_a_closed_built_in_dock(window):
     toggle.trigger()
 
     assert dock.isVisible() is True
+
+
+def test_theme_menu_defaults_to_automatico_checked(window):
+    assert window._theme_actions["auto"].isChecked() is True
+    assert window._theme_actions["light"].isChecked() is False
+    assert window._theme_actions["dark"].isChecked() is False
+
+
+def test_selecting_oscuro_applies_the_dark_stylesheet(window):
+    from studio.theme import DARK
+
+    window._theme_actions["dark"].trigger()
+
+    assert DARK.bg in QApplication.instance().styleSheet()
+    assert window._theme_actions["dark"].isChecked() is True
+
+
+def test_selecting_claro_applies_the_light_stylesheet(window):
+    from studio.theme import LIGHT
+
+    window._theme_actions["dark"].trigger()
+    window._theme_actions["light"].trigger()
+
+    assert LIGHT.bg in QApplication.instance().styleSheet()
+    assert window._theme_actions["light"].isChecked() is True
+
+
+def test_theme_actions_are_mutually_exclusive(window):
+    window._theme_actions["dark"].trigger()
+
+    assert window._theme_actions["dark"].isChecked() is True
+    assert window._theme_actions["auto"].isChecked() is False
