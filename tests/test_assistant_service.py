@@ -1,4 +1,4 @@
-from boardcomposer.ai import MockAIProvider
+from boardcomposer.ai import AIProvider, MockAIProvider
 from studio.assistant_service import AssistantService
 from studio.models import StudioBoard, StudioPiece, StudioProject
 from studio.services import StudioServices
@@ -73,3 +73,18 @@ def test_studio_services_wires_a_default_assistant():
     services = StudioServices()
 
     assert services.assistant.ask("hola") != ""
+
+
+class _FailingProvider(AIProvider):
+    def complete(self, prompt: str) -> str:
+        raise RuntimeError("invalid x-api-key")
+
+
+def test_ask_reports_a_provider_failure_instead_of_raising():
+    services = StudioServices()
+    assistant = AssistantService(services, provider=_FailingProvider())
+
+    answer = assistant.ask("¿cómo exporto a PDF?")
+
+    assert "invalid x-api-key" in answer
+    assert assistant.history == [("¿cómo exporto a PDF?", answer)]

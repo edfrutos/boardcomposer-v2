@@ -31,7 +31,14 @@ class AssistantService:
             context=self._project_context(),
             question=question,
         )
-        answer = self.provider.complete(prompt)
+        try:
+            answer = self.provider.complete(prompt)
+        except Exception as error:
+            # A real AIProvider (AnthropicProvider) is a network call — an
+            # invalid API key, rate limit, or connection failure shouldn't
+            # crash Studio or silently do nothing; show it in the chat like
+            # any other answer.
+            answer = f"No se pudo obtener respuesta del proveedor de IA: {error}"
         self.history.append((question, answer))
         return answer
 
