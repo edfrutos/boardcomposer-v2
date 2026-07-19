@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 18/07/2026
+**Última revisión:** 19/07/2026
 
 ---
 
@@ -85,6 +85,7 @@ Observaciones:
 | IDE-0014 | Receta de despliegue Cloud | 🟢 | P2 |
 | IDE-0015 | Visibilidad de plugins instalados | 🟢 | P2 |
 | IDE-0016 | Tema visual, iconos y toolbar de Studio | 🟢 | P2 |
+| IDE-0017 | Despliegue privado de la API en VPS propio | 🟢 | P2 |
 
 ---
 
@@ -213,6 +214,21 @@ Alcance dividido en fases, cada una construida sobre la anterior:
 - Set de iconos de línea (`studio/icons.py`): trazado SVG por acción, renderizado en tiempo de ejecución a `QPixmap` vía `QSvgRenderer` (sin pipeline de assets binarios), coloreado según el tema activo; aplicado a las acciones del menú y a una nueva toolbar principal (`_build_toolbar()`, `studio/main_window.py`) con las acciones más usadas agrupadas por bloques.
 - Entrada del Asistente (`studio/prompt_input.py`, `PromptTextEdit`): sustituye al `QLineEdit` de una sola línea por una caja multilínea con altura mínima cómoda; Intro envía la pregunta, Mayús+Intro inserta un salto de línea; pegar o arrastrar un archivo (o elegirlo con un botón de clip vía `QFileDialog`) lo adjunta en vez de volcar su ruta como texto — se incluye como contenido en la pregunta si es un archivo de texto legible (`.txt`/`.md`/`.json`/`.csv`/`.py`/`.log`), o solo referenciado por nombre si no lo es (el `AIProvider` es solo texto, sin soporte multimodal). `chat_panel.py` renderiza los saltos de línea como `<br>` para que las preguntas multilínea y los adjuntos se lean bien en el historial.
 - Verificado con la app real (no solo tests): capturas de la toolbar, la franja de color de los docks y la nueva entrada del Asistente con los botones de adjuntar/enviar.
+
+---
+
+## IDE-0017 — Despliegue privado de la API en VPS propio
+
+**Estado:** 🟢 Completado. Extiende `IDE-0014` con una tercera opción de despliegue (Opción C, `docs/deploy.md`) y, a diferencia de `IDE-0014`, verificada contra un despliegue real y en marcha — no solo documentación. Decisión `DEC-0014` (`docs/masterplan/DOC-005-Decisiones.md`).
+
+- **Opción C — VPS con Plesk (extensión Docker)** (`docs/deploy.md`): despliegue de la misma imagen de `IDE-0014` (sin cambios en el `Dockerfile` salvo añadir `Svg` a `studio/pysidedeploy.spec` para `IDE-0016`) en un VPS con panel Plesk, usando su extensión Docker en vez de Caddy manual (Opción B) — Plesk gestiona el dominio, el proxy inverso (directivas nginx adicionales) y el certificado TLS (Let's Encrypt) desde su propia interfaz.
+- Desplegado en real contra `bc.efjdefrutos.com` (Vultr + Ubuntu + Plesk): subdominio creado, imagen construida y contenedor arrancado por SSH (`docker build`/`docker run --env-file`, evitando comillas con las claves para no romper la línea de comandos), certificado Let's Encrypt emitido, proxy nginx conectado tras desactivar "Modo proxy" (evita el conflicto `duplicate location "/"` entre el `location /` que genera Plesk hacia Apache y el nuestro hacia el contenedor).
+- `ANTHROPIC_API_KEY` real configurada (sin restringir a `MockAIProvider`) — decisión explícita del propietario, con el límite de gasto mensual fijado en la propia consola de Anthropic (`DEC-0014`).
+- Protección por IP en vez de login (`DEC-0014`): directiva nginx `allow <IP>; deny all;` antes del `proxy_pass`, para un uso personal de un único usuario — corta en `403` antes de que la petición llegue a la API, incluso si `BOARDCOMPOSER_API_KEY` se filtrara. `BOARDCOMPOSER_API_KEY` se mantiene igualmente como defensa en profundidad.
+- Verificado en real, no solo local (a diferencia de `IDE-0014`, que solo probó Docker/local): `/health` sin clave (`200`) y `/strategies` con la clave correcta (`200`, lista de estrategias) desde la IP permitida; `403` de nginx al probar desde datos móviles (IP distinta, fuera del `allow`); Fail2Ban y el Web Application Firewall (mod_security) de Plesk descartados como causa de falsos positivos durante el diagnóstico — ambos estaban desactivados para este dominio.
+- `docs/deploy.md` actualizado con la Opción C completa (pasos, directiva nginx con IP allowlist, verificación, actualización tras un cambio de código) y una entrada de troubleshooting para el `403` de la allowlist (IP dinámica o no actualizada).
+
+**Fuera de alcance:** esto es una instancia **privada** de un único usuario, no la candidata "instancia demo pública" de `DOC-999-Ideas.md` (que por definición implica acceso abierto sin restricción de IP) — esa sigue sin acotar. Tampoco un SaaS real con cuentas de usuario (se decidió explícitamente no construir login/registro por email para este caso, `DEC-0014`).
 
 ---
 

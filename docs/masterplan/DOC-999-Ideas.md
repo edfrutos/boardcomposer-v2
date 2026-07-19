@@ -4,7 +4,7 @@
 
 **Código:** DOC-999
 **Estado:** En revisión
-**Última revisión:** 17/07/2026
+**Última revisión:** 19/07/2026
 
 ---
 
@@ -26,8 +26,8 @@ El sistema de plugins (`IDE-0008`) ya deja instalar generadores, estrategias, im
 
 `docs/masterplan/DOC-000-Manifiesto.md` menciona "Servicios Cloud" como una de las interfaces que el Core debería poder soportar — no describe un producto cloud concreto. Con `IDE-0009` (auth por clave, rate limiting, `gunicorn`) la API ya es desplegable; falta decidir qué significa "Cloud" aquí:
 
-- **Guía/receta de despliegue** (Dockerfile + instrucciones para Fly.io/Railway/Render o un VPS con Caddy): lo más acotado y programable ya mismo, no requiere ninguna decisión de producto adicional. **Promovida a `IDE-0014`** (`DEC-0012`, `docs/masterplan/DOC-004-Backlog.md`).
-- **Instancia demo pública**: la API (o Studio) desplegada en algún sitio con una clave de solo lectura, para que cualquiera la pruebe sin instalar nada. Acotado, pero implica mantener infraestructura corriendo y pagar por ella.
+- **Guía/receta de despliegue** (Dockerfile + instrucciones para Fly.io/Railway/Render o un VPS con Caddy): lo más acotado y programable ya mismo, no requiere ninguna decisión de producto adicional. **Promovida a `IDE-0014`** (`DEC-0012`, `docs/masterplan/DOC-004-Backlog.md`); ampliada con una tercera opción (VPS con Plesk) en **`IDE-0017`** (`DEC-0014`).
+- **Instancia demo pública**: la API (o Studio) desplegada en algún sitio con una clave de solo lectura, para que cualquiera la pruebe sin instalar nada. Acotado, pero implica mantener infraestructura corriendo y pagar por ella. Sigue sin acotar — no confundir con `IDE-0017`, que es una instancia **privada** de un único usuario (protegida por allowlist de IP, sin acceso abierto al público).
 - **SaaS real** (proyectos persistentes por usuario, gestión de cuentas, autenticación real más allá de una clave compartida): salto arquitectónico grande — base de datos, modelo de usuarios, facturación. No es una tarea, es una fase nueva del producto; requiere decisión de producto antes de diseñar nada técnico.
 
 ---

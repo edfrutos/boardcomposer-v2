@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 17/07/2026
+**Última revisión:** 19/07/2026
 
 ---
 
@@ -71,6 +71,7 @@ Documentos relacionados
 | DEC-0011 | De las candidatas de Marketplace/Comunidad en `DOC-999-Ideas.md`, se empieza por la guía para desarrolladores de plugins (`IDE-0013`), la más acotada y sin decisión de producto pendiente | ✅ Vigente |
 | DEC-0012 | De las candidatas de Cloud en `DOC-999-Ideas.md`, se empieza por la receta de despliegue — Dockerfile + guía (`IDE-0014`), la más acotada y sin decisión de producto pendiente | ✅ Vigente |
 | DEC-0013 | De las candidatas restantes de Marketplace/Comunidad en `DOC-999-Ideas.md`, se sigue con la visibilidad de plugins instalados — CLI + API (`IDE-0015`), la única sin decisión de producto ni coste de infraestructura pendiente | ✅ Vigente |
+| DEC-0014 | Para proteger la API de `IDE-0017` (despliegue privado de un único usuario), se descarta un sistema de login/registro con confirmación por email — implicaría la primera capa de persistencia de todo el proyecto (usuarios, tokens, envío de email transaccional) para un problema de un solo usuario. Se opta por un allowlist de IP en nginx (`allow`/`deny`) sobre `BOARDCOMPOSER_API_KEY` (`IDE-0009`) como defensa en profundidad | ✅ Vigente |
 
 ---
 

@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 18/07/2026
+**Última revisión:** 19/07/2026
 
 ---
 
@@ -68,6 +68,7 @@ Incluye:
 - Automatización. 🟢 (DEC-0009: cubierta por el mecanismo de plugins de `IDE-0008` — generadores, estrategias, importadores/exportadores instalables vía entry points; sin entrega nueva propia)
 - Integraciones. 🟢 (DEC-0010: cubierta por los importadores/exportadores registrables de `IDE-0008` Fase D; sin entrega nueva propia)
 - Servicios remotos. 🟢 (IDE-0009: autenticación por clave de API vía `BOARDCOMPOSER_API_KEY`, rate limiting con Flask-Limiter, `gunicorn` como servidor WSGI de producción; ver `docs/architecture.md`)
+- Despliegue Cloud. 🟢 (IDE-0014: Dockerfile + receta Fly.io/VPS+Caddy; IDE-0017: tercera opción VPS+Plesk, verificada con un despliegue privado real y en marcha — `docs/deploy.md`)
 
 ---
 
