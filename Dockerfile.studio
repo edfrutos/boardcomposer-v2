@@ -1,0 +1,64 @@
+# BoardComposer Studio, accesible por navegador vía escritorio remoto
+# (noVNC) — ver docs/deploy-studio-remote.md. Corre el mismo código PySide6
+# de studio/app.py, sin ningún puerto/reescritura web: una pantalla virtual
+# (Xvfb) le hace de display, x11vnc la captura, y noVNC/websockify la sirve
+# como página web. Complementa a Dockerfile (la API), no lo sustituye.
+FROM python:3.13-slim
+
+# Xvfb: pantalla X11 virtual (no hay GPU/monitor en un VPS). fluxbox: gestor
+# de ventanas mínimo para que la ventana de Studio tenga decoraciones.
+# x11vnc: servidor VNC sobre esa pantalla virtual. novnc/websockify: cliente
+# VNC como página web (HTML5 canvas sobre websockets), sin necesidad de un
+# cliente VNC nativo en quien se conecte. El resto son librerías de runtime
+# que PySide6/Qt necesita para pintar (renderizado por software, sin GPU).
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    xvfb \
+    fluxbox \
+    x11vnc \
+    novnc \
+    websockify \
+    libgl1 \
+    libegl1 \
+    libxkbcommon0 \
+    libxkbcommon-x11-0 \
+    libxcb-cursor0 \
+    libxcb-glx0 \
+    libxcb-icccm4 \
+    libxcb-image0 \
+    libxcb-keysyms1 \
+    libxcb-randr0 \
+    libxcb-render0 \
+    libxcb-render-util0 \
+    libxcb-shape0 \
+    libxcb-shm0 \
+    libxcb-sync1 \
+    libxcb-xfixes0 \
+    libxcb-xinerama0 \
+    libxcb-xkb1 \
+    fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DISPLAY=:1 \
+    QT_QPA_PLATFORM=xcb
+
+COPY pyproject.toml ./
+COPY src/ src/
+COPY studio/ studio/
+
+RUN pip install --no-cache-dir .
+
+RUN useradd --create-home --uid 1000 appuser
+COPY docker/studio-entrypoint.sh /usr/local/bin/studio-entrypoint.sh
+RUN chmod +x /usr/local/bin/studio-entrypoint.sh && chown -R appuser:appuser /app
+
+USER appuser
+
+EXPOSE 6080
+
+# VNC_PASSWORD se inyecta en tiempo de despliegue (ver
+# docs/deploy-studio-remote.md) — sin valor por defecto aquí a propósito.
+ENTRYPOINT ["/usr/local/bin/studio-entrypoint.sh"]
