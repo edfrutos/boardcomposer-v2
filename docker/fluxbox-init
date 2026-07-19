@@ -1,0 +1,13 @@
+# Minimal fluxbox config for the Studio remote-desktop container: a single
+# maximized app window, no need for multiple virtual desktops (scrolling the
+# background can switch to an empty one, looking like a crash). Missing keys
+# fall back to fluxbox's own defaults, same as if this file didn't exist.
+#
+# Deliberately NOT touching defaultDeco here: removing fluxbox's titlebar
+# (NONE or BORDER) looked right in a screenshot, but local testing couldn't
+# confirm clicks still reach the app afterwards — and this sandbox has no
+# prior confirmed success clicking *inside* the VNC canvas at all, so that
+# result isn't trustworthy either way. Not worth risking real interactivity
+# over 3 unused titlebar buttons; the default (interactive, per real usage
+# on the deployed instance) stays as-is.
+session.screen0.workspaces: 1
