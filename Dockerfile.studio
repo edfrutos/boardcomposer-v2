@@ -36,6 +36,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxcb-xinerama0 \
     libxcb-xkb1 \
     fonts-dejavu-core \
+    wmctrl \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

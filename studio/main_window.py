@@ -2,6 +2,7 @@
 
 import dataclasses
 import pathlib
+import sys
 import uuid
 
 from PySide6.QtCore import Qt
@@ -123,6 +124,14 @@ class MainWindow(QMainWindow):
     def _build_menu(self):
         menu = QMenuBar(self)
         self.setMenuBar(menu)
+        if sys.platform != "darwin":
+            # Linux Qt builds can try to export the menu bar to a desktop
+            # global-menu service (Unity/KDE-style) instead of drawing it in
+            # the window; on a headless X11 session with no such service
+            # running (studio/prompt_input.py's VNC/noVNC deployment,
+            # IDE-0017), that silently makes the whole menu bar disappear
+            # instead of falling back to drawing it locally.
+            menu.setNativeMenuBar(False)
 
         menus = {}
 

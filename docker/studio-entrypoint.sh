@@ -10,7 +10,7 @@ set -e
 mkdir -p "$HOME/.vnc"
 x11vnc -storepasswd "$VNC_PASSWORD" "$HOME/.vnc/passwd"
 
-Xvfb "$DISPLAY" -screen 0 1600x900x24 &
+Xvfb "$DISPLAY" -screen 0 1920x1080x24 &
 XVFB_PID=$!
 sleep 1
 
@@ -21,6 +21,20 @@ fluxbox &
 
 boardcomposer-studio &
 STUDIO_PID=$!
+
+# fluxbox places new windows at their requested size/position, not filled
+# to the screen — left alone, Studio's 1400x900 window floats in a corner
+# with a lot of black void around it. Force it to fill the display once it
+# appears (retried: the window can take a few seconds to map while Studio
+# boots and loads the demo project).
+(
+    for _ in $(seq 1 20); do
+        if wmctrl -r "BoardComposer Studio" -b add,maximized_vert,maximized_horz 2>/dev/null; then
+            break
+        fi
+        sleep 0.5
+    done
+) &
 
 x11vnc -display "$DISPLAY" -forever -shared -rfbauth "$HOME/.vnc/passwd" &
 
