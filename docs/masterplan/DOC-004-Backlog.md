@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 19/07/2026
+**Última revisión:** 20/07/2026
 
 ---
 
@@ -228,7 +228,14 @@ Alcance dividido en fases, cada una construida sobre la anterior:
 - Verificado en real, no solo local (a diferencia de `IDE-0014`, que solo probó Docker/local): `/health` sin clave (`200`) y `/strategies` con la clave correcta (`200`, lista de estrategias) desde la IP permitida; `403` de nginx al probar desde datos móviles (IP distinta, fuera del `allow`); Fail2Ban y el Web Application Firewall (mod_security) de Plesk descartados como causa de falsos positivos durante el diagnóstico — ambos estaban desactivados para este dominio.
 - `docs/deploy.md` actualizado con la Opción C completa (pasos, directiva nginx con IP allowlist, verificación, actualización tras un cambio de código) y una entrada de troubleshooting para el `403` de la allowlist (IP dinámica o no actualizada).
 
-**Fuera de alcance:** esto es una instancia **privada** de un único usuario, no la candidata "instancia demo pública" de `DOC-999-Ideas.md` (que por definición implica acceso abierto sin restricción de IP) — esa sigue sin acotar. Tampoco un SaaS real con cuentas de usuario (se decidió explícitamente no construir login/registro por email para este caso, `DEC-0014`).
+**Ampliación — Studio por navegador (escritorio remoto):** tras verificar la API, el propietario aclaró que su objetivo real era usar la **interfaz visual** de Studio desde fuera de su Mac, no solo la API. De las dos vías posibles (escritorio remoto de la app existente vs. reescritura web completa), se eligió la primera — la segunda es el salto "SaaS real" ya descartado.
+
+- `Dockerfile.studio` + `docker/studio-entrypoint.sh`: el mismo Studio PySide6 sin modificar corre dentro de una pantalla X11 virtual (`Xvfb`, 1920x1080, renderizado por software), gestionada por `fluxbox` (limitado a 1 escritorio virtual vía `docker/fluxbox-init`), capturada por `x11vnc` (contraseña obligatoria vía `VNC_PASSWORD`) y servida como página web con `noVNC`/`websockify` (puerto `6080`). El entrypoint maximiza la ventana con `wmctrl` al arrancar y tumba el contenedor si muere cualquiera de los procesos clave (para que `--restart unless-stopped` lo levante entero).
+- `docs/deploy-studio-remote.md`: despliegue en el mismo patrón VPS+Plesk que la Opción C — subdominio propio, proxy nginx con las cabeceras de websocket (`Upgrade`/`Connection`) y `proxy_read_timeout` alto (sin ellas noVNC se queda en "Connecting…"/corta la sesión), mismo allowlist de IP de `DEC-0014`, TLS de Let's Encrypt.
+- Cuatro fallos reales detectados y corregidos probando contra el despliegue real (registrados también en `CHANGELOG.md`): barra de menú desaparecida en Linux/xcb (`setNativeMenuBar(False)` fuera de macOS), ventana sin maximizar, Asistente mudo ante un fallo del proveedor de IA (ahora el error se muestra en el propio chat — detectado por una `ANTHROPIC_API_KEY` inválida que solo aparecía en `docker logs`), e iconos de menú invisibles (blanco sobre superficie clara; ahora tematizados para el menú, blanco solo en la toolbar).
+- Verificado extremo a extremo por el propietario en su navegador: interfaz completa (menú, toolbar, Explorer, lienzo, Comparador) manejándose en remoto, con IA real en el Asistente.
+
+**Fuera de alcance:** esto es una instancia **privada** de un único usuario, no la candidata "instancia demo pública" de `DOC-999-Ideas.md` (que por definición implica acceso abierto sin restricción de IP) — esa sigue sin acotar. Tampoco un SaaS real con cuentas de usuario (se decidió explícitamente no construir login/registro por email para este caso, `DEC-0014`), ni sesiones multiusuario simultáneas del Studio remoto (una sesión VNC compartida, un contenedor).
 
 ---
 
