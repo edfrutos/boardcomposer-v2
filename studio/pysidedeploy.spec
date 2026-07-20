@@ -15,20 +15,20 @@ exec_directory = ./dist
 # path to the project file relative to project_dir
 project_file = 
 
-# application icon. left blank on purpose: this path is machine-specific
-# (points into whichever .venv generated it), so it's resolved fresh on
-# every run instead of committing an absolute path. Falls back to the
-# default PySide6 icon bundled with the venv actually running the build.
-# NOTE: once a build writes a resolved value here, it "sticks" (pyside6-deploy
-# only re-detects it if this field reads back blank) — re-blank it before
-# committing if a local build run dirtied this file.
-icon =
+# application icon = the project's own icon, committed in-repo (source
+# artwork in assets/icon-source.jpg, converted with sips + iconutil).
+# relative to this file's directory (project_dir = ., builds run from
+# studio/). before this existed the field was left blank so pyside6-deploy
+# would fall back to the default pyside6 icon — if a build run ever
+# rewrites this to an absolute path into a .venv, restore this relative
+# path before committing.
+icon = ./assets/icon.icns
 
 [python]
 
-# python path. left blank on purpose, same reasoning as icon: pyside6-deploy
+# python path. left blank on purpose, same reasoning as icon = pyside6-deploy
 # overwrites this with the currently active venv's interpreter on every run
-# (see Config.set_or_fetch), so committing an absolute path here would only
+# (see config.set_or_fetch), so committing an absolute path here would only
 # be misleading, not authoritative.
 python_path =
 

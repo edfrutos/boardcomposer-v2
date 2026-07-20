@@ -54,7 +54,12 @@ from studio.panels import (
 )
 from studio.export import export_project_to_pdf, export_project_to_svg
 from studio.panel_plugins import discover_panel_plugins
-from studio.project import load_project_from_file, save_project_to_file
+from studio.project import (
+    CsvImportError,
+    load_pieces_from_csv,
+    load_project_from_file,
+    save_project_to_file,
+)
 from studio.workspace.board_workspace import BoardWorkspace
 from studio.commands import (
     AddBoardCommand,
@@ -159,6 +164,7 @@ class MainWindow(QMainWindow):
         self._actions["new_project"] = QAction("Nuevo proyecto", self)
         self._actions["open"] = QAction("Abrir…", self)
         self._actions["save"] = QAction("Guardar", self)
+        self._actions["import_csv"] = QAction("Importar piezas (CSV)…", self)
         self._actions["exit"] = QAction("Salir", self)
         self._actions["undo"] = QAction("Deshacer", self)
         self._actions["redo"] = QAction("Rehacer", self)
@@ -250,12 +256,15 @@ class MainWindow(QMainWindow):
         menus["Archivo"].addAction(self._actions["open"])
         menus["Archivo"].addAction(self._actions["save"])
         menus["Archivo"].addSeparator()
+        menus["Archivo"].addAction(self._actions["import_csv"])
+        menus["Archivo"].addSeparator()
         menus["Archivo"].addAction(self._actions["exit"])
 
         self._actions["exit"].triggered.connect(self.close)
         self._actions["new_project"].triggered.connect(self._new_project)
         self._actions["open"].triggered.connect(self._open_project)
         self._actions["save"].triggered.connect(self._save_project)
+        self._actions["import_csv"].triggered.connect(self._import_pieces_csv)
 
         self._menus = menus
 
@@ -663,6 +672,42 @@ class MainWindow(QMainWindow):
         self._update_window_title()
         self._update_undo_redo()
         self.statusBar().showMessage(f"Proyecto abierto: {path}", 3000)
+
+    def _import_pieces_csv(self):
+        project = self.services.projects.current_project
+        active_board_id = self.workspace.active_board_id
+        if project is None or active_board_id is None:
+            self.statusBar().showMessage("Añade primero un tablero.", 5000)
+            return
+
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Importar piezas desde CSV", "", "CSV (*.csv)"
+        )
+        if not path:
+            return
+
+        existing_ids = frozenset(piece.piece_id for piece in project.pieces)
+        try:
+            pieces = load_pieces_from_csv(path, existing_ids=existing_ids)
+        except (OSError, CsvImportError) as error:
+            self.statusBar().showMessage(f"No se pudo importar el CSV: {error}", 6000)
+            return
+
+        # One undoable command per piece, same as _add_piece — a single
+        # Ctrl+Z per pieza, consistent with how manual additions behave.
+        for piece in pieces:
+            placement = StudioPlacement(piece.piece_id, 0, 0, board_id=active_board_id)
+            command = AddPieceCommand(self.services, piece, placement)
+            self.services.commands.execute(command)
+        self.services.projects.mark_modified()
+
+        self.workspace.reload_project()
+        self._reload_explorer()
+        self._update_window_title()
+        self._update_undo_redo()
+        self.statusBar().showMessage(
+            f"{len(pieces)} pieza(s) importadas de {path}", 4000
+        )
 
     def _save_project(self):
         project = self.services.projects.current_project
