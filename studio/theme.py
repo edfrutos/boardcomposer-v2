@@ -183,11 +183,6 @@ def build_stylesheet(scheme: str) -> str:
         border: 1px solid {p.border};
         border-radius: 10px;
         padding: 6px;
-        /* Actions share one QIcon with the toolbar (always white, for
-           contrast against its colored gradient) — on the menu's light
-           surface that icon is invisible. Collapsing the icon column to 0
-           hides it here instead of shipping a second icon set per action. */
-        icon-size: 0px;
     }}
     QMenu::item {{
         padding: 7px 24px 7px 14px;

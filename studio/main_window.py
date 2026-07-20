@@ -31,7 +31,13 @@ from PySide6.QtWidgets import (
 from studio.dialogs import BoardDialog, KerfDialog, MoveToBoardDialog, PieceDialog
 from studio.icons import build_icons
 from studio.prompt_input import PromptTextEdit
-from studio.theme import ICON_COLOR, apply_elevation, apply_theme
+from studio.theme import (
+    ICON_COLOR,
+    apply_elevation,
+    apply_theme,
+    detect_color_scheme,
+    palette_for,
+)
 from studio.models import (
     StudioBoard,
     StudioPiece,
@@ -279,31 +285,37 @@ class MainWindow(QMainWindow):
         scheme = None if key == "auto" else key
         apply_theme(QApplication.instance(), scheme)
 
+    # Shared by the menu bar (via QAction.icon(), themed for contrast against
+    # the menu's own surface) and the toolbar (always white — see
+    # _build_toolbar, which overrides each button's icon after the fact,
+    # since the toolbar's colored gradient background doesn't follow the
+    # light/dark theme the way the menu's surface does).
+    _ACTION_ICON_NAMES = {
+        "new_project": "new_project",
+        "open": "open",
+        "save": "save",
+        "undo": "undo",
+        "redo": "redo",
+        "rotate_piece": "rotate",
+        "delete_piece": "delete",
+        "add_board": "add_board",
+        "edit_board": "edit_board",
+        "add_piece": "add_piece",
+        "edit_piece": "edit_piece",
+        "move_piece_to_board": "move_to_board",
+        "configure_kerf": "kerf",
+        "solve_layout": "solve",
+        "apply_layout": "apply",
+        "compare_solutions": "compare",
+        "export_svg": "export_svg",
+        "export_pdf": "export_pdf",
+    }
+
     def _apply_action_icons(self):
-        icons = build_icons(ICON_COLOR)
+        palette = palette_for(detect_color_scheme())
+        icons = build_icons(palette.text)
 
-        action_icons = {
-            "new_project": "new_project",
-            "open": "open",
-            "save": "save",
-            "undo": "undo",
-            "redo": "redo",
-            "rotate_piece": "rotate",
-            "delete_piece": "delete",
-            "add_board": "add_board",
-            "edit_board": "edit_board",
-            "add_piece": "add_piece",
-            "edit_piece": "edit_piece",
-            "move_piece_to_board": "move_to_board",
-            "configure_kerf": "kerf",
-            "solve_layout": "solve",
-            "apply_layout": "apply",
-            "compare_solutions": "compare",
-            "export_svg": "export_svg",
-            "export_pdf": "export_pdf",
-        }
-
-        for action_name, icon_name in action_icons.items():
+        for action_name, icon_name in self._ACTION_ICON_NAMES.items():
             self._actions[action_name].setIcon(icons[icon_name])
 
     def _build_toolbar(self):
@@ -327,6 +339,16 @@ class MainWindow(QMainWindow):
         toolbar.addSeparator()
         for action_name in ("rotate_piece", "delete_piece"):
             toolbar.addAction(self._actions[action_name])
+
+        # The actions' own icon (set in _apply_action_icons) is themed for
+        # the menu bar's surface — override just these toolbar buttons back
+        # to white, since the toolbar's gradient background stays colored
+        # regardless of light/dark theme.
+        white_icons = build_icons(ICON_COLOR)
+        for action_name, icon_name in self._ACTION_ICON_NAMES.items():
+            button = toolbar.widgetForAction(self._actions[action_name])
+            if button is not None:
+                button.setIcon(white_icons[icon_name])
 
     def _build_workspace(self):
         self.workspace = BoardWorkspace(self.services)
