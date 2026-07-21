@@ -39,12 +39,20 @@ Mismo patrón que la Opción C de `docs/deploy.md`, con un subdominio propio (p.
     git pull
     docker build -f Dockerfile.studio -t boardcomposer-studio-remote .
 
-**3. Arrancar el contenedor**, escuchando solo en loopback:
+**3. Arrancar el contenedor**, escuchando solo en loopback, con una carpeta compartida entre el VPS y el contenedor:
 
+    mkdir -p /root/studio-compartido
     docker run -d --name boardcomposer-studio-remote --restart unless-stopped \
       -p 127.0.0.1:6080:6080 \
+      -v /root/studio-compartido:/home/appuser/compartido \
       -e VNC_PASSWORD="una-contraseña-de-vnc" \
       boardcomposer-studio-remote
+
+**Carpeta compartida — subir/bajar ficheros:** los diálogos de fichero de Studio (Abrir/Guardar proyecto, Exportar, Importar CSV, adjuntar archivo al Asistente) navegan el sistema de ficheros **del contenedor**, no el de tu Mac — sin esto, un CSV que tengas en tu Mac nunca aparece ahí, por mucho que lo busques. El `-v` monta `/root/studio-compartido` (en el VPS) como `/home/appuser/compartido` dentro del contenedor — mismo contenido, visto desde dos sitios. Para subir un fichero desde tu Mac:
+
+    scp piezas.csv root@tu-servidor:/root/studio-compartido/
+
+y en el diálogo de Studio, navega a `compartido` (aparece directamente en `/home/appuser`, la carpeta de inicio por defecto). Para bajar algo que Studio haya guardado ahí (un proyecto exportado, un PDF), el mismo `scp` en sentido contrario.
 
 **4. Credenciales para el proxy** (`htpasswd`, por SSH — puede ser el mismo comando/fichero que en la API, o uno propio para este subdominio):
 
@@ -82,6 +90,7 @@ Con esto quedan dos credenciales independientes y de naturaleza distinta: `auth_
     docker stop boardcomposer-studio-remote && docker rm boardcomposer-studio-remote
     docker run -d --name boardcomposer-studio-remote --restart unless-stopped \
       -p 127.0.0.1:6080:6080 \
+      -v /root/studio-compartido:/home/appuser/compartido \
       -e VNC_PASSWORD="una-contraseña-de-vnc" \
       boardcomposer-studio-remote
 
@@ -94,3 +103,4 @@ Con esto quedan dos credenciales independientes y de naturaleza distinta: `auth_
 - **El navegador pide usuario/contraseña antes de llegar a noVNC:** es el `auth_basic` del paso 5, no un fallo — introduce las credenciales de `.htpasswd-studio`. Si las rechaza, revisa que el fichero se generó con `htpasswd` (paso 4) y que `auth_basic_user_file` apunta a la ruta correcta.
 - **Contraseña de VNC rechazada:** `VNC_PASSWORD` se fija al arrancar el contenedor (`docker run -e VNC_PASSWORD=...`) — si la cambias, hay que recrear el contenedor (parar, quitar, volver a arrancar con el nuevo valor), no basta con reiniciarlo.
 - **Rendimiento lento/tirones:** esperable en escritorio remoto sobre una conexión doméstica — noVNC no está pensado para animaciones fluidas, solo para uso puntual de la interfaz.
+- **Un fichero de tu Mac no aparece en el diálogo "Abrir"/"Importar" de Studio:** los diálogos ven el sistema de ficheros del contenedor, no el de tu Mac — sin la carpeta compartida del paso 3 no hay forma de que aparezca. Súbelo primero con `scp` a `/root/studio-compartido/` en el VPS.
