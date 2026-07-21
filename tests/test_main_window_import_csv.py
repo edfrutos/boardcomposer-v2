@@ -1,5 +1,5 @@
 import pytest
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMessageBox
 
 from studio.main_window import MainWindow
 from studio.services import StudioServices
@@ -69,12 +69,19 @@ def test_import_csv_with_a_bad_file_leaves_the_project_untouched(
         "id,length_mm,width_mm,thickness_mm\nP-101,700,300,19\nP-101,520,360,19\n",
     )
     _patch_open_dialog(monkeypatch, path)
+    warnings = []
+    monkeypatch.setattr(
+        QMessageBox, "warning", lambda *a, **k: warnings.append(a) or None
+    )
     project = window.services.projects.current_project
     pieces_before = len(project.pieces)
 
     window._import_pieces_csv()
 
     assert len(project.pieces) == pieces_before
+    # A transient status-bar message is easy to miss (mistaken for silent
+    # failure on the remote/VNC deployment) — a blocking dialog isn't.
+    assert len(warnings) == 1
 
 
 def test_import_csv_rejects_ids_already_in_the_project(window, monkeypatch, tmp_path):
@@ -85,6 +92,7 @@ def test_import_csv_rejects_ids_already_in_the_project(window, monkeypatch, tmp_
         f"id,length_mm,width_mm,thickness_mm\n{existing_id},700,300,19\n",
     )
     _patch_open_dialog(monkeypatch, path)
+    monkeypatch.setattr(QMessageBox, "warning", lambda *a, **k: None)
     pieces_before = len(project.pieces)
 
     window._import_pieces_csv()
@@ -100,3 +108,26 @@ def test_import_csv_cancelled_dialog_does_nothing(window, monkeypatch):
     window._import_pieces_csv()
 
     assert len(project.pieces) == pieces_before
+
+
+def test_import_csv_without_a_board_warns_and_never_opens_the_dialog(
+    window, monkeypatch
+):
+    # A brand new project (Archivo → Nuevo proyecto) has no boards yet —
+    # imported pieces need one to be placed on, same requirement as adding
+    # a piece by hand.
+    window._new_project()
+    warnings = []
+    monkeypatch.setattr(
+        QMessageBox, "warning", lambda *a, **k: warnings.append(a) or None
+    )
+    dialog_calls = []
+    monkeypatch.setattr(
+        "studio.main_window.QFileDialog.getOpenFileName",
+        staticmethod(lambda *a, **k: dialog_calls.append(1) or ("", "")),
+    )
+
+    window._import_pieces_csv()
+
+    assert len(warnings) == 1
+    assert dialog_calls == []

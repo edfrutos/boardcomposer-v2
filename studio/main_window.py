@@ -661,7 +661,13 @@ class MainWindow(QMainWindow):
         try:
             project = load_project_from_file(path)
         except (OSError, ValueError, KeyError) as error:
-            self.statusBar().showMessage(f"No se pudo abrir el proyecto: {error}", 5000)
+            # A status-bar message alone is easy to miss — it auto-clears in
+            # a few seconds, and on the remote/VNC deployment (IDE-0017) it's
+            # been mistaken for silent failure more than once. A blocking
+            # dialog forces the user to actually see why the file didn't load.
+            QMessageBox.warning(
+                self, "Abrir proyecto", f"No se pudo abrir el proyecto:\n\n{error}"
+            )
             return
 
         self.services.projects.open_project(project, filename=path)
@@ -677,7 +683,9 @@ class MainWindow(QMainWindow):
         project = self.services.projects.current_project
         active_board_id = self.workspace.active_board_id
         if project is None or active_board_id is None:
-            self.statusBar().showMessage("Añade primero un tablero.", 5000)
+            QMessageBox.warning(
+                self, "Importar piezas (CSV)", "Añade primero un tablero."
+            )
             return
 
         path, _ = QFileDialog.getOpenFileName(
@@ -690,7 +698,11 @@ class MainWindow(QMainWindow):
         try:
             pieces = load_pieces_from_csv(path, existing_ids=existing_ids)
         except (OSError, CsvImportError) as error:
-            self.statusBar().showMessage(f"No se pudo importar el CSV: {error}", 6000)
+            # Same reasoning as _open_project: a status-bar message here was
+            # mistaken for the import silently doing nothing.
+            QMessageBox.warning(
+                self, "Importar piezas (CSV)", f"No se pudo importar el CSV:\n\n{error}"
+            )
             return
 
         # One undoable command per piece, same as _add_piece — a single
