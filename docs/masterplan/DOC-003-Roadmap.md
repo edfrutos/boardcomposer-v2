@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 20/07/2026
+**Última revisión:** 21/07/2026
 
 ---
 
@@ -55,6 +55,7 @@ Entregables principales:
 - Exportación visual. 🟢 (SVG/PDF, IDE-0005)
 - Alta/edición de tableros y piezas, y soporte multi-tablero. 🟢 (`DT-0013`, `docs/masterplan/DOC-006-DeudaTecnica.md`)
 - Tema visual, iconos y toolbar. 🟢 (`IDE-0016`)
+- Importación de piezas desde CSV. 🟢 (`IDE-0018`)
 
 ---
 

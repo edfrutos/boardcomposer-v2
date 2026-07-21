@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 20/07/2026
+**Última revisión:** 21/07/2026
 
 ---
 
@@ -86,6 +86,7 @@ Observaciones:
 | IDE-0015 | Visibilidad de plugins instalados | 🟢 | P2 |
 | IDE-0016 | Tema visual, iconos y toolbar de Studio | 🟢 | P2 |
 | IDE-0017 | Despliegue privado de la API en VPS propio | 🟢 | P2 |
+| IDE-0018 | Importación de piezas desde CSV en Studio | 🟢 | P2 |
 
 ---
 
@@ -236,6 +237,16 @@ Alcance dividido en fases, cada una construida sobre la anterior:
 - Verificado extremo a extremo por el propietario en su navegador: interfaz completa (menú, toolbar, Explorer, lienzo, Comparador) manejándose en remoto, con IA real en el Asistente.
 
 **Fuera de alcance:** esto es una instancia **privada** de un único usuario, no la candidata "instancia demo pública" de `DOC-999-Ideas.md` (que por definición implica acceso abierto sin restricción de IP) — esa sigue sin acotar. Tampoco un SaaS real con cuentas de usuario (se decidió explícitamente no construir login/registro por email para este caso, `DEC-0014`), ni sesiones multiusuario simultáneas del Studio remoto (una sesión VNC compartida, un contenedor).
+
+---
+
+## IDE-0018 — Importación de piezas desde CSV en Studio
+
+**Estado:** 🟢 Completado. BoardComposer Studio solo tenía el CSV como formato de proyecto de la CLI (`--csv`, cierra RF-002) — no había forma de meter piezas desde un CSV externo en un proyecto ya abierto en Studio sin editar `.bcstudio.json` a mano.
+
+- `load_pieces_from_csv()` (`studio/project/csv_import.py`, función pura sin Qt): mismas columnas obligatorias que el importador CSV del Core/CLI (`id`/`length_mm`/`width_mm`/`thickness_mm`), más `material` opcional. Validación estricta — cualquier fila con una columna ausente, una dimensión no numérica, un id vacío o un id repetido (en el propio fichero o contra el proyecto abierto) aborta toda la importación con `CsvImportError` y el número de fila, sin devolver piezas parciales.
+- `MainWindow._import_pieces_csv()`: nueva acción "Importar piezas (CSV)…" en el menú Archivo. Exige un tablero activo (igual que "Añadir pieza…"), y añade cada pieza válida con un `AddPieceCommand` deshacible (uno por pieza, igual que al añadir varias a mano con "Cantidad"), colocada en el tablero activo.
+- Verificado con tests (`tests/test_csv_import.py`, `tests/test_main_window_import_csv.py`): carga básica, columna `material` opcional, las cuatro validaciones de rechazo, deshacer pieza a pieza, y que un fichero inválido deja el proyecto intacto.
 
 ---
 

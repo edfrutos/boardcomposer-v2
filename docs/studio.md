@@ -35,6 +35,12 @@ Cubre `DT-0001` (`docs/masterplan/DOC-006-DeudaTecnica.md`). Complementa a `docs
 
 `MainWindow.closeEvent()` (testeado en `tests/test_main_window_close.py`) impide perder cambios sin guardar al cerrar la ventana: si `ProjectManager.is_modified` es `False` acepta el cierre directamente; si es `True`, muestra un `QMessageBox` con "Guardar"/"Descartar"/"Cancelar" — "Cancelar" hace `event.ignore()`, "Descartar" acepta el cierre sin tocar el fichero, y "Guardar" reutiliza `_save_project()` y solo acepta el cierre si terminó con éxito (si el usuario cancela el diálogo de ruta o falla el guardado, `is_modified` sigue en `True` y el cierre se ignora también).
 
+### Importación de piezas desde CSV — `studio/project/csv_import.py`
+
+`load_pieces_from_csv(path, existing_ids)` (función pura, sin Qt, testeada en `tests/test_csv_import.py`) lee un CSV con las mismas columnas obligatorias que el importador CSV del Core/CLI (`id`/`length_mm`/`width_mm`/`thickness_mm`, más `material` opcional) y devuelve una lista de `StudioPiece`. Cualquier fila inválida (columna obligatoria ausente, dimensión no numérica, id vacío, o id repetido — dentro del propio fichero o contra `existing_ids`, los ids ya presentes en el proyecto abierto) lanza `CsvImportError` con el número de fila, abortando toda la importación sin devolver piezas parciales.
+
+`MainWindow._import_pieces_csv()` conecta esto al `QAction` "Importar piezas (CSV)…" del menú Archivo (testeado en `tests/test_main_window_import_csv.py`): pide el tablero activo (igual que `_add_piece()`, sin tablero no hay dónde colocar), abre el CSV con `QFileDialog`, y por cada `StudioPiece` válida ejecuta un `AddPieceCommand` (deshacible, uno por pieza) colocándola en `(0, 0)` del tablero activo. Un fallo de `load_pieces_from_csv()` se muestra en la barra de estado y no ejecuta ningún comando — el proyecto queda exactamente como estaba.
+
 ## Undo/Redo — `CommandManager` + `Command`
 
 `studio/commands/`. `Command` (`command.py`) es un `Protocol` con `name: str`, `redo()` y `undo()` — cualquier objeto que implemente esos tres miembros sirve como comando, sin herencia obligatoria.
