@@ -1,3 +1,5 @@
+import pytest
+
 from studio.models import StudioBoard, StudioPiece, StudioPlacement, StudioProject
 from studio.project.project_io import (
     load_project_from_file,
@@ -107,3 +109,37 @@ def test_project_from_dict_defaults_missing_kerf_to_zero():
     project = project_from_dict(legacy_data)
 
     assert project.kerf_mm == 0.0
+
+
+def test_project_from_dict_ignores_unknown_extra_keys():
+    # Seen in the wild: a .bcstudio.json not written by Studio itself (an
+    # AI-generated project spec) with a "quantity" key per board/piece that
+    # StudioBoard/StudioPiece don't have — used to crash the whole app with
+    # a raw TypeError instead of just being ignored.
+    data = {
+        "project_id": "proj-1",
+        "name": "Demo",
+        "boards": [
+            {"board_id": "A", "length_mm": 2000, "width_mm": 300, "quantity": 2}
+        ],
+        "pieces": [
+            {"piece_id": "p1", "length_mm": 500, "width_mm": 200, "quantity": 3}
+        ],
+        "placements": [{"piece_id": "p1", "x_mm": 10, "y_mm": 20, "quantity": 1}],
+    }
+
+    project = project_from_dict(data)
+
+    assert project.boards[0].board_id == "A"
+    assert project.pieces[0].piece_id == "p1"
+
+
+def test_project_from_dict_raises_value_error_on_missing_required_field():
+    data = {
+        "project_id": "proj-1",
+        "name": "Demo",
+        "boards": [{"length_mm": 2000, "width_mm": 300}],  # falta board_id
+    }
+
+    with pytest.raises(ValueError, match="formato de proyecto no reconocido"):
+        project_from_dict(data)

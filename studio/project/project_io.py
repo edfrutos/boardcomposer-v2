@@ -1,5 +1,6 @@
 """JSON persistence for BoardComposer Studio projects."""
 
+import dataclasses
 import json
 from pathlib import Path
 
@@ -45,23 +46,49 @@ def project_to_dict(project: StudioProject) -> dict:
     }
 
 
+def _known_fields(data_cls, raw: dict) -> dict:
+    """Drops any key that isn't one of `data_cls`'s dataclass fields.
+
+    A `.bcstudio.json` isn't always one Studio itself wrote — it can come
+    from a hand-edited file, an older/newer Studio version, or another tool
+    entirely (e.g. an AI-generated project spec with an extra "quantity"
+    key per board, seen in the wild). Silently ignoring unknown keys here
+    is the same tolerance CSV import already has for extra columns —
+    better than a raw TypeError crashing the whole app on `_open_project`.
+    """
+    known = {field.name for field in dataclasses.fields(data_cls)}
+    return {key: value for key, value in raw.items() if key in known}
+
+
 def project_from_dict(data: dict) -> StudioProject:
-    boards = [StudioBoard(**board) for board in data.get("boards", [])]
-    default_board_id = boards[0].board_id if boards else None
+    try:
+        boards = [
+            StudioBoard(**_known_fields(StudioBoard, board))
+            for board in data.get("boards", [])
+        ]
+        default_board_id = boards[0].board_id if boards else None
 
-    placements = []
-    for placement in data.get("placements", []):
-        placement.setdefault("board_id", default_board_id)
-        placements.append(StudioPlacement(**placement))
+        placements = []
+        for placement in data.get("placements", []):
+            placement = dict(placement)
+            placement.setdefault("board_id", default_board_id)
+            placements.append(
+                StudioPlacement(**_known_fields(StudioPlacement, placement))
+            )
 
-    return StudioProject(
-        project_id=data["project_id"],
-        name=data["name"],
-        boards=boards,
-        pieces=[StudioPiece(**piece) for piece in data.get("pieces", [])],
-        placements=placements,
-        kerf_mm=data.get("kerf_mm", 0.0),
-    )
+        return StudioProject(
+            project_id=data["project_id"],
+            name=data["name"],
+            boards=boards,
+            pieces=[
+                StudioPiece(**_known_fields(StudioPiece, piece))
+                for piece in data.get("pieces", [])
+            ],
+            placements=placements,
+            kerf_mm=data.get("kerf_mm", 0.0),
+        )
+    except (TypeError, KeyError) as error:
+        raise ValueError(f"formato de proyecto no reconocido ({error})") from error
 
 
 def save_project_to_file(project: StudioProject, path: str | Path) -> None:
