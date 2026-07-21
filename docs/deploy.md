@@ -123,12 +123,18 @@ Para un VPS con panel Plesk (con la extensión Docker habilitada) en vez de Cadd
 
 Puede arrancarse igualmente desde la propia extensión Docker de Plesk (*Docker* → *Ejecutar un contenedor* → imagen local `boardcomposer-api`) en vez de por SSH, configurando ahí el mismo mapeo de puerto y las mismas variables de entorno.
 
-**4. Proxy inverso hacia el contenedor:** en el subdominio, *Configuración de Apache y nginx* → *Directivas adicionales de nginx*:
+**4. Credenciales para el proxy** (`htpasswd`, por SSH — viene con el paquete `apache2-utils`/`httpd-tools` según la distro):
+
+    htpasswd -c /etc/nginx/.htpasswd-bc tu-usuario
+
+Pide la contraseña dos veces y la guarda ya hasheada (nunca en claro) en `/etc/nginx/.htpasswd-bc`. Con `-c` se crea el fichero desde cero — omite `-c` si ya existe y solo añades otro usuario.
+
+**5. Proxy inverso hacia el contenedor, con autenticación HTTP Basic delante:** en el subdominio, *Configuración de Apache y nginx* → *Directivas adicionales de nginx*:
 
 ```nginx
 location / {
-    allow 203.0.113.10;   # tu IP pública — averíguala con curl ifconfig.me
-    deny all;
+    auth_basic "BoardComposer";
+    auth_basic_user_file /etc/nginx/.htpasswd-bc;
 
     proxy_pass http://127.0.0.1:5050;
     proxy_set_header Host $host;
@@ -136,16 +142,24 @@ location / {
 }
 ```
 
-Restringe el subdominio por IP en vez de (o además de) confiar solo en `BOARDCOMPOSER_API_KEY`: cualquiera fuera de la lista `allow` recibe un `403` de nginx antes de que la petición llegue siquiera a la API — la clave nunca es alcanzable desde otra IP, aunque se filtre. Añade una línea `allow` por cada IP/red que necesite acceso (formato CIDR, p. ej. `allow 203.0.113.0/24;`). Limitación a tener en cuenta: si tu IP pública es dinámica (típico en una conexión doméstica), cambiará tarde o temprano y te dejará fuera hasta que actualices la regla — para una IP estable sin depender de tu operador, una VPN propia (p. ej. WireGuard en el mismo VPS) es la alternativa más robusta, permitiendo el `allow` solo sobre la IP interna de la VPN.
+`auth_basic` pide usuario/contraseña por HTTP (diálogo nativo del navegador o `curl -u`) antes de que la petición llegue siquiera a la API — funciona desde cualquier IP/red, a diferencia de un allowlist de IP (`DEC-0015`, `docs/masterplan/DOC-005-Decisiones.md`), que ataba el acceso a una única IP y se rompía en cuanto cambiabas de red o tu IP dinámica rotaba. No es un sistema de login/cuentas (eso se descartó en `DEC-0014` por desproporcionado) — es una credencial fija a nivel de servidor web, sin infraestructura nueva ni persistencia. Se suma a `BOARDCOMPOSER_API_KEY`, no la sustituye: quien pase el `auth_basic` sigue necesitando la clave de la API para cualquier ruta salvo `/health`.
 
-**5. TLS:** *Certificados SSL/TLS* del subdominio → *Obtener gratis* (Let's Encrypt) — Plesk lo renueva solo, sin pasos manuales adicionales.
+Si quieres que un monitor de disponibilidad externo (UptimeRobot o similar) siga pudiendo comprobar `/health` sin credenciales, añade una excepción antes del bloque `location /` general:
 
-**6. Verificar:**
+```nginx
+location = /health {
+    proxy_pass http://127.0.0.1:5050;
+}
+```
 
-    curl https://bc.tu-dominio.com/health
-    curl -H "X-API-Key: una-clave-secreta" https://bc.tu-dominio.com/strategies
+**6. TLS:** *Certificados SSL/TLS* del subdominio → *Obtener gratis* (Let's Encrypt) — Plesk lo renueva solo, sin pasos manuales adicionales.
 
-**7. Actualizar tras un cambio de código:**
+**7. Verificar:**
+
+    curl -u tu-usuario:tu-contraseña https://bc.tu-dominio.com/health
+    curl -u tu-usuario:tu-contraseña -H "X-API-Key: una-clave-secreta" https://bc.tu-dominio.com/strategies
+
+**8. Actualizar tras un cambio de código:**
 
     cd boardcomposer && git pull
     docker build -t boardcomposer-api .
@@ -156,15 +170,16 @@ Restringe el subdominio por IP en vez de (o además de) confiar solo en `BOARDCO
       -e ANTHROPIC_API_KEY="sk-ant-..." \
       boardcomposer-api
 
-Uso personal/de un único usuario: con el `allow`/`deny` del paso 4 ya nadie fuera de tu IP llega ni a `/health`, así que es la protección principal; mantener `BOARDCOMPOSER_API_KEY` definida además es defensa en profundidad barata (si algún día compartes acceso con más IPs en la allowlist). Con `ANTHROPIC_API_KEY` real (sin `MockAIProvider`), fijar un límite de gasto mensual en la propia consola de Anthropic — BoardComposer no impone ninguno.
+Uso personal/de un único usuario: con el `auth_basic` del paso 5 ya nadie sin la contraseña llega ni a `/health`, así que es la protección principal, y funciona desde cualquier red; mantener `BOARDCOMPOSER_API_KEY` definida además es defensa en profundidad barata (una segunda credencial independiente, a otro nivel — HTTP vs. aplicación). Con `ANTHROPIC_API_KEY` real (sin `MockAIProvider`), fijar un límite de gasto mensual en la propia consola de Anthropic — BoardComposer no impone ninguno.
 
-**Verificado con un despliegue real (`IDE-0017`)**, no solo con `docker build`/`run` local: subdominio propio con SSL Let's Encrypt, contenedor corriendo en el VPS, proxy nginx conectado tras desactivar "Modo proxy" en Plesk, `/health` (`200`) y `/strategies` con clave (`200`, lista de estrategias) desde la IP permitida, `403` de nginx desde una IP fuera del `allow` (probado con datos móviles). Dos falsos positivos descartados durante el diagnóstico: Fail2Ban y el Web Application Firewall (mod_security) de Plesk, ambos desactivados para este dominio — el `403` inicial que parecía venir de uno de los dos resultó ser, una vez añadido `-v` a `curl`, simplemente la clave de ejemplo sin sustituir por la real.
+**Verificado con un despliegue real (`IDE-0017`)**, no solo con `docker build`/`run` local: subdominio propio con SSL Let's Encrypt, contenedor corriendo en el VPS, proxy nginx conectado tras desactivar "Modo proxy" en Plesk, `/health` (`200`) y `/strategies` con clave (`200`, lista de estrategias) desde la IP permitida, `403` de nginx desde una IP fuera del `allow` (probado con datos móviles). Dos falsos positivos descartados durante el diagnóstico: Fail2Ban y el Web Application Firewall (mod_security) de Plesk, ambos desactivados para este dominio — el `403` inicial que parecía venir de uno de los dos resultó ser, una vez añadido `-v` a `curl`, simplemente la clave de ejemplo sin sustituir por la real. Protección migrada después de `allow`/`deny` por IP a `auth_basic` (`DEC-0015`) para no depender de una IP fija.
 
 ---
 
 ## Troubleshooting
 
-- **`403` de nginx en cualquier ruta, incluida `/health` (solo Opción C con IP allowlist):** tu IP pública no está en la regla `allow` del subdominio (o ha cambiado, si es dinámica). Comprueba tu IP actual con `curl ifconfig.me` y actualiza la directiva nginx en Plesk.
-- **`401` en todas las rutas salvo `/health`:** falta la cabecera `X-API-Key` o no coincide con `BOARDCOMPOSER_API_KEY`. Verificar con `curl -H "X-API-Key: ..." .../health` — `/health` siempre responde `200` independientemente de la clave.
+- **El navegador/`curl` pide usuario y contraseña (`401` con cabecera `WWW-Authenticate`):** es el `auth_basic` del paso 5, no un fallo — introduce las credenciales de `.htpasswd-bc`. Con `curl`, añade `-u tu-usuario:tu-contraseña`.
+- **`401` de nginx sin pedir credenciales / rechaza las que introduces:** revisa que `auth_basic_user_file` apunte al fichero correcto y que lo regeneraste con `htpasswd` (no editado a mano — el hash tiene que coincidir).
+- **`401` en todas las rutas salvo `/health`, ya autenticado por `auth_basic`:** falta la cabecera `X-API-Key` o no coincide con `BOARDCOMPOSER_API_KEY`. Verificar con `curl -u usuario:contraseña -H "X-API-Key: ..." .../health` — `/health` siempre responde `200` independientemente de la clave (pero sigue pidiendo `auth_basic` salvo que hayas añadido la excepción del paso 5).
 - **`429`:** límite de 60 peticiones/minuto por IP superado (`IDE-0009`). El almacenamiento del rate limiting es en memoria y no se comparte entre workers de `gunicorn` (`DT-0010`, `docs/masterplan/DOC-006-DeudaTecnica.md`) — con varios workers el límite real es mayor que 60/min.
 - **`/assist/*` responde pero con explicaciones genéricas:** `ANTHROPIC_API_KEY` no está definida y la API cayó a `MockAIProvider`. Confirmar con `docker exec boardcomposer-api env | grep ANTHROPIC`.

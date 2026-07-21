@@ -46,12 +46,16 @@ Mismo patrón que la Opción C de `docs/deploy.md`, con un subdominio propio (p.
       -e VNC_PASSWORD="una-contraseña-de-vnc" \
       boardcomposer-studio-remote
 
-**4. Proxy inverso en Plesk**, con el mismo allowlist de IP que la API (`docs/deploy.md`, `DEC-0014`) — noVNC usa websockets, así que hacen falta las cabeceras de actualización de protocolo además del `proxy_pass` habitual:
+**4. Credenciales para el proxy** (`htpasswd`, por SSH — puede ser el mismo comando/fichero que en la API, o uno propio para este subdominio):
+
+    htpasswd -c /etc/nginx/.htpasswd-studio tu-usuario
+
+**5. Proxy inverso en Plesk, con autenticación HTTP Basic delante** (`docs/deploy.md` Opción C, `DEC-0015`) en vez del allowlist de IP inicial — noVNC usa websockets, así que hacen falta las cabeceras de actualización de protocolo además del `proxy_pass` habitual:
 
 ```nginx
 location / {
-    allow TU.IP.PUBLICA.AQUI;
-    deny all;
+    auth_basic "BoardComposer Studio";
+    auth_basic_user_file /etc/nginx/.htpasswd-studio;
 
     proxy_pass http://127.0.0.1:6080;
     proxy_http_version 1.1;
@@ -65,11 +69,13 @@ location / {
 
 (`proxy_read_timeout` alto porque una sesión VNC es una conexión larga y persistente, no una petición HTTP puntual — el valor por defecto de nginx la cortaría a los pocos segundos de inactividad.)
 
-**5. TLS:** *Certificados SSL/TLS* del subdominio → *Obtener gratis* (Let's Encrypt), igual que en la Opción C de `docs/deploy.md`.
+Con esto quedan dos credenciales independientes y de naturaleza distinta: `auth_basic` (usuario/contraseña por HTTP, antes de que cargue la página) y `VNC_PASSWORD` (contraseña de la sesión de escritorio remoto, dentro de la página de noVNC) — perder una no compromete la otra, y ambas funcionan desde cualquier red, sin depender de una IP fija.
 
-**6. Verificar:** abre `https://studio.tu-dominio.com/vnc.html`, introduce la contraseña de VNC, y confirma que ves la ventana de Studio.
+**6. TLS:** *Certificados SSL/TLS* del subdominio → *Obtener gratis* (Let's Encrypt), igual que en la Opción C de `docs/deploy.md`.
 
-**7. Actualizar tras un cambio de código:**
+**7. Verificar:** abre `https://studio.tu-dominio.com/vnc.html` — el navegador debe pedir primero el usuario/contraseña de `auth_basic`, y solo después la contraseña de VNC dentro de la página de noVNC. Confirma que ves la ventana de Studio.
+
+**8. Actualizar tras un cambio de código:**
 
     cd /root/boardcomposer && git pull
     docker build -f Dockerfile.studio -t boardcomposer-studio-remote .
@@ -83,8 +89,8 @@ location / {
 
 ## Troubleshooting
 
-- **La página de noVNC carga pero no conecta / se queda "Connecting…":** casi siempre faltan las cabeceras `Upgrade`/`Connection` del paso 4 — sin ellas nginx no deja pasar el handshake de websocket. Revisa las directivas adicionales de nginx.
-- **Se desconecta tras un rato de inactividad:** `proxy_read_timeout` demasiado bajo (por defecto de nginx, unos 60s). Confirma que está el valor alto del paso 4.
-- **`403` de nginx:** tu IP no está en el `allow` o ha cambiado — mismo troubleshooting que en `docs/deploy.md` (Opción C).
+- **La página de noVNC carga pero no conecta / se queda "Connecting…":** casi siempre faltan las cabeceras `Upgrade`/`Connection` del paso 5 — sin ellas nginx no deja pasar el handshake de websocket. Revisa las directivas adicionales de nginx.
+- **Se desconecta tras un rato de inactividad:** `proxy_read_timeout` demasiado bajo (por defecto de nginx, unos 60s). Confirma que está el valor alto del paso 5.
+- **El navegador pide usuario/contraseña antes de llegar a noVNC:** es el `auth_basic` del paso 5, no un fallo — introduce las credenciales de `.htpasswd-studio`. Si las rechaza, revisa que el fichero se generó con `htpasswd` (paso 4) y que `auth_basic_user_file` apunta a la ruta correcta.
 - **Contraseña de VNC rechazada:** `VNC_PASSWORD` se fija al arrancar el contenedor (`docker run -e VNC_PASSWORD=...`) — si la cambias, hay que recrear el contenedor (parar, quitar, volver a arrancar con el nuevo valor), no basta con reiniciarlo.
 - **Rendimiento lento/tirones:** esperable en escritorio remoto sobre una conexión doméstica — noVNC no está pensado para animaciones fluidas, solo para uso puntual de la interfaz.
