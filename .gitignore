@@ -25,3 +25,6 @@ graphify-out/.graphify_labels.json
 # intermediate build directory, never committed.
 studio/dist/
 studio/deployment/
+
+# BoardComposer Studio project files: user data, not source code.
+*.bcstudio.json

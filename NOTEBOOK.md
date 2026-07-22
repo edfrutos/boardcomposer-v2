@@ -41,6 +41,19 @@ De lo que "quedaba fuera por ahora" en la sesión inicial, dos puntos ya están 
 
 Modelado 3D, muebles completos y uniones complejas de carpintería siguen fuera de alcance. Ver `docs/masterplan/DOC-004-Backlog.md` para el estado vivo de cada funcionalidad.
 
+## 2026-07-22 - Release v0.2.0
+
+Publicada la versión 0.2.0 con todos los cambios acumulados desde 0.1.0. Incluye:
+
+- **IDE-0013–0015**: guía de plugins, receta de despliegue Cloud y visibilidad de plugins instalados (CLI + API).
+- **IDE-0016**: tema visual claro/oscuro con detección automática, iconos de línea, toolbar principal y `PromptTextEdit` multilínea en el Asistente.
+- **IDE-0017**: despliegue privado en VPS propio (Plesk + Docker): API en `bc.efjdefrutos.com` y Studio accesible por navegador vía noVNC en `studio.efjdefrutos.com`. Autenticación HTTP Basic (nginx) sumada a `BOARDCOMPOSER_API_KEY` y `VNC_PASSWORD`. Cuatro bugs reales detectados y corregidos probando el Studio remoto contra el despliegue real.
+- **IDE-0018**: importación de piezas desde CSV en Studio (`Archivo → Importar piezas (CSV)…`), deshacible pieza a pieza.
+- Múltiples correcciones de usabilidad detectadas probando datos reales: nodo Soluciones vacío quitado del Explorer, `DeletePieceCommand` que no eliminaba la pieza del inventario, diálogos que cerraban con id vacío/repetido, fila "Orden de piezas" en el Comparador.
+- CI: 489 tests en verde. Build del `.app` macOS generado y publicado como asset de la release `v0.2.0` en GitHub Actions (19 min).
+
+Todos los IDEs planificados (IDE-0001–IDE-0018) en 🟢. Próximos pasos sin acotar en `docs/masterplan/DOC-999-Ideas.md`.
+
 ## 2026-07-14 - Cierre de las prioridades P0/P1
 
 La IA integrada (2026-07-13) pasa de proveedor simulado a proveedor real: `AnthropicProvider` (SDK `anthropic`, modelo `claude-haiku-4-5`) conectado y verificado con una clave real (IDE-0007). Además:
