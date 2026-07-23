@@ -1,9 +1,9 @@
 import pytest
-from PySide6.QtCore import Qt, QMimeData, QUrl
-from PySide6.QtGui import QKeyEvent
+from PySide6.QtCore import QEvent, QMimeData, QPointF, Qt, QUrl
+from PySide6.QtGui import QDropEvent, QKeyEvent
 from PySide6.QtWidgets import QApplication
 
-from studio.prompt_input import PromptTextEdit
+from studio.prompt_input import PromptTextEdit, _local_file_paths
 
 
 @pytest.fixture
@@ -70,3 +70,49 @@ def test_pasting_plain_text_still_inserts_it(prompt_input):
     prompt_input.insertFromMimeData(mime)
 
     assert prompt_input.toPlainText() == "hola mundo"
+
+
+def test_keypad_enter_also_submits(prompt_input):
+    # The numeric-keypad Enter is a distinct key from the main Return; both
+    # must send, or a keypad user's message would silently insert a newline.
+    received = []
+    prompt_input.submitted.connect(lambda: received.append(True))
+
+    prompt_input.keyPressEvent(_key_event(Qt.Key.Key_Enter))
+
+    assert received == [True]
+
+
+def test_dropping_a_file_emits_files_attached_and_accepts_event(prompt_input):
+    mime = QMimeData()
+    mime.setUrls([QUrl.fromLocalFile("/tmp/a.csv"), QUrl.fromLocalFile("/tmp/b.csv")])
+    received = []
+    prompt_input.files_attached.connect(received.append)
+    event = QDropEvent(
+        QPointF(0, 0),
+        Qt.DropAction.CopyAction,
+        mime,
+        Qt.MouseButton.LeftButton,
+        Qt.KeyboardModifier.NoModifier,
+        QEvent.Type.Drop,
+    )
+
+    prompt_input.dropEvent(event)
+
+    assert received == [["/tmp/a.csv", "/tmp/b.csv"]]
+    assert event.isAccepted()
+    assert prompt_input.toPlainText() == ""
+
+
+def test_local_file_paths_keeps_only_local_files():
+    mime = QMimeData()
+    mime.setUrls([QUrl("https://example.com/x.csv"), QUrl.fromLocalFile("/tmp/x.csv")])
+
+    assert _local_file_paths(mime) == ["/tmp/x.csv"]
+
+
+def test_local_file_paths_empty_without_urls():
+    mime = QMimeData()
+    mime.setText("solo texto")
+
+    assert _local_file_paths(mime) == []
