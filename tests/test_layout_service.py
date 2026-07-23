@@ -1,4 +1,4 @@
-from studio.models import StudioBoard, StudioPiece, StudioProject
+from studio.models import StudioBoard, StudioPiece, StudioPlacement, StudioProject
 from studio.services import StudioServices
 
 
@@ -106,3 +106,20 @@ def test_apply_last_solution_assigns_placements_to_active_board():
     placements = services.projects.current_project.placements
     assert placements
     assert all(placement.board_id == "B" for placement in placements)
+
+
+def test_apply_solution_keeps_placements_on_other_boards():
+    services = StudioServices()
+    services.projects.new_project(_project_with_two_boards())
+    project = services.projects.current_project
+
+    # A piece placed by hand on board A, before solving anything.
+    project.placements.append(StudioPlacement("p1", 0, 0, board_id="A"))
+
+    services.layout.solve_current_project("B")
+    assert services.layout.apply_last_solution_to_current_project("B") is True
+
+    # Applying a layout to B must leave A's placement untouched — it used to
+    # clear the whole list and silently empty every other board.
+    assert any(placement.board_id == "A" for placement in project.placements)
+    assert any(placement.board_id == "B" for placement in project.placements)
