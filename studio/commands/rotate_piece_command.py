@@ -25,3 +25,8 @@ class RotatePieceCommand(Command):
         placement = project.placement_by_piece_id(self.piece_id)
         if placement is not None:
             placement.rotation = rotation
+            # solution_bridge.py (SVG/PDF export) swaps a piece's length/width
+            # off `rotated`, not `rotation` — without this, a manual rotate
+            # looks right on the canvas but exports in the original,
+            # unrotated orientation.
+            placement.rotated = rotation == 90
