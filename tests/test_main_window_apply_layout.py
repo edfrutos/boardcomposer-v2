@@ -50,3 +50,37 @@ def test_apply_comparison_solution_warns_about_pieces_left_unplaced(window):
     unplaced = window._unplaced_piece_ids()
     assert len(unplaced) == 1
     assert "sin colocar" in window.statusBar().currentMessage()
+
+
+def _project_two_boards_leftover_fits_the_other():
+    return StudioProject(
+        project_id="proj-2",
+        name="Demo",
+        boards=[
+            StudioBoard("A", 2000, 300),
+            StudioBoard("B", 600, 300),
+        ],
+        pieces=[
+            StudioPiece("p1", 500, 300),  # fits on B
+            StudioPiece("p2", 700, 300),  # too long for B, fits only A
+        ],
+    )
+
+
+def test_apply_layout_places_leftover_on_another_empty_board():
+    QApplication.instance() or QApplication([])
+    leftover_window = MainWindow(services=StudioServices())
+    leftover_window.services.projects.new_project(
+        _project_two_boards_leftover_fits_the_other()
+    )
+    leftover_window.workspace.reload_project()
+    leftover_window.workspace.set_active_board("B")
+
+    leftover_window.services.layout.solve_current_project("B")
+    leftover_window._apply_layout()
+
+    project = leftover_window.services.projects.current_project
+    assert not leftover_window._unplaced_piece_ids()
+    assert project.placement_by_piece_id("p1").board_id == "B"
+    assert project.placement_by_piece_id("p2").board_id == "A"
+    assert leftover_window.statusBar().currentMessage() == "Layout aplicado al proyecto"

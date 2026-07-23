@@ -105,7 +105,64 @@ def test_apply_last_solution_assigns_placements_to_active_board():
 
     placements = services.projects.current_project.placements
     assert placements
-    assert all(placement.board_id == "B" for placement in placements)
+    # Not "all on B": a piece p1+p2 don't both fit B's 1000mm, so whichever
+    # is left over now gets auto-placed on the project's other empty board
+    # (A) instead of staying unplaced — proving "B" was honored just needs
+    # at least one placement to land there.
+    assert any(placement.board_id == "B" for placement in placements)
+
+
+def test_apply_last_solution_fills_other_empty_boards_with_leftovers():
+    services = StudioServices()
+    services.projects.new_project(
+        StudioProject(
+            project_id="proj-4",
+            name="Demo",
+            boards=[
+                StudioBoard("A", 2000, 300),
+                StudioBoard("B", 600, 300),
+            ],
+            pieces=[
+                StudioPiece("p1", 500, 300),  # fits on B
+                StudioPiece("p2", 700, 300),  # too long for B, fits only A
+            ],
+        )
+    )
+
+    services.layout.solve_current_project("B")
+    assert services.layout.apply_last_solution_to_current_project("B") is True
+
+    project = services.projects.current_project
+    assert project.placement_by_piece_id("p1").board_id == "B"
+    assert project.placement_by_piece_id("p2").board_id == "A"
+
+
+def test_apply_last_solution_does_not_touch_a_board_that_already_has_pieces():
+    services = StudioServices()
+    services.projects.new_project(
+        StudioProject(
+            project_id="proj-5",
+            name="Demo",
+            boards=[
+                StudioBoard("A", 2000, 300),
+                StudioBoard("B", 600, 300),
+            ],
+            pieces=[
+                StudioPiece("p1", 500, 300),
+                StudioPiece("p2", 700, 300),
+            ],
+        )
+    )
+    project = services.projects.current_project
+    # A already has something on it — it must stay exactly as-is even though
+    # p2 would otherwise fit there once p1 fills up B.
+    project.placements.append(StudioPlacement("existing", 0, 0, board_id="A"))
+
+    services.layout.solve_current_project("B")
+    services.layout.apply_last_solution_to_current_project("B")
+
+    assert project.placement_by_piece_id("existing").board_id == "A"
+    assert project.placement_by_piece_id("p2") is None
 
 
 def test_apply_solution_keeps_placements_on_other_boards():
