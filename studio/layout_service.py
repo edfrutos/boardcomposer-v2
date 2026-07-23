@@ -120,7 +120,15 @@ class LayoutService:
 
         target_board_id = target_board.board_id
 
-        studio_project.placements.clear()
+        # Only replace placements on the board being solved. A project can
+        # have pieces placed on other boards; clearing the whole list (as
+        # this used to) silently emptied every other board whenever a layout
+        # was applied to one of them.
+        studio_project.placements = [
+            placement
+            for placement in studio_project.placements
+            if placement.board_id != target_board_id
+        ]
 
         for placement in solution.placements:
             studio_project.placements.append(
