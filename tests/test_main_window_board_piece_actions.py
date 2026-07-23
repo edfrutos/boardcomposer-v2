@@ -264,6 +264,66 @@ def test_move_piece_to_board_with_a_single_board_shows_a_message(window, monkeyp
     assert "otro tablero" in window.statusBar().currentMessage()
 
 
+def test_move_piece_to_board_rejects_a_different_thickness(window, monkeypatch):
+    project = window.services.projects.current_project
+    from studio.models import StudioBoard
+
+    project.boards.append(StudioBoard("TAB-002", 3000, 1000, thickness_mm=25.0))
+    window.workspace.selection.select_many(["P-001"])
+    monkeypatch.setattr(
+        "studio.main_window.MoveToBoardDialog",
+        lambda *a, **k: _FakeMoveDialog("TAB-002"),
+    )
+
+    window._move_piece_to_board()
+
+    placement = project.placement_by_piece_id("P-001")
+    assert placement.board_id == "TAB-001"
+    assert "grosor" in window.statusBar().currentMessage()
+
+
+def test_move_piece_to_board_rejects_a_piece_that_no_longer_fits(window, monkeypatch):
+    project = window.services.projects.current_project
+    from studio.models import StudioBoard
+
+    # P-001 is 700x300 at (120, 120) — doesn't fit an 500x400 board.
+    project.boards.append(StudioBoard("TAB-002", 500, 400))
+    window.workspace.selection.select_many(["P-001"])
+    monkeypatch.setattr(
+        "studio.main_window.MoveToBoardDialog",
+        lambda *a, **k: _FakeMoveDialog("TAB-002"),
+    )
+
+    window._move_piece_to_board()
+
+    placement = project.placement_by_piece_id("P-001")
+    assert placement.board_id == "TAB-001"
+    assert "no cabe" in window.statusBar().currentMessage()
+
+
+def test_move_piece_to_board_rejects_an_overlap_with_an_existing_piece(
+    window, monkeypatch
+):
+    project = window.services.projects.current_project
+    from studio.models import StudioBoard, StudioPiece, StudioPlacement
+
+    project.boards.append(StudioBoard("TAB-002", 3000, 1000))
+    # Same position/size P-001 would keep when moved — guaranteed overlap.
+    project.pieces.append(StudioPiece("P-999", 700, 300))
+    project.placements.append(StudioPlacement("P-999", 120, 120, board_id="TAB-002"))
+    window.workspace.selection.select_many(["P-001"])
+    monkeypatch.setattr(
+        "studio.main_window.MoveToBoardDialog",
+        lambda *a, **k: _FakeMoveDialog("TAB-002"),
+    )
+
+    window._move_piece_to_board()
+
+    placement = project.placement_by_piece_id("P-001")
+    assert placement.board_id == "TAB-001"
+    assert "no cabe" in window.statusBar().currentMessage()
+
+
 class _FakeKerfDialog:
     def __init__(self, kerf_mm, accepted=True):
         self._kerf_mm = kerf_mm
