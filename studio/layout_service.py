@@ -40,7 +40,22 @@ class LayoutService:
                 allow_cutting=False,
             )
 
+        target_board_id = source_board.board_id if source_board is not None else None
+
         for piece in studio_project.pieces:
+            placement = studio_project.placement_by_piece_id(piece.piece_id)
+            # A piece already placed on a DIFFERENT board is spoken for —
+            # packing it again here would leave the project with two
+            # placements for the same piece once the solution is applied.
+            # Pieces with no placement yet, or already on the board being
+            # solved, are fair game for (re)packing.
+            if (
+                placement is not None
+                and target_board_id is not None
+                and placement.board_id != target_board_id
+            ):
+                continue
+
             core_project.add_board(
                 Board(
                     id=piece.piece_id,
@@ -97,7 +112,11 @@ class LayoutService:
     def apply_last_solution_to_current_project(
         self, active_board_id: str | None = None
     ) -> bool:
-        return self._apply_solution(self.last_solution, active_board_id)
+        if not self._apply_solution(self.last_solution, active_board_id):
+            return False
+
+        self._fill_other_empty_boards_with_leftovers(active_board_id)
+        return True
 
     def apply_comparison_solution(
         self, index: int, active_board_id: str | None = None
@@ -105,7 +124,53 @@ class LayoutService:
         if index < 0 or index >= len(self.last_solutions):
             return False
 
-        return self._apply_solution(self.last_solutions[index], active_board_id)
+        if not self._apply_solution(self.last_solutions[index], active_board_id):
+            return False
+
+        self._fill_other_empty_boards_with_leftovers(active_board_id)
+        return True
+
+    def _fill_other_empty_boards_with_leftovers(
+        self, solved_board_id: str | None
+    ) -> None:
+        """A project can have several boards, but a layout only ever solves
+        for one of them — pieces that don't fit there aren't necessarily
+        unplaceable if another board still has room. Tries each of the
+        project's other boards, in order, for whatever's left; only boards
+        that are still completely empty are candidates, so this never
+        reshuffles a board someone (or a previous apply) already arranged.
+        """
+        studio_project = self.services.projects.current_project
+        if studio_project is None:
+            return
+
+        solved_board = self._resolve_board(studio_project, solved_board_id)
+        solved_board_id = solved_board.board_id if solved_board is not None else None
+
+        def has_unplaced_pieces() -> bool:
+            return any(
+                studio_project.placement_by_piece_id(piece.piece_id) is None
+                for piece in studio_project.pieces
+            )
+
+        occupied_board_ids = {p.board_id for p in studio_project.placements}
+        original_last_solution = self.last_solution
+
+        try:
+            for board in studio_project.boards:
+                if board.board_id == solved_board_id:
+                    continue
+                if board.board_id in occupied_board_ids:
+                    continue
+                if not has_unplaced_pieces():
+                    break
+
+                solution = self.solve_current_project(board.board_id)
+                if solution is not None and solution.placements:
+                    self._apply_solution(solution, board.board_id)
+                    occupied_board_ids.add(board.board_id)
+        finally:
+            self.last_solution = original_last_solution
 
     def _apply_solution(
         self, solution: AssemblySolution | None, active_board_id: str | None = None
