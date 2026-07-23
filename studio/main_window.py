@@ -61,6 +61,7 @@ from studio.project import (
     save_project_to_file,
 )
 from studio.workspace.board_workspace import BoardWorkspace
+from studio.workspace.placement_fit import piece_fits_on_board
 from studio.commands import (
     AddBoardCommand,
     AddPieceCommand,
@@ -1071,22 +1072,67 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage("Esa pieza no tiene una colocación.", 5000)
             return
 
-        other_board_ids = [
-            board.board_id
-            for board in project.boards
-            if board.board_id != placement.board_id
+        piece = project.piece_by_id(piece_id)
+
+        other_boards = [
+            board for board in project.boards if board.board_id != placement.board_id
         ]
-        if not other_board_ids:
+        if not other_boards:
             self.statusBar().showMessage(
                 "No hay otro tablero al que mover la pieza.", 5000
             )
             return
 
-        dialog = MoveToBoardDialog(self, board_ids=other_board_ids)
+        # A piece can only go on a board of its own thickness — same physical
+        # constraint the solver already enforces (IDE-00xx).
+        matching_boards = [
+            board for board in other_boards if board.thickness_mm == piece.thickness_mm
+        ]
+        if not matching_boards:
+            self.statusBar().showMessage(
+                f"Ningún otro tablero tiene el grosor de esta pieza "
+                f"({piece.thickness_mm:g} mm).",
+                5000,
+            )
+            return
+
+        dialog = MoveToBoardDialog(
+            self, board_ids=[board.board_id for board in matching_boards]
+        )
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
         new_board_id = dialog.selected_board_id()
+        target_board = next(
+            board for board in matching_boards if board.board_id == new_board_id
+        )
+
+        # The piece keeps its current x/y and rotation across the move — it
+        # doesn't get repositioned to fit the new board — so that has to be
+        # checked before committing, or it can silently end up outside the
+        # destination board's bounds, or overlapping a piece already there.
+        other_placements = [
+            other
+            for other in project.placements
+            if other.board_id == new_board_id and other.piece_id != piece_id
+        ]
+        pieces_by_id = {p.piece_id: p for p in project.pieces}
+        if not piece_fits_on_board(
+            target_board,
+            piece,
+            placement.x_mm,
+            placement.y_mm,
+            placement.rotated,
+            other_placements,
+            pieces_by_id,
+        ):
+            self.statusBar().showMessage(
+                f"La pieza no cabe en el tablero '{new_board_id}' en su posición "
+                "actual.",
+                5000,
+            )
+            return
+
         command = MoveToBoardCommand(
             self.services, piece_id, placement.board_id, new_board_id
         )
