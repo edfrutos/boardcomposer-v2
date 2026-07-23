@@ -959,6 +959,51 @@ class MainWindow(QMainWindow):
             thickness_mm=thickness_mm,
         )
 
+        # Shrinking a board (or changing its thickness) doesn't move the
+        # pieces already placed on it — check each still fits and still
+        # matches, or the edit would silently leave them out of bounds or
+        # on a board of the wrong thickness.
+        board_placements = [
+            placement
+            for placement in project.placements
+            if placement.board_id == active_board_id
+        ]
+        pieces_by_id = {piece.piece_id: piece for piece in project.pieces}
+        for placement in board_placements:
+            piece = pieces_by_id.get(placement.piece_id)
+            if piece is None:
+                continue
+
+            if piece.thickness_mm != new_board.thickness_mm:
+                self.statusBar().showMessage(
+                    f"La pieza '{piece.piece_id}' tiene grosor "
+                    f"{piece.thickness_mm:g} mm — no coincide con el nuevo "
+                    "grosor del tablero.",
+                    5000,
+                )
+                return
+
+            other_placements = [
+                other
+                for other in board_placements
+                if other.piece_id != placement.piece_id
+            ]
+            if not piece_fits_on_board(
+                new_board,
+                piece,
+                placement.x_mm,
+                placement.y_mm,
+                placement.rotated,
+                other_placements,
+                pieces_by_id,
+            ):
+                self.statusBar().showMessage(
+                    f"La pieza '{piece.piece_id}' ya no cabría en el tablero "
+                    "con ese tamaño.",
+                    5000,
+                )
+                return
+
         command = EditBoardCommand(self.services, old_board, new_board)
         self.services.commands.execute(command)
         self.services.projects.mark_modified()
@@ -1049,6 +1094,48 @@ class MainWindow(QMainWindow):
             material=material,
             thickness_mm=thickness_mm,
         )
+
+        # Resizing a piece (or changing its thickness) doesn't move its
+        # placement — check it still fits and still matches its board's
+        # thickness, or the edit would silently leave it out of bounds,
+        # overlapping a neighbor, or on a board of the wrong thickness.
+        placement = project.placement_by_piece_id(piece_id)
+        if placement is not None:
+            target_board = next(
+                (b for b in project.boards if b.board_id == placement.board_id),
+                None,
+            )
+            if target_board is not None:
+                if new_piece.thickness_mm != target_board.thickness_mm:
+                    self.statusBar().showMessage(
+                        f"El grosor {new_piece.thickness_mm:g} mm no coincide "
+                        f"con el del tablero '{placement.board_id}'.",
+                        5000,
+                    )
+                    return
+
+                other_placements = [
+                    other
+                    for other in project.placements
+                    if other.board_id == placement.board_id
+                    and other.piece_id != piece_id
+                ]
+                pieces_by_id = {p.piece_id: p for p in project.pieces}
+                if not piece_fits_on_board(
+                    target_board,
+                    new_piece,
+                    placement.x_mm,
+                    placement.y_mm,
+                    placement.rotated,
+                    other_placements,
+                    pieces_by_id,
+                ):
+                    self.statusBar().showMessage(
+                        f"La pieza no cabría en el tablero "
+                        f"'{placement.board_id}' con ese tamaño.",
+                        5000,
+                    )
+                    return
 
         command = EditPieceCommand(self.services, old_piece, new_piece)
         self.services.commands.execute(command)

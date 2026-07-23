@@ -110,6 +110,42 @@ def test_edit_board_replaces_the_active_boards_dimensions(window, monkeypatch):
     assert board.width_mm == 900
 
 
+def test_edit_board_rejects_a_shrink_that_leaves_a_piece_out_of_bounds(
+    window, monkeypatch
+):
+    board_id = window.workspace.active_board_id
+    # P-003 sits at x=1500, 820 long (right edge at 2320) — a 2000mm board
+    # cuts it off.
+    monkeypatch.setattr(
+        "studio.main_window.BoardDialog",
+        lambda *a, **k: _FakeDialog((board_id, 2000, 1000, "Demo", 19.0)),
+    )
+
+    window._edit_board()
+
+    project = window.services.projects.current_project
+    board = next(b for b in project.boards if b.board_id == board_id)
+    assert board.length_mm == 3000
+    assert "no cabría" in window.statusBar().currentMessage()
+
+
+def test_edit_board_rejects_a_thickness_that_no_longer_matches_its_pieces(
+    window, monkeypatch
+):
+    board_id = window.workspace.active_board_id
+    monkeypatch.setattr(
+        "studio.main_window.BoardDialog",
+        lambda *a, **k: _FakeDialog((board_id, 3000, 1000, "Demo", 25.0)),
+    )
+
+    window._edit_board()
+
+    project = window.services.projects.current_project
+    board = next(b for b in project.boards if b.board_id == board_id)
+    assert board.thickness_mm == 19.0
+    assert "grosor" in window.statusBar().currentMessage()
+
+
 def test_add_piece_appends_a_piece_visible_on_the_active_board(window, monkeypatch):
     active_board_id = window.workspace.active_board_id
     monkeypatch.setattr(
@@ -174,17 +210,69 @@ def test_edit_piece_requires_a_selection(window, monkeypatch):
 
 def test_edit_piece_replaces_the_selected_pieces_dimensions(window, monkeypatch):
     window.workspace.selection.select_many(["P-001"])
+    # P-001 sits at (120, 120); P-002 starts at x=900 — 750 keeps clear of it
+    # (120+750=870 < 900), unlike the 800 this test used to grow to, which
+    # would now overlap P-002 and get rejected (see the test below).
     monkeypatch.setattr(
         "studio.main_window.PieceDialog",
-        lambda *a, **k: _FakeDialog(("P-001", 800, 400, "Demo", 19.0)),
+        lambda *a, **k: _FakeDialog(("P-001", 750, 350, "Demo", 19.0)),
     )
 
     window._edit_piece()
 
     project = window.services.projects.current_project
     piece = next(p for p in project.pieces if p.piece_id == "P-001")
-    assert piece.length_mm == 800
-    assert piece.width_mm == 400
+    assert piece.length_mm == 750
+    assert piece.width_mm == 350
+
+
+def test_edit_piece_rejects_a_resize_that_would_overlap_a_neighbor(window, monkeypatch):
+    # Growing P-001 (at 120,120) to 800 long reaches past P-002's x=900.
+    monkeypatch.setattr(
+        "studio.main_window.PieceDialog",
+        lambda *a, **k: _FakeDialog(("P-001", 800, 400, "Demo", 19.0)),
+    )
+    window.workspace.selection.select_many(["P-001"])
+
+    window._edit_piece()
+
+    project = window.services.projects.current_project
+    piece = next(p for p in project.pieces if p.piece_id == "P-001")
+    assert piece.length_mm == 700
+    assert "no cabría" in window.statusBar().currentMessage()
+
+
+def test_edit_piece_rejects_a_resize_that_would_leave_the_board(window, monkeypatch):
+    # TAB-001 is 3000x1000 — 3000 long doesn't fit starting at P-001's x=120.
+    monkeypatch.setattr(
+        "studio.main_window.PieceDialog",
+        lambda *a, **k: _FakeDialog(("P-001", 3000, 300, "Demo", 19.0)),
+    )
+    window.workspace.selection.select_many(["P-001"])
+
+    window._edit_piece()
+
+    project = window.services.projects.current_project
+    piece = next(p for p in project.pieces if p.piece_id == "P-001")
+    assert piece.length_mm == 700
+    assert "no cabría" in window.statusBar().currentMessage()
+
+
+def test_edit_piece_rejects_a_thickness_that_no_longer_matches_its_board(
+    window, monkeypatch
+):
+    monkeypatch.setattr(
+        "studio.main_window.PieceDialog",
+        lambda *a, **k: _FakeDialog(("P-001", 700, 300, "Demo", 25.0)),
+    )
+    window.workspace.selection.select_many(["P-001"])
+
+    window._edit_piece()
+
+    project = window.services.projects.current_project
+    piece = next(p for p in project.pieces if p.piece_id == "P-001")
+    assert piece.thickness_mm == 19.0
+    assert "grosor" in window.statusBar().currentMessage()
 
 
 def _explorer_piece_texts(window) -> list[str]:
