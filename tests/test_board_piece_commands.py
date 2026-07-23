@@ -4,6 +4,7 @@ from studio.commands import (
     DeletePieceCommand,
     EditBoardCommand,
     EditPieceCommand,
+    RotatePieceCommand,
 )
 from studio.models import StudioBoard, StudioPiece, StudioPlacement, StudioProject
 from studio.services import StudioServices
@@ -157,3 +158,33 @@ def test_delete_piece_command_on_an_unknown_piece_does_nothing():
     command.execute()
 
     assert services.projects.current_project.pieces == [piece]
+
+
+def test_rotate_piece_command_sets_rotation_and_rotated_together():
+    piece = StudioPiece("p1", 500, 200)
+    placement = StudioPlacement("p1", 0, 0, board_id="B1")
+    services = _services_with_project(pieces=[piece], placements=[placement])
+    command = RotatePieceCommand(services, "p1", 0, 90)
+
+    command.execute()
+
+    updated = services.projects.current_project.placement_by_piece_id("p1")
+    assert updated.rotation == 90
+    # solution_bridge.py (SVG/PDF export) swaps length/width off `rotated`,
+    # not `rotation` — if these two ever drift apart, a piece rotated on
+    # the canvas exports in its original, unrotated orientation.
+    assert updated.rotated is True
+
+
+def test_rotate_piece_command_undo_restores_rotation_and_rotated():
+    piece = StudioPiece("p1", 500, 200)
+    placement = StudioPlacement("p1", 0, 0, board_id="B1", rotated=False, rotation=0)
+    services = _services_with_project(pieces=[piece], placements=[placement])
+    command = RotatePieceCommand(services, "p1", 0, 90)
+    command.execute()
+
+    command.undo()
+
+    updated = services.projects.current_project.placement_by_piece_id("p1")
+    assert updated.rotation == 0
+    assert updated.rotated is False
