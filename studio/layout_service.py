@@ -56,6 +56,17 @@ class LayoutService:
             ):
                 continue
 
+            # A piece can only go on a board of its own thickness — a 19mm
+            # piece has no business on a 25mm board, physically. Both
+            # (re)pack candidates for the active board and the leftover
+            # distribution to other boards go through this same method, so
+            # filtering here covers both without extra bookkeeping.
+            if (
+                source_board is not None
+                and piece.thickness_mm != source_board.thickness_mm
+            ):
+                continue
+
             core_project.add_board(
                 Board(
                     id=piece.piece_id,

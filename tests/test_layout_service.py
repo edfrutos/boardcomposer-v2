@@ -86,7 +86,10 @@ def test_to_core_project_uses_each_pieces_own_thickness():
     project = StudioProject(
         project_id="proj-3",
         name="Demo",
-        boards=[StudioBoard("A", 2000, 300)],
+        # Board thickness matches the piece — this test is only about the
+        # value passing through, not about the thickness-matching filter
+        # (covered separately below).
+        boards=[StudioBoard("A", 2000, 300, thickness_mm=25.0)],
         pieces=[StudioPiece("p1", 700, 300, thickness_mm=25.0)],
     )
     services.projects.new_project(project)
@@ -94,6 +97,75 @@ def test_to_core_project_uses_each_pieces_own_thickness():
     core_project = services.layout.to_core_project()
 
     assert core_project.boards[0].thickness_mm == 25.0
+
+
+def test_to_core_project_excludes_pieces_with_a_different_thickness():
+    services = StudioServices()
+    services.projects.new_project(
+        StudioProject(
+            project_id="proj-6",
+            name="Demo",
+            boards=[StudioBoard("A", 2000, 300, thickness_mm=19.0)],
+            pieces=[
+                StudioPiece("p1", 500, 300, thickness_mm=19.0),
+                StudioPiece("p2", 500, 300, thickness_mm=25.0),
+            ],
+        )
+    )
+
+    core_project = services.layout.to_core_project("A")
+
+    assert {board.id for board in core_project.boards} == {"p1"}
+
+
+def test_apply_last_solution_sends_leftover_to_the_matching_thickness_board():
+    services = StudioServices()
+    services.projects.new_project(
+        StudioProject(
+            project_id="proj-7",
+            name="Demo",
+            boards=[
+                StudioBoard("A", 2000, 300, thickness_mm=19.0),
+                StudioBoard("B", 2000, 300, thickness_mm=25.0),
+            ],
+            pieces=[
+                StudioPiece("p1", 500, 300, thickness_mm=19.0),
+                StudioPiece("p2", 500, 300, thickness_mm=25.0),
+            ],
+        )
+    )
+
+    services.layout.solve_current_project("A")
+    assert services.layout.apply_last_solution_to_current_project("A") is True
+
+    project = services.projects.current_project
+    assert project.placement_by_piece_id("p1").board_id == "A"
+    assert project.placement_by_piece_id("p2").board_id == "B"
+
+
+def test_apply_last_solution_leaves_piece_unplaced_without_a_matching_thickness_board():
+    services = StudioServices()
+    services.projects.new_project(
+        StudioProject(
+            project_id="proj-8",
+            name="Demo",
+            boards=[
+                StudioBoard("A", 2000, 300, thickness_mm=19.0),
+                StudioBoard("B", 2000, 300, thickness_mm=19.0),
+            ],
+            pieces=[
+                StudioPiece("p1", 500, 300, thickness_mm=19.0),
+                StudioPiece("p2", 500, 300, thickness_mm=25.0),  # no 25mm board
+            ],
+        )
+    )
+
+    services.layout.solve_current_project("A")
+    services.layout.apply_last_solution_to_current_project("A")
+
+    project = services.projects.current_project
+    assert project.placement_by_piece_id("p1").board_id == "A"
+    assert project.placement_by_piece_id("p2") is None
 
 
 def test_apply_last_solution_assigns_placements_to_active_board():
