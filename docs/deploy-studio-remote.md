@@ -19,9 +19,12 @@ Receta para acceder a la interfaz visual de BoardComposer Studio (`studio/`, apl
     docker build -f Dockerfile.studio -t boardcomposer-studio-remote .
     docker run -d --name boardcomposer-studio-remote -p 6080:6080 \
       -e VNC_PASSWORD="una-contraseña-de-vnc" \
+      -e ANTHROPIC_API_KEY="tu-clave-de-anthropic" \
       boardcomposer-studio-remote
 
 Abre `http://localhost:6080/vnc.html` en el navegador, introduce la contraseña de VNC, y deberías ver la ventana de Studio arrancando.
+
+**`ANTHROPIC_API_KEY` es opcional pero recomendada:** sin ella, el panel Asistente sigue funcionando pero siempre responde "Respuesta simulada del asistente IA." (`boardcomposer.ai.default_provider()` cae al proveedor mock si no encuentra la variable en el entorno — ver `docs/deploy.md` para dónde se usa esta misma variable en la API). No es un fallo: es el modo sin proveedor real, y solo se nota preguntando algo al Asistente — el resto de Studio (tableros, piezas, solver) no depende de ella en absoluto.
 
 **Verificado con una build y un arranque reales** (no solo revisión del `Dockerfile`): imagen construida, contenedor levantado, y la interfaz completa de Studio (Explorer, lienzo con piezas, toolbar, Asistente) confirmada por captura real a través de `noVNC` en el navegador. Un fallo real detectado y corregido en el proceso: Qt necesita `libxcb-xkb1` además de `libxcb-cursor0` para cargar el plugin `xcb` — el mensaje de error de Qt apunta genéricamente a `libxcb-cursor0` aunque la causa real sea otra librería `xcb-*` ausente; si el contenedor no arranca, revisa los logs (`docker logs`) para la línea `cannot open shared object file`, no solo el mensaje genérico de Qt.
 
@@ -46,6 +49,7 @@ Mismo patrón que la Opción C de `docs/deploy.md`, con un subdominio propio (p.
       -p 127.0.0.1:6080:6080 \
       -v /root/studio-compartido:/home/appuser/compartido \
       -e VNC_PASSWORD="una-contraseña-de-vnc" \
+      -e ANTHROPIC_API_KEY="tu-clave-de-anthropic" \
       boardcomposer-studio-remote
 
 **Carpeta compartida — subir/bajar ficheros:** los diálogos de fichero de Studio (Abrir/Guardar proyecto, Exportar, Importar CSV, adjuntar archivo al Asistente) navegan el sistema de ficheros **del contenedor**, no el de tu Mac — sin esto, un CSV que tengas en tu Mac nunca aparece ahí, por mucho que lo busques. El `-v` monta `/root/studio-compartido` (en el VPS) como `/home/appuser/compartido` dentro del contenedor — mismo contenido, visto desde dos sitios. Para subir un fichero desde tu Mac:
@@ -92,6 +96,7 @@ Con esto quedan dos credenciales independientes y de naturaleza distinta: `auth_
       -p 127.0.0.1:6080:6080 \
       -v /root/studio-compartido:/home/appuser/compartido \
       -e VNC_PASSWORD="una-contraseña-de-vnc" \
+      -e ANTHROPIC_API_KEY="tu-clave-de-anthropic" \
       boardcomposer-studio-remote
 
 ---
@@ -104,3 +109,4 @@ Con esto quedan dos credenciales independientes y de naturaleza distinta: `auth_
 - **Contraseña de VNC rechazada:** `VNC_PASSWORD` se fija al arrancar el contenedor (`docker run -e VNC_PASSWORD=...`) — si la cambias, hay que recrear el contenedor (parar, quitar, volver a arrancar con el nuevo valor), no basta con reiniciarlo.
 - **Rendimiento lento/tirones:** esperable en escritorio remoto sobre una conexión doméstica — noVNC no está pensado para animaciones fluidas, solo para uso puntual de la interfaz.
 - **Un fichero de tu Mac no aparece en el diálogo "Abrir"/"Importar" de Studio:** los diálogos ven el sistema de ficheros del contenedor, no el de tu Mac — sin la carpeta compartida del paso 3 no hay forma de que aparezca. Súbelo primero con `scp` a `/root/studio-compartido/` en el VPS.
+- **El panel Asistente siempre responde "Respuesta simulada del asistente IA.":** falta `ANTHROPIC_API_KEY` en el contenedor — cayó a `MockAIProvider` (`default_provider()`). No es un fallo del resto de Studio (tableros, piezas, solver funcionan igual), solo del Asistente. Confirma con `docker exec boardcomposer-studio-remote env | grep ANTHROPIC`, y si no aparece, recrea el contenedor con `-e ANTHROPIC_API_KEY=...` (paso 3/8).
