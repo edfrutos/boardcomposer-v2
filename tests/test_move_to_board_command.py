@@ -35,3 +35,28 @@ def test_move_to_board_command_undo_restores_the_old_board():
 
     placement = services.projects.current_project.placement_by_piece_id("p1")
     assert placement.board_id == "A"
+
+
+def test_move_to_board_command_with_reposition_moves_the_placement():
+    services = _services_with_piece_on_board_a()
+    command = MoveToBoardCommand(
+        services, "p1", "A", "B", old_x=0, old_y=0, new_x=300, new_y=100
+    )
+
+    command.redo()
+
+    placement = services.projects.current_project.placement_by_piece_id("p1")
+    assert (placement.board_id, placement.x_mm, placement.y_mm) == ("B", 300, 100)
+
+
+def test_move_to_board_command_with_reposition_undo_restores_both():
+    services = _services_with_piece_on_board_a()
+    command = MoveToBoardCommand(
+        services, "p1", "A", "B", old_x=0, old_y=0, new_x=300, new_y=100
+    )
+    command.redo()
+
+    command.undo()
+
+    placement = services.projects.current_project.placement_by_piece_id("p1")
+    assert (placement.board_id, placement.x_mm, placement.y_mm) == ("A", 0, 0)

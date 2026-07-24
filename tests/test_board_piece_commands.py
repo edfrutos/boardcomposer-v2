@@ -188,3 +188,32 @@ def test_rotate_piece_command_undo_restores_rotation_and_rotated():
     updated = services.projects.current_project.placement_by_piece_id("p1")
     assert updated.rotation == 0
     assert updated.rotated is False
+
+
+def test_rotate_piece_command_with_reposition_moves_the_placement():
+    piece = StudioPiece("p1", 500, 200)
+    placement = StudioPlacement("p1", 0, 0, board_id="B1")
+    services = _services_with_project(pieces=[piece], placements=[placement])
+    command = RotatePieceCommand(
+        services, "p1", 0, 90, old_x=0, old_y=0, new_x=300, new_y=150
+    )
+
+    command.execute()
+
+    updated = services.projects.current_project.placement_by_piece_id("p1")
+    assert (updated.rotation, updated.x_mm, updated.y_mm) == (90, 300, 150)
+
+
+def test_rotate_piece_command_with_reposition_undo_restores_position():
+    piece = StudioPiece("p1", 500, 200)
+    placement = StudioPlacement("p1", 0, 0, board_id="B1")
+    services = _services_with_project(pieces=[piece], placements=[placement])
+    command = RotatePieceCommand(
+        services, "p1", 0, 90, old_x=0, old_y=0, new_x=300, new_y=150
+    )
+    command.execute()
+
+    command.undo()
+
+    updated = services.projects.current_project.placement_by_piece_id("p1")
+    assert (updated.rotation, updated.x_mm, updated.y_mm) == (0, 0, 0)

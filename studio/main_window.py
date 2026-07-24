@@ -61,7 +61,7 @@ from studio.project import (
     save_project_to_file,
 )
 from studio.workspace.board_workspace import BoardWorkspace
-from studio.workspace.placement_fit import piece_fits_on_board
+from studio.workspace.placement_fit import find_free_position, piece_fits_on_board
 from studio.commands import (
     AddBoardCommand,
     AddPieceCommand,
@@ -844,18 +844,57 @@ class MainWindow(QMainWindow):
         if item is None:
             return
 
+        new_x, new_y = placement.x_mm, placement.y_mm
+
         if not self.workspace.can_rotate_item(item, new_rotation):
-            self.statusBar().showMessage(
-                "La pieza no puede rotarse en esa posición",
-                3000,
+            # Rotating in place (same top-left corner) would overlap a
+            # neighbor or leave the board — try to find free space for the
+            # rotated piece elsewhere on the same board instead of just
+            # refusing when the board isn't actually full.
+            board = next(
+                (
+                    b
+                    for b in project.boards
+                    if b.board_id == self.workspace.active_board_id
+                ),
+                None,
             )
-            return
+            piece = project.piece_by_id(piece_id)
+            length_mm, width_mm = piece.length_mm, piece.width_mm
+            if new_rotation == 90:
+                length_mm, width_mm = width_mm, length_mm
+
+            other_placements = [
+                other
+                for other in project.placements
+                if other.board_id == self.workspace.active_board_id
+                and other.piece_id != piece_id
+            ]
+            pieces_by_id = {p.piece_id: p for p in project.pieces}
+            free_position = (
+                find_free_position(
+                    board, length_mm, width_mm, other_placements, pieces_by_id
+                )
+                if board is not None
+                else None
+            )
+            if free_position is None:
+                self.statusBar().showMessage(
+                    "La pieza no puede rotarse: no hay hueco libre en el tablero.",
+                    3000,
+                )
+                return
+            new_x, new_y = free_position
 
         command = RotatePieceCommand(
             self.services,
             piece_id,
             old_rotation,
             new_rotation,
+            old_x=placement.x_mm,
+            old_y=placement.y_mm,
+            new_x=new_x,
+            new_y=new_y,
         )
         self.services.commands.execute(command)
 
@@ -1194,9 +1233,10 @@ class MainWindow(QMainWindow):
             board for board in matching_boards if board.board_id == new_board_id
         )
 
-        # The piece keeps its current x/y and rotation across the move — it
-        # doesn't get repositioned to fit the new board — so that has to be
-        # checked before committing, or it can silently end up outside the
+        # The piece keeps its current rotation across the move; its x/y only
+        # carries over as-is when it still fits there, otherwise a free spot
+        # is found elsewhere on the destination board — the alternative
+        # (silently keeping stale coordinates) can leave it outside the
         # destination board's bounds, or overlapping a piece already there.
         other_placements = [
             other
@@ -1204,6 +1244,7 @@ class MainWindow(QMainWindow):
             if other.board_id == new_board_id and other.piece_id != piece_id
         ]
         pieces_by_id = {p.piece_id: p for p in project.pieces}
+        new_x, new_y = placement.x_mm, placement.y_mm
         if not piece_fits_on_board(
             target_board,
             piece,
@@ -1213,15 +1254,31 @@ class MainWindow(QMainWindow):
             other_placements,
             pieces_by_id,
         ):
-            self.statusBar().showMessage(
-                f"La pieza no cabe en el tablero '{new_board_id}' en su posición "
-                "actual.",
-                5000,
+            length_mm, width_mm = piece.length_mm, piece.width_mm
+            if placement.rotated:
+                length_mm, width_mm = width_mm, length_mm
+
+            free_position = find_free_position(
+                target_board, length_mm, width_mm, other_placements, pieces_by_id
             )
-            return
+            if free_position is None:
+                self.statusBar().showMessage(
+                    f"La pieza no cabe en el tablero '{new_board_id}': no tiene "
+                    "hueco libre suficiente.",
+                    5000,
+                )
+                return
+            new_x, new_y = free_position
 
         command = MoveToBoardCommand(
-            self.services, piece_id, placement.board_id, new_board_id
+            self.services,
+            piece_id,
+            placement.board_id,
+            new_board_id,
+            old_x=placement.x_mm,
+            old_y=placement.y_mm,
+            new_x=new_x,
+            new_y=new_y,
         )
         self.services.commands.execute(command)
         self.services.projects.mark_modified()
