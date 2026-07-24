@@ -48,3 +48,52 @@ def piece_fits_on_board(
             return False
 
     return True
+
+
+def find_free_position(
+    board: StudioBoard,
+    length_mm: float,
+    width_mm: float,
+    other_placements: list[StudioPlacement],
+    pieces_by_id: dict[str, StudioPiece],
+) -> tuple[float, float] | None:
+    """Finds a top-left corner where a length_mm x width_mm rectangle fits
+    on `board` without leaving its bounds or overlapping `other_placements`.
+
+    A corner-search heuristic, not full bin-packing: candidates are the
+    board's origin plus the right/bottom edge of every existing placement,
+    scanned top-to-bottom then left-to-right. Good enough to relocate one
+    piece into free space a move/rotate would otherwise be rejected for —
+    solving a whole layout from scratch is what Generar (the solver) is for.
+    """
+    other_rects = []
+    candidates_x = {0.0}
+    candidates_y = {0.0}
+
+    for placement in other_placements:
+        piece = pieces_by_id.get(placement.piece_id)
+        if piece is None:
+            continue
+
+        piece_length_mm, piece_width_mm = piece.length_mm, piece.width_mm
+        if placement.rotated:
+            piece_length_mm, piece_width_mm = piece_width_mm, piece_length_mm
+
+        other_rects.append(
+            Rectangle(placement.x_mm, placement.y_mm, piece_length_mm, piece_width_mm)
+        )
+        candidates_x.add(placement.x_mm + piece_length_mm)
+        candidates_y.add(placement.y_mm + piece_width_mm)
+
+    for y_mm in sorted(candidates_y):
+        for x_mm in sorted(candidates_x):
+            candidate = Rectangle(x_mm, y_mm, length_mm, width_mm)
+            if candidate.right_mm > board.length_mm:
+                continue
+            if candidate.top_mm > board.width_mm:
+                continue
+            if any(candidate.overlaps(other) for other in other_rects):
+                continue
+            return (x_mm, y_mm)
+
+    return None

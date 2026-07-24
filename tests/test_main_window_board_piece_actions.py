@@ -389,16 +389,41 @@ def test_move_piece_to_board_rejects_a_piece_that_no_longer_fits(window, monkeyp
     assert "no cabe" in window.statusBar().currentMessage()
 
 
-def test_move_piece_to_board_rejects_an_overlap_with_an_existing_piece(
+def test_move_piece_to_board_relocates_when_its_old_position_overlaps(
     window, monkeypatch
 ):
     project = window.services.projects.current_project
     from studio.models import StudioBoard, StudioPiece, StudioPlacement
 
     project.boards.append(StudioBoard("TAB-002", 3000, 1000))
-    # Same position/size P-001 would keep when moved — guaranteed overlap.
+    # Same position/size P-001 would keep when moved — guaranteed overlap at
+    # (120, 120), but TAB-002 is large enough to have room elsewhere.
     project.pieces.append(StudioPiece("P-999", 700, 300))
     project.placements.append(StudioPlacement("P-999", 120, 120, board_id="TAB-002"))
+    window.workspace.selection.select_many(["P-001"])
+    monkeypatch.setattr(
+        "studio.main_window.MoveToBoardDialog",
+        lambda *a, **k: _FakeMoveDialog("TAB-002"),
+    )
+
+    window._move_piece_to_board()
+
+    placement = project.placement_by_piece_id("P-001")
+    assert placement.board_id == "TAB-002"
+    assert (placement.x_mm, placement.y_mm) != (120, 120)
+
+
+def test_move_piece_to_board_rejects_when_no_free_space_exists_anywhere(
+    window, monkeypatch
+):
+    project = window.services.projects.current_project
+    from studio.models import StudioBoard, StudioPiece, StudioPlacement
+
+    # Exactly P-001-sized (700x300) — no room left over for a second copy
+    # anywhere on the board, at its old position or any other.
+    project.boards.append(StudioBoard("TAB-002", 700, 300))
+    project.pieces.append(StudioPiece("P-999", 700, 300))
+    project.placements.append(StudioPlacement("P-999", 0, 0, board_id="TAB-002"))
     window.workspace.selection.select_many(["P-001"])
     monkeypatch.setattr(
         "studio.main_window.MoveToBoardDialog",
