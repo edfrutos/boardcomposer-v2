@@ -17,8 +17,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "ruff",
-    "pytest",
+    "ruff==0.15.21",
+    "pytest==9.1.1",
     "pylint",
 ]
 prod = [
