@@ -5,7 +5,7 @@ import pathlib
 import sys
 import uuid
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QCoreApplication, QSettings, Qt
 from PySide6.QtGui import QAction, QActionGroup, QCloseEvent
 
 from PySide6.QtWidgets import (
@@ -77,6 +77,8 @@ RESERVED_PANEL_NAMES = {"Explorer", "Inspector", "Timeline", "Comparador", "Asis
 
 PROJECT_FILE_FILTER = "BoardComposer Studio (*.bcstudio.json)"
 
+LAST_PROJECT_PATH_SETTINGS_KEY = "last_project/path"
+
 # Extensions read as plain text when attached to an assistant question — the
 # AI provider is text-only (studio/assistant_service.py), so anything else
 # (images, PDFs, binaries) is referenced by name only, not by content.
@@ -122,6 +124,13 @@ class MainWindow(QMainWindow):
 
     def __init__(self, services):
         super().__init__()
+        # QSettings() needs an organization/application name to know where
+        # to store its file — set here too (not just studio/app.py's entry
+        # point) so it's always established, including when a test builds a
+        # MainWindow directly without going through main().
+        QCoreApplication.setOrganizationName("BoardComposer")
+        QCoreApplication.setApplicationName("BoardComposer Studio")
+
         self.services = services
         self.setWindowTitle("BoardComposer Studio")
         self.resize(1400, 900)
@@ -131,7 +140,7 @@ class MainWindow(QMainWindow):
         self._build_workspace()
         self._build_panels()
         self._build_statusbar()
-        self._load_demo_project()
+        self._load_last_or_demo_project()
 
     def _build_menu(self):
         menu = QMenuBar(self)
@@ -539,6 +548,28 @@ class MainWindow(QMainWindow):
         status.showMessage("BoardComposer Studio listo")
         self.setStatusBar(status)
 
+    def _load_last_or_demo_project(self):
+        last_path = QSettings().value(LAST_PROJECT_PATH_SETTINGS_KEY)
+        if last_path:
+            try:
+                project = load_project_from_file(last_path)
+            except (OSError, ValueError, KeyError):
+                # The remembered project is gone, moved, or corrupted — fall
+                # through to the demo project rather than failing to start.
+                pass
+            else:
+                self.services.projects.open_project(project, filename=last_path)
+                self.workspace.reload_project()
+                self._reload_explorer()
+                self._update_window_title()
+                self.statusBar().showMessage(f"Proyecto abierto: {last_path}", 3000)
+                return
+
+        self._load_demo_project()
+
+    def _remember_last_project_path(self, path: str) -> None:
+        QSettings().setValue(LAST_PROJECT_PATH_SETTINGS_KEY, path)
+
     def _load_demo_project(self):
         project = StudioProject(
             project_id="PRJ-DEMO-001",
@@ -672,6 +703,7 @@ class MainWindow(QMainWindow):
             return
 
         self.services.projects.open_project(project, filename=path)
+        self._remember_last_project_path(path)
         self.workspace.reload_project()
         self.workspace.selection.clear()
         self.workspace.selection.sync_inspector(self)
@@ -750,6 +782,7 @@ class MainWindow(QMainWindow):
             return
 
         self.services.projects.mark_saved(path)
+        self._remember_last_project_path(path)
         self._update_window_title()
         self.statusBar().showMessage(f"Proyecto guardado: {path}", 3000)
 
