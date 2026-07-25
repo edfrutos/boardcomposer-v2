@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from boardcomposer.cli import build_demo_project, main
 
 
@@ -21,6 +23,36 @@ def test_excel_flag_loads_boards_from_an_excel_file(capsys, monkeypatch):
     output = json.loads(capsys.readouterr().out)
 
     assert output["input_boards"] == 3
+
+
+def test_a_malformed_csv_exits_with_a_message_instead_of_a_traceback(
+    tmp_path, monkeypatch
+):
+    path = tmp_path / "malo.csv"
+    path.write_text(
+        "id,length_mm,width_mm,thickness_mm\nT1,ancho,300,19\n", encoding="utf-8"
+    )
+    monkeypatch.setattr("sys.argv", ["boardcomposer", "--csv", str(path)])
+
+    with pytest.raises(SystemExit) as exit_info:
+        main()
+
+    # SystemExit con texto: argparse/Python lo imprimen en stderr y salen con
+    # código 1, en vez de la traza que salía antes.
+    assert "Fila 2" in str(exit_info.value)
+
+
+def test_a_missing_input_file_exits_with_a_message_instead_of_a_traceback(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(
+        "sys.argv", ["boardcomposer", "--csv", str(tmp_path / "no-existe.csv")]
+    )
+
+    with pytest.raises(SystemExit) as exit_info:
+        main()
+
+    assert "No se pudo abrir" in str(exit_info.value)
 
 
 def test_plugins_subcommand_prints_a_summary_per_group(capsys, monkeypatch):
