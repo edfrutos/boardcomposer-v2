@@ -1,4 +1,5 @@
 import json
+import math
 
 from boardcomposer.ai.json_response import strip_json_fence
 from boardcomposer.ai.provider import AIProvider
@@ -66,7 +67,13 @@ def suggest_strategy(
             f"Pesos inválidos en la respuesta del asistente: {error}"
         ) from error
 
+    # Estos pesos vienen de la respuesta del asistente, parseada con
+    # json.loads: acepta los tokens NaN/Infinity, y `value < 0` es False para
+    # ambos. Un peso NaN contamina cada puntuación y deja la ordenación de
+    # soluciones al azar (toda comparación con NaN es False).
     for name, value in weights.__dict__.items():
+        if not math.isfinite(value):
+            raise SuggestStrategyError(f"'{name}' debe ser un número finito.")
         if value < 0:
             raise SuggestStrategyError(f"'{name}' no puede ser negativo.")
 

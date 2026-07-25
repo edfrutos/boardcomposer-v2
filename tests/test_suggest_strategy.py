@@ -108,6 +108,21 @@ def test_suggest_strategy_rejects_negative_weight():
         suggest_strategy(_project(), provider)
 
 
+@pytest.mark.parametrize("token", ["NaN", "Infinity", "-Infinity"])
+def test_suggest_strategy_rejects_a_non_finite_weight(token):
+    # La respuesta del asistente se parsea con json.loads, que acepta los
+    # tokens NaN/Infinity: un peso NaN pasaba el `< 0` y contaminaba cada
+    # puntuación, dejando la ordenación de soluciones al azar.
+    provider = _provider(
+        '{"weights": {"material_utilization": ' + token + ', "placed_boards": 30,'
+        ' "compactness": 20, "rotation_penalty": 10},'
+        ' "generator_names": ["horizontal"]}'
+    )
+
+    with pytest.raises(SuggestStrategyError, match="número finito"):
+        suggest_strategy(_project(), provider)
+
+
 def test_suggest_strategy_rejects_missing_generator_names():
     provider = _provider(
         {

@@ -86,6 +86,30 @@ def test_rejects_non_numeric_dimensions(tmp_path):
         load_pieces_from_csv(path)
 
 
+@pytest.mark.parametrize("value", ["nan", "inf", "-inf", "1e400"])
+def test_rejects_non_finite_dimensions(tmp_path, value):
+    # float() se traga "nan"/"inf" sin error, y "1e400" desborda a inf.
+    path = _write_csv(
+        tmp_path,
+        f"id,length_mm,width_mm,thickness_mm\nP-101,{value},300,19\n",
+    )
+
+    with pytest.raises(CsvImportError, match="número finito"):
+        load_pieces_from_csv(path)
+
+
+@pytest.mark.parametrize("value", ["0", "-500"])
+@pytest.mark.parametrize("column", ["length_mm", "width_mm", "thickness_mm"])
+def test_rejects_non_positive_dimensions(tmp_path, column, value):
+    dimensions = {"length_mm": "700", "width_mm": "300", "thickness_mm": "19"}
+    dimensions[column] = value
+    row = ",".join(dimensions[key] for key in ("length_mm", "width_mm", "thickness_mm"))
+    path = _write_csv(tmp_path, f"id,length_mm,width_mm,thickness_mm\nP-101,{row}\n")
+
+    with pytest.raises(CsvImportError, match=column):
+        load_pieces_from_csv(path)
+
+
 def test_rejects_an_empty_csv(tmp_path):
     path = _write_csv(tmp_path, "id,length_mm,width_mm,thickness_mm\n")
 

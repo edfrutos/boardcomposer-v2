@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from studio.models import StudioBoard, StudioPiece, StudioPlacement, StudioProject
@@ -189,6 +191,34 @@ def test_project_from_dict_keeps_the_rest_of_the_project_when_dropping_placement
     assert [board.board_id for board in project.boards] == ["A"]
     assert [piece.piece_id for piece in project.pieces] == ["p1"]
     assert project.kerf_mm == 3.2
+
+
+def test_project_from_dict_rejects_a_board_with_a_non_finite_dimension():
+    # json.loads acepta el token NaN, así que un fichero de proyecto puede
+    # traerlo. Aquí sí se rechaza el fichero entero: un tablero sin
+    # dimensiones usables no deja nada que dibujar, al contrario que un
+    # placement colgante (que sólo se descarta).
+    data = json.loads(
+        '{"project_id": "proj-1", "name": "Demo",'
+        ' "boards": [{"board_id": "A", "length_mm": NaN, "width_mm": 300}],'
+        ' "pieces": [], "placements": []}'
+    )
+
+    with pytest.raises(ValueError, match="length_mm"):
+        project_from_dict(data)
+
+
+def test_project_from_dict_rejects_a_piece_with_a_negative_dimension():
+    data = {
+        "project_id": "proj-1",
+        "name": "Demo",
+        "boards": [{"board_id": "A", "length_mm": 2000, "width_mm": 300}],
+        "pieces": [{"piece_id": "p1", "length_mm": -500, "width_mm": 200}],
+        "placements": [],
+    }
+
+    with pytest.raises(ValueError, match="length_mm"):
+        project_from_dict(data)
 
 
 def test_project_from_dict_raises_value_error_on_missing_required_field():

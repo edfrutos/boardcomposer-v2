@@ -152,6 +152,54 @@ def test_solve_rejects_invalid_board_fields(client):
     assert "Tabla inválida" in response.get_json()["error"]
 
 
+@pytest.mark.parametrize("token", ["NaN", "Infinity", "-Infinity"])
+@pytest.mark.parametrize("field", ["length_mm", "width_mm", "thickness_mm"])
+def test_solve_rejects_non_finite_board_dimensions(client, field, token):
+    # Sent as a raw body on purpose: json.loads accepts the bare NaN/Infinity
+    # tokens, so these reach the domain as real floats. NaN used to slip past
+    # the `<= 0` guards (every comparison against it is False) and come back
+    # as `total_length_mm: nan` in a 200 response.
+    dimensions = {"length_mm": "2000", "width_mm": "300", "thickness_mm": "19"}
+    dimensions[field] = token
+    body = ", ".join(f'"{key}": {value}' for key, value in dimensions.items())
+
+    response = client.post(
+        "/solve", data=f'{{"boards": [{{{body}}}]}}', content_type="application/json"
+    )
+
+    assert response.status_code == 400
+    assert "Tabla inválida" in response.get_json()["error"]
+
+
+def test_solve_rejects_non_finite_constraints(client):
+    response = client.post(
+        "/solve",
+        data=(
+            '{"boards": [{"length_mm": 2000, "width_mm": 300, "thickness_mm": 19}],'
+            ' "constraints": {"max_length_mm": NaN}}'
+        ),
+        content_type="application/json",
+    )
+
+    assert response.status_code == 400
+    assert "Restricciones inválidas" in response.get_json()["error"]
+
+
+@pytest.mark.parametrize("endpoint", ["/assist/strategy", "/assist/explain"])
+def test_assist_endpoints_reject_non_finite_board_dimensions(client, endpoint):
+    response = client.post(
+        endpoint,
+        data=(
+            '{"boards": [{"length_mm": NaN, "width_mm": 300, "thickness_mm": 19}],'
+            ' "goal": "aprovechar el material"}'
+        ),
+        content_type="application/json",
+    )
+
+    assert response.status_code == 400
+    assert "Tabla inválida" in response.get_json()["error"]
+
+
 def test_solve_rejects_unknown_strategy(client):
     response = client.post(
         "/solve",

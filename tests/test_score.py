@@ -18,3 +18,19 @@ def test_solution_score_total():
 def test_solution_score_rejects_negative_values():
     with pytest.raises(ValueError):
         SolutionScore(waste_score=-1)
+
+
+@pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+@pytest.mark.parametrize(
+    "field",
+    [
+        "waste_score",
+        "material_usage_score",
+        "cuts_score",
+        "regularity_score",
+        "grain_score",
+    ],
+)
+def test_solution_score_rejects_non_finite_values(field, value):
+    with pytest.raises(ValueError, match="número finito"):
+        SolutionScore(**{field: value})
