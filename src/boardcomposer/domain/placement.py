@@ -16,13 +16,13 @@ class BoardPlacement:
         # Infinity — ambos se parsean sin problema desde JSON. Ver
         # Board.__post_init__.
         if not math.isfinite(self.x_mm) or self.x_mm < 0:
-            raise ValueError("x_mm no puede ser negativo")
+            raise ValueError("x_mm debe ser un número finito no negativo")
         if not math.isfinite(self.y_mm) or self.y_mm < 0:
-            raise ValueError("y_mm no puede ser negativo")
+            raise ValueError("y_mm debe ser un número finito no negativo")
         if not math.isfinite(self.length_mm) or self.length_mm <= 0:
-            raise ValueError("length_mm debe ser mayor que 0")
+            raise ValueError("length_mm debe ser un número finito mayor que 0")
         if not math.isfinite(self.width_mm) or self.width_mm <= 0:
-            raise ValueError("width_mm debe ser mayor que 0")
+            raise ValueError("width_mm debe ser un número finito mayor que 0")
 
     @property
     def area_mm2(self) -> float:

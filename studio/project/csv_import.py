@@ -11,6 +11,7 @@ absent, StudioPiece's default applies.
 """
 
 import csv
+import math
 from pathlib import Path
 
 from studio.models import StudioPiece
@@ -66,15 +67,36 @@ def load_pieces_from_csv(
                     f"Fila {line_number}: dimensión no numérica ({error})"
                 ) from error
 
+            # float() acepta "nan", "inf" y "1e400" (que desborda a inf), y una
+            # dimensión negativa o cero es igual de inservible: una pieza así
+            # entra al proyecto y revienta después, al colocarla o exportarla.
+            for column, value in (
+                ("length_mm", length_mm),
+                ("width_mm", width_mm),
+                ("thickness_mm", thickness_mm),
+            ):
+                if not math.isfinite(value) or value <= 0:
+                    raise CsvImportError(
+                        f"Fila {line_number}: {column} debe ser un número finito "
+                        f"mayor que 0 (se recibió {row[column]!r})"
+                    )
+
             material = (row.get("material") or "").strip()
-            if material:
-                piece = StudioPiece(
-                    piece_id, length_mm, width_mm, material, thickness_mm
-                )
-            else:
-                piece = StudioPiece(
-                    piece_id, length_mm, width_mm, thickness_mm=thickness_mm
-                )
+            # StudioPiece valida también por su cuenta; traducir su ValueError
+            # mantiene la promesa del docstring (todo fallo sale como
+            # CsvImportError) y evita que un invariante añadido ahí en el
+            # futuro se escape hasta _import_pieces_csv, que no lo captura.
+            try:
+                if material:
+                    piece = StudioPiece(
+                        piece_id, length_mm, width_mm, material, thickness_mm
+                    )
+                else:
+                    piece = StudioPiece(
+                        piece_id, length_mm, width_mm, thickness_mm=thickness_mm
+                    )
+            except ValueError as error:
+                raise CsvImportError(f"Fila {line_number}: {error}") from error
             pieces.append(piece)
 
     if not pieces:

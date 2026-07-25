@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 
 
@@ -11,6 +12,10 @@ class SolutionScore:
 
     def __post_init__(self) -> None:
         for name, value in self.__dict__.items():
+            # `value < 0` es False para NaN. Un componente NaN se propaga a
+            # `total` y deja la ordenación de soluciones al azar, sin error.
+            if not math.isfinite(value):
+                raise ValueError(f"{name} debe ser un número finito")
             if value < 0:
                 raise ValueError(f"{name} no puede ser negativo")
 
