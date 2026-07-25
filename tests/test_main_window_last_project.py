@@ -1,5 +1,7 @@
+import json
+
 from PySide6.QtCore import QSettings
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QMessageBox
 
 from studio.main_window import LAST_PROJECT_PATH_SETTINGS_KEY, MainWindow
 from studio.models import StudioBoard, StudioPiece, StudioPlacement, StudioProject
@@ -76,6 +78,10 @@ def test_opening_a_project_remembers_its_path(tmp_path, monkeypatch):
     other_project = StudioProject(
         project_id="proj-other",
         name="Otro",
+        # El tablero tiene que existir: project_from_dict descarta los
+        # placements que referencian tableros/piezas ausentes, y este test
+        # comprueba la ruta feliz (el descarte se cubre en el test siguiente).
+        boards=[StudioBoard("TAB-001", 900, 490)],
         pieces=[StudioPiece("p1", 100, 100)],
         placements=[StudioPlacement("p1", 0, 0, board_id="TAB-001")],
     )
@@ -90,3 +96,46 @@ def test_opening_a_project_remembers_its_path(tmp_path, monkeypatch):
     window._open_project()
 
     assert QSettings().value(LAST_PROJECT_PATH_SETTINGS_KEY) == str(path)
+
+
+def test_opening_a_project_with_a_dangling_placement_warns_and_drops_it(
+    tmp_path, monkeypatch
+):
+    path = tmp_path / "danado.bcstudio.json"
+    path.write_text(
+        json.dumps(
+            {
+                "project_id": "proj-danado",
+                "name": "Dañado",
+                "boards": [{"board_id": "TAB-001", "length_mm": 900, "width_mm": 490}],
+                "pieces": [{"piece_id": "p1", "length_mm": 100, "width_mm": 100}],
+                "placements": [
+                    {"piece_id": "p1", "x_mm": 0, "y_mm": 0, "board_id": "TAB-001"},
+                    {
+                        "piece_id": "fantasma",
+                        "x_mm": 0,
+                        "y_mm": 0,
+                        "board_id": "TAB-001",
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        "studio.main_window.QFileDialog.getOpenFileName",
+        lambda *a, **k: (str(path), ""),
+    )
+    warnings = []
+    monkeypatch.setattr(
+        QMessageBox, "warning", lambda *a, **k: warnings.append(a[2]) or None
+    )
+
+    window = _make_window()
+    window._open_project()
+
+    project = window.services.projects.current_project
+    assert project.project_id == "proj-danado"
+    assert [placement.piece_id for placement in project.placements] == ["p1"]
+    assert len(warnings) == 1
+    assert "fantasma" in warnings[0]

@@ -2,6 +2,7 @@
 
 import dataclasses
 import json
+from collections.abc import Callable
 from pathlib import Path
 
 from studio.models import StudioBoard, StudioPiece, StudioPlacement, StudioProject
@@ -60,7 +61,21 @@ def _known_fields(data_cls, raw: dict) -> dict:
     return {key: value for key, value in raw.items() if key in known}
 
 
-def project_from_dict(data: dict) -> StudioProject:
+def _warn(on_warning: Callable[[str], None] | None, message: str) -> None:
+    if on_warning is not None:
+        on_warning(message)
+
+
+def project_from_dict(
+    data: dict, *, on_warning: Callable[[str], None] | None = None
+) -> StudioProject:
+    """Rebuilds a project from its dict form.
+
+    `on_warning` receives one message per recoverable problem (currently:
+    placements dropped for referencing a piece/board the file doesn't
+    contain). Callers that pass nothing load exactly as before, minus the
+    dropped placements.
+    """
     try:
         boards = [
             StudioBoard(**_known_fields(StudioBoard, board))
@@ -68,22 +83,54 @@ def project_from_dict(data: dict) -> StudioProject:
         ]
         default_board_id = boards[0].board_id if boards else None
 
-        placements = []
+        pieces = [
+            StudioPiece(**_known_fields(StudioPiece, piece))
+            for piece in data.get("pieces", [])
+        ]
+
+        parsed_placements = []
         for placement in data.get("placements", []):
             placement = dict(placement)
             placement.setdefault("board_id", default_board_id)
-            placements.append(
+            parsed_placements.append(
                 StudioPlacement(**_known_fields(StudioPlacement, placement))
             )
+
+        # A placement pointing at a piece/board that doesn't exist in this
+        # file (hand-edited, AI-generated, or truncated JSON) would blow up
+        # later, unguarded, deep in the workspace's rendering — see
+        # StudioProject.piece_by_id. Dropping just the bad placements keeps
+        # the rest of the project openable (the alternative, refusing the
+        # whole file, leaves the user with nothing to recover from) and
+        # reports each drop through `on_warning`.
+        piece_ids = {piece.piece_id for piece in pieces}
+        board_ids = {board.board_id for board in boards}
+        placements = []
+        for placement in parsed_placements:
+            if placement.piece_id not in piece_ids:
+                _warn(
+                    on_warning,
+                    "Se descarta un placement que referencia una pieza "
+                    f"inexistente: {placement.piece_id!r}",
+                )
+                continue
+            # `board_id is None` no es una referencia colgante: es un fichero
+            # sin tableros (legacy pre-IDE-0013, sin "board_id" y sin "boards"
+            # donde caer por defecto). El workspace ya tolera ese caso.
+            if placement.board_id is not None and placement.board_id not in board_ids:
+                _warn(
+                    on_warning,
+                    f"Se descarta el placement de {placement.piece_id!r}: "
+                    f"referencia un tablero inexistente ({placement.board_id!r})",
+                )
+                continue
+            placements.append(placement)
 
         return StudioProject(
             project_id=data["project_id"],
             name=data["name"],
             boards=boards,
-            pieces=[
-                StudioPiece(**_known_fields(StudioPiece, piece))
-                for piece in data.get("pieces", [])
-            ],
+            pieces=pieces,
             placements=placements,
             kerf_mm=data.get("kerf_mm", 0.0),
         )
@@ -98,6 +145,8 @@ def save_project_to_file(project: StudioProject, path: str | Path) -> None:
     )
 
 
-def load_project_from_file(path: str | Path) -> StudioProject:
+def load_project_from_file(
+    path: str | Path, *, on_warning: Callable[[str], None] | None = None
+) -> StudioProject:
     data = json.loads(Path(path).read_text(encoding="utf-8"))
-    return project_from_dict(data)
+    return project_from_dict(data, on_warning=on_warning)

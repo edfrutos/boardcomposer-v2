@@ -38,3 +38,13 @@ class CommandManager:
 
     def can_redo(self) -> bool:
         return bool(self.redo_stack)
+
+    def clear(self) -> None:
+        """Drops both stacks — call whenever the open project changes.
+
+        Commands look up the current project at undo/redo time rather than
+        holding their own reference, so a stale command from a previous
+        project would otherwise apply to whatever project is open next.
+        """
+        self.undo_stack.clear()
+        self.redo_stack.clear()
