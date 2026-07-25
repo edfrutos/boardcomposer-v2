@@ -134,6 +134,63 @@ def test_project_from_dict_ignores_unknown_extra_keys():
     assert project.pieces[0].piece_id == "p1"
 
 
+def test_project_from_dict_drops_a_placement_of_an_unknown_piece():
+    data = {
+        "project_id": "proj-1",
+        "name": "Demo",
+        "boards": [{"board_id": "A", "length_mm": 2000, "width_mm": 300}],
+        "pieces": [{"piece_id": "p1", "length_mm": 500, "width_mm": 200}],
+        "placements": [
+            {"piece_id": "p9", "x_mm": 10, "y_mm": 20, "board_id": "A"},
+            {"piece_id": "p1", "x_mm": 30, "y_mm": 40, "board_id": "A"},
+        ],
+    }
+    warnings = []
+
+    project = project_from_dict(data, on_warning=warnings.append)
+
+    assert [placement.piece_id for placement in project.placements] == ["p1"]
+    assert len(warnings) == 1
+    assert "pieza inexistente" in warnings[0]
+
+
+def test_project_from_dict_drops_a_placement_on_an_unknown_board():
+    data = {
+        "project_id": "proj-1",
+        "name": "Demo",
+        "boards": [{"board_id": "A", "length_mm": 2000, "width_mm": 300}],
+        "pieces": [{"piece_id": "p1", "length_mm": 500, "width_mm": 200}],
+        "placements": [{"piece_id": "p1", "x_mm": 10, "y_mm": 20, "board_id": "Z"}],
+    }
+    warnings = []
+
+    project = project_from_dict(data, on_warning=warnings.append)
+
+    assert project.placements == []
+    assert len(warnings) == 1
+    assert "tablero inexistente" in warnings[0]
+
+
+def test_project_from_dict_keeps_the_rest_of_the_project_when_dropping_placements():
+    # Dropping only the dangling placements is what makes a damaged file
+    # recoverable — boards, pieces and kerf survive untouched.
+    data = {
+        "project_id": "proj-1",
+        "name": "Demo",
+        "boards": [{"board_id": "A", "length_mm": 2000, "width_mm": 300}],
+        "pieces": [{"piece_id": "p1", "length_mm": 500, "width_mm": 200}],
+        "placements": [{"piece_id": "p9", "x_mm": 10, "y_mm": 20, "board_id": "A"}],
+        "kerf_mm": 3.2,
+    }
+
+    project = project_from_dict(data)
+
+    assert project.placements == []
+    assert [board.board_id for board in project.boards] == ["A"]
+    assert [piece.piece_id for piece in project.pieces] == ["p1"]
+    assert project.kerf_mm == 3.2
+
+
 def test_project_from_dict_raises_value_error_on_missing_required_field():
     data = {
         "project_id": "proj-1",

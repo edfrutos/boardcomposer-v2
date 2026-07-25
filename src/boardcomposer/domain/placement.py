@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 
 
@@ -11,13 +12,16 @@ class BoardPlacement:
     rotated: bool = False
 
     def __post_init__(self) -> None:
-        if self.x_mm < 0:
+        # Los comparadores por sí solos dejan pasar NaN (`nan < 0` es False) e
+        # Infinity — ambos se parsean sin problema desde JSON. Ver
+        # Board.__post_init__.
+        if not math.isfinite(self.x_mm) or self.x_mm < 0:
             raise ValueError("x_mm no puede ser negativo")
-        if self.y_mm < 0:
+        if not math.isfinite(self.y_mm) or self.y_mm < 0:
             raise ValueError("y_mm no puede ser negativo")
-        if self.length_mm <= 0:
+        if not math.isfinite(self.length_mm) or self.length_mm <= 0:
             raise ValueError("length_mm debe ser mayor que 0")
-        if self.width_mm <= 0:
+        if not math.isfinite(self.width_mm) or self.width_mm <= 0:
             raise ValueError("width_mm debe ser mayor que 0")
 
     @property

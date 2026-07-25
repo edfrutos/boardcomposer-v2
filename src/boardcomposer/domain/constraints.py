@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 
 
@@ -9,7 +10,12 @@ class ProjectConstraints:
     allow_cutting: bool = False
 
     def __post_init__(self) -> None:
-        if self.max_length_mm is not None and self.max_length_mm <= 0:
+        # `<= 0` alone lets NaN/Infinity through — see Board.__post_init__.
+        if self.max_length_mm is not None and (
+            not math.isfinite(self.max_length_mm) or self.max_length_mm <= 0
+        ):
             raise ValueError("max_length_mm debe ser mayor que 0")
-        if self.max_width_mm is not None and self.max_width_mm <= 0:
+        if self.max_width_mm is not None and (
+            not math.isfinite(self.max_width_mm) or self.max_width_mm <= 0
+        ):
             raise ValueError("max_width_mm debe ser mayor que 0")

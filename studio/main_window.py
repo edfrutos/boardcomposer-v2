@@ -551,21 +551,43 @@ class MainWindow(QMainWindow):
     def _load_last_or_demo_project(self):
         last_path = QSettings().value(LAST_PROJECT_PATH_SETTINGS_KEY)
         if last_path:
+            load_warnings: list[str] = []
             try:
-                project = load_project_from_file(last_path)
+                project = load_project_from_file(
+                    last_path, on_warning=load_warnings.append
+                )
             except (OSError, ValueError, KeyError):
                 # The remembered project is gone, moved, or corrupted — fall
                 # through to the demo project rather than failing to start.
                 pass
             else:
                 self.services.projects.open_project(project, filename=last_path)
+                self.services.commands.clear()
                 self.workspace.reload_project()
                 self._reload_explorer()
                 self._update_window_title()
                 self.statusBar().showMessage(f"Proyecto abierto: {last_path}", 3000)
+                self._report_load_warnings(load_warnings)
                 return
 
         self._load_demo_project()
+
+    def _report_load_warnings(self, warnings: list[str]) -> None:
+        """Surfaces recoverable problems found while loading a project.
+
+        These are data losses (dropped placements), not cosmetic notices: the
+        next save writes the project without them, so the user has to see it
+        before working on the file — hence a dialog rather than a status-bar
+        message that auto-clears.
+        """
+        if not warnings:
+            return
+
+        QMessageBox.warning(
+            self,
+            "Abrir proyecto",
+            "El proyecto se abrió, pero con avisos:\n\n" + "\n".join(warnings),
+        )
 
     def _remember_last_project_path(self, path: str) -> None:
         QSettings().setValue(LAST_PROJECT_PATH_SETTINGS_KEY, path)
@@ -588,6 +610,7 @@ class MainWindow(QMainWindow):
         )
 
         self.services.projects.new_project(project)
+        self.services.commands.clear()
         self.workspace.reload_project()
         self._reload_explorer()
         self._update_window_title()
@@ -677,10 +700,12 @@ class MainWindow(QMainWindow):
         )
 
         self.services.projects.new_project(project)
+        self.services.commands.clear()
         self.workspace.reload_project()
         self._reload_explorer()
         self.statusBar().showMessage("Nuevo proyecto creado", 3000)
         self._update_window_title()
+        self._update_undo_redo()
 
     def _open_project(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -690,8 +715,9 @@ class MainWindow(QMainWindow):
         if not path:
             return
 
+        load_warnings: list[str] = []
         try:
-            project = load_project_from_file(path)
+            project = load_project_from_file(path, on_warning=load_warnings.append)
         except (OSError, ValueError, KeyError) as error:
             # A status-bar message alone is easy to miss — it auto-clears in
             # a few seconds, and on the remote/VNC deployment (IDE-0017) it's
@@ -704,6 +730,7 @@ class MainWindow(QMainWindow):
 
         self.services.projects.open_project(project, filename=path)
         self._remember_last_project_path(path)
+        self.services.commands.clear()
         self.workspace.reload_project()
         self.workspace.selection.clear()
         self.workspace.selection.sync_inspector(self)
@@ -711,6 +738,7 @@ class MainWindow(QMainWindow):
         self._update_window_title()
         self._update_undo_redo()
         self.statusBar().showMessage(f"Proyecto abierto: {path}", 3000)
+        self._report_load_warnings(load_warnings)
 
     def _import_pieces_csv(self):
         project = self.services.projects.current_project
