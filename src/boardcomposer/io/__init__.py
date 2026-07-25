@@ -1,4 +1,5 @@
 from .csv_loader import load_project_from_csv
+from .errors import LoaderError
 from .excel_loader import load_project_from_excel
 from .registry import (
     IMPORTER_REGISTRY,
@@ -11,6 +12,7 @@ from .registry import (
 __all__ = [
     "IMPORTER_REGISTRY",
     "Importer",
+    "LoaderError",
     "available_importers",
     "importer_by_name",
     "importer_plugin_errors",

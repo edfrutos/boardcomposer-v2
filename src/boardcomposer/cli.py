@@ -3,7 +3,11 @@ import json
 
 from boardcomposer import Board, Project, ProjectConstraints
 
-from boardcomposer.io import load_project_from_csv, load_project_from_excel
+from boardcomposer.io import (
+    LoaderError,
+    load_project_from_csv,
+    load_project_from_excel,
+)
 from boardcomposer.plugin_visibility import plugin_summary
 from boardcomposer.presenters import solution_to_text, solutions_to_json
 
@@ -80,12 +84,21 @@ def main() -> None:
         print_plugin_summary(as_json=args.json)
         return
 
-    if args.csv:
-        project = load_project_from_csv(args.csv)
-    elif args.excel:
-        project = load_project_from_excel(args.excel)
-    else:
-        project = build_demo_project()
+    # Un fichero de entrada mal formado es el error más habitual de esta
+    # herramienta, y hasta ahora salía como traza de Python (ValueError,
+    # KeyError o FileNotFoundError en bruto). Aquí se traduce a una línea
+    # legible en stderr y código de salida 1.
+    try:
+        if args.csv:
+            project = load_project_from_csv(args.csv)
+        elif args.excel:
+            project = load_project_from_excel(args.excel)
+        else:
+            project = build_demo_project()
+    except LoaderError as error:
+        raise SystemExit(f"Error al leer el fichero de entrada: {error}") from error
+    except OSError as error:
+        raise SystemExit(f"No se pudo abrir el fichero de entrada: {error}") from error
 
     project.constraints = ProjectConstraints(
         max_length_mm=args.max_length,
