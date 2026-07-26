@@ -35,6 +35,18 @@ Cubre `DT-0001` (`docs/masterplan/DOC-006-DeudaTecnica.md`). Complementa a `docs
 
 `MainWindow.closeEvent()` (testeado en `tests/test_main_window_close.py`) impide perder cambios sin guardar al cerrar la ventana: si `ProjectManager.is_modified` es `False` acepta el cierre directamente; si es `True`, muestra un `QMessageBox` con "Guardar"/"Descartar"/"Cancelar" — "Cancelar" hace `event.ignore()`, "Descartar" acepta el cierre sin tocar el fichero, y "Guardar" reutiliza `_save_project()` y solo acepta el cierre si terminó con éxito (si el usuario cancela el diálogo de ruta o falla el guardado, `is_modified` sigue en `True` y el cierre se ignora también).
 
+### Reapertura del último proyecto al arrancar
+
+`MainWindow._load_last_or_demo_project()`. `_save_project()`/`_open_project()` recuerdan la ruta del fichero en `QSettings` (clave `last_project/path`, constante `LAST_PROJECT_PATH_SETTINGS_KEY`), y al arrancar se carga esa ruta en vez del proyecto demo. Cae a la demo solo si no hay ruta recordada, o si el fichero desapareció o está corrupto — arrancar nunca falla por esto.
+
+`QSettings` necesita nombre de organización y aplicación para saber dónde escribir; se fijan en el constructor de `MainWindow` vía `QCoreApplication`. Los tests aíslan `QSettings` en un directorio temporal por test (`tests/conftest.py`), para no leer ni escribir los ajustes reales de la máquina de desarrollo.
+
+### Proyectos dañados — colocaciones colgantes
+
+`project_from_dict()` **descarta** las colocaciones que apuntan a una pieza o un tablero ausentes del fichero, en vez de rechazar el fichero entero: un proyecto dañado sigue siendo recuperable, y el siguiente guardado lo escribirá ya limpio. Cada descarte se informa por el callback opcional `on_warning` de `load_project_from_file()`, que `MainWindow` conecta a un diálogo de avisos. Antes la carga "tenía éxito" y el fallo aparecía después, sin protección, al renderizar el workspace.
+
+Los modelos `StudioBoard`/`StudioPiece` validan sus dimensiones (positivas y finitas) y `StudioPlacement` sus coordenadas (finitas, pero no el signo: una coordenada negativa es un estado transitorio legítimo mientras se arrastra una pieza fuera del tablero). Sin esto, un `.bcstudio.json` manipulado podía sembrar un tablero de -500 mm o un `NaN` — `json.loads()` acepta `NaN`/`Infinity` como flotantes, y toda comparación contra `NaN` es falsa, así que las guardas `<= 0` no bastaban.
+
 ### Importación de piezas desde CSV — `studio/project/csv_import.py`
 
 `load_pieces_from_csv(path, existing_ids)` (función pura, sin Qt, testeada en `tests/test_csv_import.py`) lee un CSV con las mismas columnas obligatorias que el importador CSV del Core/CLI (`id`/`length_mm`/`width_mm`/`thickness_mm`, más `material` opcional) y devuelve una lista de `StudioPiece`. Cualquier fila inválida (columna obligatoria ausente, dimensión no numérica, id vacío, o id repetido — dentro del propio fichero o contra `existing_ids`, los ids ya presentes en el proyecto abierto) lanza `CsvImportError` con el número de fila, abortando toda la importación sin devolver piezas parciales.
@@ -57,10 +69,16 @@ Comandos concretos (todos con la misma forma: guardan el estado antes/después y
 | Comando | Efecto de `redo()` | Efecto de `undo()` |
 |---|---|---|
 | `MovePieceCommand` | Mueve la pieza a `(new_x, new_y)`. | La devuelve a `(old_x, old_y)`. |
-| `RotatePieceCommand` | Aplica `new_rotation`. | Restaura `old_rotation`. |
+| `RotatePieceCommand` | Aplica `new_rotation` (y `rotated`, más las coordenadas nuevas si hubo recolocación). | Restaura el estado anterior completo. |
 | `DeletePieceCommand` | Elimina la pieza del proyecto. | La reinserta. |
+| `AddBoardCommand` / `AddPieceCommand` | Añaden un `StudioBoard`/`StudioPiece` al proyecto. | Lo eliminan. |
+| `EditBoardCommand` / `EditPieceCommand` | Sustituyen el modelo por su versión editada. | Restauran el anterior. |
+| `MoveToBoardCommand` | Reasigna el `board_id` de una colocación (con las coordenadas nuevas si hubo recolocación). | Devuelve la colocación a su tablero y posición previos. |
+| `SetKerfCommand` | Fija `project.kerf_mm` (ancho de sierra). | Restaura el valor anterior. |
 
-Ninguno valida colisiones por sí mismo — la validación (`PlacementValidator`) ocurre **antes** de construir y ejecutar el comando, en `MainWindow` o `BoardWorkspace`.
+Ninguno valida colisiones por sí mismo — la validación ocurre **antes** de construir y ejecutar el comando, en `MainWindow` o `BoardWorkspace` (`PlacementValidator` en el lienzo, `piece_fits_on_board()` fuera de él).
+
+Los comandos resuelven `services.projects.current_project` **en el momento de deshacer**, no guardan una referencia al proyecto: si no, deshacer tras abrir otro proyecto aplicaba el comando al proyecto equivocado. `CommandManager.clear()` se llama además en cada transición de proyecto (nuevo, abrir, cargar el último al arrancar).
 
 ## Selección — dos capas distintas
 
@@ -78,19 +96,38 @@ Hay **dos** mecanismos de selección con responsabilidades distintas, que se sin
 - `can_place(item)` — `True` si la pieza está dentro del tablero y no colisiona.
 - `rotated_rect(item, angle)` / `can_rotate(item, angle)` — calcula el rectángulo que ocuparía la pieza tras rotar 90° e intercambiar `length_mm`/`width_mm`, y comprueba que quepa sin colisionar.
 
-`MainWindow._rotate_selected_piece()` llama a `can_rotate_item()` (envoltorio en `BoardWorkspace` sobre `PlacementValidator.can_rotate()`) **antes** de crear el `RotatePieceCommand`; si no cabe, muestra un mensaje en la barra de estado y no ejecuta nada.
+`MainWindow._rotate_selected_piece()` llama a `can_rotate_item()` (envoltorio en `BoardWorkspace` sobre `PlacementValidator.can_rotate()`) **antes** de crear el `RotatePieceCommand`; si no cabe en su posición actual, se intenta recolocar (ver abajo) y solo si tampoco así cabe se muestra un mensaje en la barra de estado sin ejecutar nada.
+
+### Encaje fuera del lienzo — `placement_fit.py`
+
+`studio/workspace/placement_fit.py`. `PlacementValidator` hace el mismo trabajo pero solo para el arrastre/rotación interactivos, acoplado a los `QGraphicsItem` vivos de la escena. Las acciones que reasignan una pieza a **otro** tablero ocurren fuera de esa escena, así que necesitan un equivalente sin Qt. Dos funciones puras (testeadas en `tests/test_placement_fit.py`), que reutilizan `boardcomposer.geometry.Rectangle.overlaps()` en vez de reimplementar la geometría:
+
+- **`piece_fits_on_board(board, piece, x_mm, y_mm, rotated, other_placements, pieces_by_id)`** — `True` si la pieza cabe dentro de los límites del tablero en esa posición y no solapa a ninguna otra colocación.
+- **`find_free_position(board, length_mm, width_mm, other_placements, pieces_by_id)`** — busca la esquina superior-izquierda de un hueco libre, o `None` si no hay. Heurística por esquinas: candidatas son el origen del tablero más el borde derecho/inferior de cada colocación existente, recorridas de arriba abajo y luego de izquierda a derecha. **No es empaquetado completo** — sirve para recolocar *una* pieza que si no habría que rechazar; resolver una disposición entera es trabajo del solver ("Generar").
+
+Se usan en tres sitios de `MainWindow`, siempre antes de construir el comando: mover una pieza a otro tablero (`MoveToBoardCommand`, con el diálogo ofreciendo solo tableros del mismo grosor), rotarla en el sitio (`RotatePieceCommand`), y editar una pieza o un tablero (`_edit_piece()` comprueba que las dimensiones nuevas siguen cabiendo sin solapar; `_edit_board()`, que todas las piezas ya colocadas siguen encajando en el tablero redimensionado).
 
 ## Inspector contextual — `studio/panels/inspector_panel.py`
 
 Cubre `IDE-0003` (`docs/masterplan/DOC-004-Backlog.md`) y la especificación `docs/masterplan/ui/SCR-004-Inspector.md`. `render_project()`/`render_board()`/`render_piece()`/`render_empty()` son funciones puras (sin Qt, testeadas en `tests/test_inspector_panel.py`) que devuelven el HTML mostrado en el dock "Inspector" (`MainWindow.inspector.setHtml(...)`), según qué se seleccione en el explorador o en el workspace:
 
 - **Proyecto** (nodo raíz del explorador): nombre, materiales usados (unión de tableros + piezas), nº de tableros, nº de piezas.
-- **Tablero**: dimensiones, material, nº de piezas colocadas, superficie utilizada y desperdicio (calculados sumando el área de las piezas de `project.placements` — Studio solo soporta un tablero activo por proyecto, así que se asume que todas las colocaciones pertenecen a él).
+- **Tablero**: dimensiones, material, nº de piezas colocadas, superficie utilizada y desperdicio. `MainWindow` filtra `project.placements` por el `board_id` del tablero seleccionado antes de llamar a `render_board()`: desde el soporte multi-tablero (`DT-0013`) cada colocación sabe a qué tablero pertenece.
 - **Pieza**: dimensiones, material, rotación y coordenadas si está colocada; si no, se indica explícitamente "Sin colocar".
 
 Solo se muestran campos con datos reales. La especificación SCR-004 menciona campos que el modelo de datos actual no soporta (descripción y fecha de modificación de proyecto, espesor y restricciones activas) — se omiten en vez de rellenarlos con valores inventados; la propia especificación los marca como "edición directa de propiedades" para una versión futura, no la actual.
 
-Los contextos "Solución" y "Algoritmo" de SCR-004 dependen del Comparador (`IDE-0002`, aún sin construir) y no están cubiertos todavía.
+Los contextos "Solución" y "Algoritmo" de SCR-004 siguen sin cubrirse como vistas propias del Inspector: la información equivalente se muestra en el Comparador (`IDE-0002`, ver más abajo) y en el resumen que `_show_layout_solution()` vuelca en el Inspector tras "Generar".
+
+## Ancho de sierra (kerf) — alcance real
+
+`StudioProject.kerf_mm` (por defecto `0.0`, persistido en `.bcstudio.json` con migración retrocompatible vía `data.get("kerf_mm", 0.0)`). Se configura en el menú "Proyecto" → "Ancho de sierra…" (`KerfDialog`) y se cambia con `SetKerfCommand`, deshacible como cualquier otro comando.
+
+Hoy **solo lo consume el arrastre interactivo**: `BoardWorkspace.constrain_piece_position()` se lo pasa a `PlacementValidator.constrain_position()`, que ajusta la pieza a `gap_mm` de distancia de sus vecinas al hacer *snap*. **No** lo tienen en cuenta ni el solver (`LayoutService.to_core_project()` no traslada el kerf a `ProjectConstraints`), ni `piece_fits_on_board()`, ni la exportación SVG/PDF/DXF: una disposición generada o un fichero exportado asumen corte de anchura cero. Registrado como deuda técnica (`DT-0020`, `docs/masterplan/DOC-006-DeudaTecnica.md`).
+
+## Lienzo — etiquetas
+
+`create_board_item()` (`studio/workspace/board_item.py`) dibuja el rectángulo del tablero y añade su `board_id` como `QGraphicsSimpleTextItem` **fuera** de los límites del tablero, para no solaparse con una pieza colocada cerca del origen. Las piezas se etiquetan a su vez con su `piece_id` (`create_piece_item()`): con varios tableros, sin la etiqueta del tablero la única forma de saber cuál se estaba mirando era el Explorer o el Inspector.
 
 ## Arrastre de piezas — `DragController`
 
@@ -99,6 +136,14 @@ Los contextos "Solución" y "Algoritmo" de SCR-004 dependen del Comparador (`IDE
 ## Flujo de resolución de layout
 
 `MainWindow._solve_layout()` → `services.layout.solve_current_project()` (Core, ver `docs/architecture.md`) → si hay solución, `_show_layout_solution()` la muestra en el inspector (piezas colocadas, dimensiones totales, `waste_ratio`) **sin aplicarla todavía**. `_apply_layout()` es un paso explícito y separado: llama a `services.layout.apply_last_solution_to_current_project()`, recarga el workspace y limpia la selección. Este calcular-antes-de-aplicar es intencional: dos operaciones distintas, ninguna deshace la otra automáticamente (no hay un `ApplyLayoutCommand` en el sistema de undo/redo).
+
+Con varios tableros, el solver resuelve siempre **uno solo** — el activo (`_resolve_board()`), cuyas dimensiones se convierten en las restricciones del `Project` del Core. De ahí tres reglas en `to_core_project()`/`_apply_solution()`, todas para no estropear el resto del proyecto:
+
+- Las piezas ya colocadas en **otro** tablero se excluyen del candidato; si no, resolver el tablero B reempaquetaba una pieza ya puesta en el A y quedaban dos colocaciones para la misma pieza.
+- Se excluyen también las piezas cuyo `thickness_mm` no coincide con el del tablero que se resuelve: una pieza sin tablero de su grosor queda correctamente sin colocar, en vez de forzada donde no corresponde.
+- Al aplicar, se sustituyen solo las colocaciones del tablero resuelto, no la lista entera (antes se vaciaban los demás tableros).
+
+`_fill_other_empty_boards_with_leftovers()` prueba después los demás tableros del proyecto con lo que haya quedado sin colocar, pero **solo los que están completamente vacíos** — nunca rebaraja un tablero que alguien ya había ordenado.
 
 ## Comparador de soluciones — `studio/panels/comparator_panel.py`
 

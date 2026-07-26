@@ -8,14 +8,14 @@ Motor 2D para generar composiciones de tablas a partir de medidas dadas.
 
 - Python 3.13
 - Core: varios algoritmos de layout (skyline, MaxRects, beam search, permutaciones), puntuación y explicación de soluciones, exportación SVG/DXF
-- CLI: entrada CSV/Excel, salida texto/JSON
-- API HTTP (`/solve`, `/strategies`, `/assist/*`) con autenticación por clave y rate limiting opcionales, servidor WSGI de producción (`gunicorn`)
-- BoardComposer Studio (GUI PySide6): workspace interactivo, comparador, inspector, gestión de proyectos, exportación SVG/PDF, empaquetado como `.app` de macOS
+- CLI: entrada CSV/Excel, salida texto/JSON, subcomando `plugins` — referencia completa en `docs/cli.md`
+- API HTTP (`/solve`, `/strategies`, `/assist/*`, `/plugins`) con autenticación por clave y rate limiting opcionales, servidor WSGI de producción (`gunicorn`)
+- BoardComposer Studio (GUI PySide6): workspace interactivo multi-tablero, alta y edición de tableros y piezas, importación de piezas desde CSV, comparador, inspector, exportación SVG/PDF/DXF, empaquetado como `.app` de macOS
 - Asistente IA (proveedor real conectado: Anthropic Claude)
 - Sistema de plugins: generadores, estrategias, importadores/exportadores y paneles de Studio de terceros — ver `docs/plugins.md`
-- Tests automatizados (300+)
+- Tests automatizados (673)
 
-Ver `docs/masterplan/DOC-004-Backlog.md` para el estado vivo, funcionalidad por funcionalidad.
+Ver `docs/masterplan/DOC-004-Backlog.md` para el estado vivo, funcionalidad por funcionalidad, y `docs/masterplan/INDEX.md` como índice de toda la documentación.
 
 ## Instalación
 
@@ -29,6 +29,16 @@ Ver `docs/masterplan/DOC-004-Backlog.md` para el estado vivo, funcionalidad por 
     make check
     make demo
     make json
+
+## Uso desde la terminal
+
+    boardcomposer --csv piezas.csv --max-length 3000 --max-width 600
+    boardcomposer --excel piezas.xlsx --strategy compact --allow-rotation
+    boardcomposer --csv piezas.csv --json --top 3
+    boardcomposer plugins
+
+Referencia completa de opciones, formato de entrada, salida JSON, mensajes de
+error y códigos de salida: **`docs/cli.md`**.
 
 ## API en producción
 
@@ -64,12 +74,14 @@ Genera `studio/dist/BoardComposerStudio.app` (con `pyside6-deploy`, sin firmar n
 
 ## CSV/Excel de entrada
 
-Columnas obligatorias (mismas en `--csv` y `--excel`):
+Columnas obligatorias (mismas en `--csv` y `--excel`): `length_mm`,
+`width_mm`, `thickness_mm`. La columna `id` es opcional — si falta, se genera
+un identificador. El importador de piezas de Studio usa el mismo formato pero
+sí exige `id`.
 
     id,length_mm,width_mm,thickness_mm
-
-Ejemplo:
-
     A,2000,300,20
     B,1000,300,20
     C,800,250,20
+
+Ficheros de ejemplo en `data/samples/`. Detalle en `docs/cli.md`.

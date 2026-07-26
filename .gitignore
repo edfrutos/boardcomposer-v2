@@ -15,6 +15,31 @@ graphify-out/.graphify_labels.json
 # Claude Code: personal, machine-specific permissions
 .claude/settings.local.json
 
+# Directorios de configuración de asistentes de código: herramienta personal
+# de quien desarrolla, no fuente del proyecto. Un instalador de skills externo
+# vuelca el mismo paquete (`ui-ux-pro-max`, con sus scripts de Python) en el
+# directorio de cada IDE a la vez — 14 copias que además rompían `make check`,
+# porque `ruff check .` las analizaba (196 errores en código que no es nuestro).
+# Excepciones, esas sí versionadas: `.claude/launch.json` y `.github/`.
+.agent/
+.claude/*
+!.claude/launch.json
+.codebuddy/
+.codex/
+.continue/
+.cursor/
+.gemini/
+.github/prompts/
+.kiro/
+.opencode/
+.qoder/
+.roo/
+.trae/
+.windsurf/
+
+# macOS: fichero de icono personalizado de carpeta (su nombre acaba en CR).
+Icon?
+
 # Flake8: personal editor config, not the project's linter (ruff)
 .flake8
 

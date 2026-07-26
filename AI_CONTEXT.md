@@ -5,7 +5,7 @@ Nombre del proyecto: BoardComposer
 Propósito:
 Generar composiciones de tablas reutilizando material existente mediante algoritmos de optimización.
 
-Versión actual: 0.2.0 (publicada 2026-07-22). Ver `docs/masterplan/DOC-004-Backlog.md` para el detalle vivo de cada funcionalidad (todos los IDEs planificados, IDE-0001–IDE-0018, están en 🟢 completado).
+Versión actual: 0.3.0 (publicada 2026-07-26). Ver `docs/masterplan/DOC-004-Backlog.md` para el detalle vivo de cada funcionalidad (todos los IDEs planificados, IDE-0001–IDE-0018, están en 🟢 completado).
 
 Estado actual:
 - Core implementado: modelos de dominio, varios algoritmos de layout (skyline, maxrects, beam search, permutaciones), sistema de puntuación y explicación de soluciones.
