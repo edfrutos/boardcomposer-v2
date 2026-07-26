@@ -43,6 +43,10 @@ Consume el Core directamente: carga un `Project` (desde CSV, Excel o `build_demo
 
 Subcomando `boardcomposer plugins` (`--json` opcional): visibilidad de plugins instalados, misma fuente que `GET /plugins` en la API (`plugin_visibility.plugin_summary()`). Opcional (`add_subparsers(dest="command")`, no `required`), así que no rompe la invocación sin subcomando que ya usan `--csv`/`--excel`/etc.
 
+La carga del fichero de entrada va envuelta en `try/except`: `LoaderError` (fichero malformado, con el número de fila) y `OSError` (fichero inexistente o ilegible) se convierten en una línea legible por stderr y `SystemExit(1)`, en vez del traceback de Python que salía antes. `LoaderError` (`io/errors.py`) hereda de `ValueError`, así que quien ya capturaba `ValueError` alrededor de los cargadores sigue funcionando.
+
+Referencia de usuario de la línea de comandos (opciones, formato de entrada, salida, códigos de salida): `docs/cli.md`.
+
 ## API (`src/boardcomposer/api.py`)
 
 Cubre `IDE-0006` y la Fase F de `IDE-0007` (`docs/masterplan/DOC-004-Backlog.md`). Primer contrato HTTP mínimo sobre el Core (Flask, ya declarado en `pyproject.toml`) — mismo papel que `cli.py`, sin lógica propia: traduce peticiones a las mismas llamadas que ya usan CLI y Studio (`Project`/`ProjectConstraints`/`GeometrySolver`/`solutions_to_json`, y ahora también `boardcomposer.ai`). `_parse_boards()`/`_parse_constraints()`/`_parse_top()`/`_solve_response()` son helpers internos que factorizan la validación que `/solve` y los `/assist/*` comparten.
@@ -78,8 +82,9 @@ Receta de despliegue en la nube (`IDE-0014`), `Dockerfile` en la raíz del repo 
 Aplicación PySide6 (Qt) para explorar y editar proyectos visualmente. Estructura interna:
 
 - **`models/`** — `StudioProject`, `StudioBoard`, `StudioPiece`, `StudioPlacement`: modelos propios de Studio, distintos de los del Core.
-- **`workspace/`** — `BoardWorkspace`, `BoardPieceItem`, `SelectionController`, `DragController`, `PlacementValidator`, cámara y grid: la superficie gráfica (`QGraphicsScene`/`QGraphicsView`) donde el usuario coloca piezas manualmente.
-- **`commands/`** — `CommandManager` + comandos (`MovePieceCommand`, `RotatePieceCommand`, `DeletePieceCommand`): patrón Command para undo/redo (ver ADR-008).
+- **`workspace/`** — `BoardWorkspace`, `BoardPieceItem`, `SelectionController`, `DragController`, `PlacementValidator`, cámara y grid: la superficie gráfica (`QGraphicsScene`/`QGraphicsView`) donde el usuario coloca piezas manualmente. `placement_fit.py` es el equivalente sin Qt de `PlacementValidator` (`piece_fits_on_board()`, `find_free_position()`), para las acciones que ocurren fuera de la escena — mover una pieza a otro tablero, editar dimensiones — y reutiliza `boardcomposer.geometry.Rectangle`.
+- **`commands/`** — `CommandManager` + comandos (`MovePieceCommand`, `RotatePieceCommand`, `DeletePieceCommand`, `AddBoardCommand`/`EditBoardCommand`, `AddPieceCommand`/`EditPieceCommand`, `MoveToBoardCommand`, `SetKerfCommand`): patrón Command para undo/redo (ver ADR-008). Cada comando resuelve el proyecto actual en el momento de deshacer, no guarda una referencia.
+- **`dialogs/`** — `BoardDialog`, `PieceDialog`, `MoveToBoardDialog`, `KerfDialog`: diálogos de alta/edición y de configuración, con la validación previa a construir el comando.
 - **`events/`** — `EventBus` síncrono para desacoplar componentes de Studio (ver ADR-003).
 - **`selection/`** — `SelectionManager`, seguimiento de qué objetos están seleccionados.
 - **`project/`** — `ProjectManager` (ciclo de vida del proyecto abierto) + `project_io.py` (persistencia JSON `.bcstudio.json`).
