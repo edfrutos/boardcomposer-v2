@@ -2,6 +2,10 @@
 
 ## Sin publicar
 
+---
+
+## 0.3.1 - 2026-07-27
+
 ### Añadido
 
 - Firma y notarización del `.app` de macOS, condicionadas a que existan las credenciales (`DEC-0017`, mitiga `DT-0011`). `scripts/sign_and_notarize.sh` firma *inside-out* —cada `.dylib`/`.so` primero y el bundle al final, porque la firma exterior sella los hashes de lo que hay dentro— con hardened runtime y *timestamp*, notariza con `notarytool --wait` y grapa el ticket con `stapler`, de modo que el `.app` descargado abre sin avisos incluso sin conexión. Sin `--deep`, que Apple desaconseja para firmar, y sin entitlements: la aplicación dibuja ventanas y hace HTTPS saliente, y ninguna de las dos cosas necesita uno fuera del App Sandbox. `package-studio.yml` detecta los secrets (`MACOS_CERTIFICATE_P12`, `MACOS_CERTIFICATE_PASSWORD`, `MACOS_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_TEAM_ID`, `APPLE_APP_PASSWORD`): si están, firma; si no, publica la build sin firmar. Contratar la cuenta de Apple Developer pasa a ser añadir secrets, sin tocar código. **Descartado firmar con un certificado autofirmado**: Gatekeeper solo confía en los emitidos por Apple, así que dejaría exactamente el mismo aviso al descargar y solo aparentaría estar resuelto.
