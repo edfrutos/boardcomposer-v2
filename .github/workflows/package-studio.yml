@@ -12,6 +12,9 @@ jobs:
   package:
     runs-on: macos-latest
 
+    env:
+      APP_PATH: studio/dist/BoardComposerStudio.app
+
     steps:
       - uses: actions/checkout@v4
 
@@ -32,6 +35,63 @@ jobs:
           cd studio
           pyside6-deploy -f app.py
 
+      # Signing needs a Developer ID Application certificate, which needs a
+      # paid Apple Developer account. Until those secrets exist the release
+      # ships unsigned with install instructions instead (DT-0011). Nothing
+      # here has to change on the day they do — only the secrets.
+      - name: Check for signing credentials
+        id: signing
+        env:
+          MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+        run: |
+          if [ -n "$MACOS_CERTIFICATE_P12" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Sin credenciales de firma: se publicará una build sin firmar con docs/INSTALL-macos.md"
+          fi
+
+      - name: Import signing certificate
+        if: steps.signing.outputs.available == 'true'
+        env:
+          MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: |
+          # A keychain of its own, with a throwaway password: the runner is
+          # destroyed after the job, and this keeps the certificate out of
+          # the default login keychain.
+          keychain_password="$(uuidgen)"
+          echo "$MACOS_CERTIFICATE_P12" | base64 --decode > /tmp/certificate.p12
+
+          security create-keychain -p "$keychain_password" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$keychain_password" build.keychain
+          # Without this the keychain re-locks after 5 minutes and codesign
+          # fails partway through a long signing run.
+          security set-keychain-settings -t 3600 -u build.keychain
+
+          security import /tmp/certificate.p12 -k build.keychain \
+            -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          # Lets codesign use the key without a UI prompt nobody can answer.
+          security set-key-partition-list -S apple-tool:,apple: \
+            -s -k "$keychain_password" build.keychain
+
+          rm -f /tmp/certificate.p12
+
+      - name: Sign, notarize and staple
+        if: steps.signing.outputs.available == 'true'
+        env:
+          SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        run: scripts/sign_and_notarize.sh
+
+      - name: Report what got shipped
+        run: |
+          echo "Firma del bundle publicado:"
+          codesign -dv "$APP_PATH" 2>&1 | sed 's/^/  /'
+
       - name: Zip the app bundle
         run: |
           cd studio/dist
@@ -40,11 +100,20 @@ jobs:
       - name: Publish release asset
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SIGNED: ${{ steps.signing.outputs.available }}
         run: |
+          assets=(studio/dist/BoardComposerStudio-macos.zip)
+          # An unsigned build is useless to whoever downloads it without the
+          # one command that gets past Gatekeeper, so the instructions ride
+          # along with it.
+          if [ "$SIGNED" != "true" ]; then
+            assets+=(docs/INSTALL-macos.md)
+          fi
+
           if gh release view "${{ github.ref_name }}" --repo "${{ github.repository }}" >/dev/null 2>&1; then
-            gh release upload "${{ github.ref_name }}" studio/dist/BoardComposerStudio-macos.zip \
+            gh release upload "${{ github.ref_name }}" "${assets[@]}" \
               --repo "${{ github.repository }}" --clobber
           else
-            gh release create "${{ github.ref_name }}" studio/dist/BoardComposerStudio-macos.zip \
+            gh release create "${{ github.ref_name }}" "${assets[@]}" \
               --repo "${{ github.repository }}" --title "${{ github.ref_name }}" --generate-notes
           fi

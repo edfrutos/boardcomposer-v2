@@ -102,9 +102,20 @@ Studio se distribuye como `.app` de macOS (arm64) generado con `pyside6-deploy` 
 
 - Configuración en `studio/pysidedeploy.spec`: `input_file = app.py`, `exec_directory = ./dist` (el `.app` final queda en `studio/dist/BoardComposerStudio.app`, fuera del árbol de código). `icon`/`python_path` se dejan en blanco a propósito: son rutas absolutas de la máquina que hace el build — `python_path` se sobrescribe en cada ejecución con el intérprete activo (`Config.set_or_fetch` en `pyside_deploy`), e `icon` cae al icono por defecto de PySide6 si el campo está vacío; si un build local los deja escritos, hay que volver a dejarlos en blanco antes de comitear.
 - `make package` lo genera localmente (`cd studio && pyside6-deploy -f app.py`); requiere `pip install -e ".[package]"` (dependencia opcional `nuitka`).
-- `.github/workflows/package-studio.yml` (`runs-on: macos-latest`): al crear un tag `v*`, corre los tests, compila el `.app`, lo comprime con `ditto` y lo publica como asset de una release de GitHub para ese tag.
+- `extra_args` fija el bundle identifier (`--macos-signed-app-name=com.efjdefrutos.boardcomposer.studio`) y la versión (`--macos-app-version`). Sin lo primero, Nuitka lo deriva del nombre del fichero de entrada y el `.app` sale con `CFBundleIdentifier = app`: ni único, ni notarizable. No debe cambiar nunca una vez publicada una release — macOS indexa ajustes y permisos por esa cadena. La versión la contrasta `scripts/check_project.py` contra `pyproject.toml` en cada `make check`, porque viven en ficheros distintos y se desincronizan solas.
+- `.github/workflows/package-studio.yml` (`runs-on: macos-latest`): al crear un tag `v*`, corre los tests, compila el `.app`, lo firma si puede (ver abajo), lo comprime con `ditto` y lo publica como asset de una release de GitHub para ese tag.
 - macOS por defecto usa `--standalone --macos-create-app-bundle` independientemente del `mode` configurado en el `.spec` (solo relevante en Windows/Linux).
-- Fuera de alcance: sin firma ni notarización de Apple (Gatekeeper avisará de "desarrollador no identificado" al primer arranque), solo macOS/arm64 (`DT-0011`).
+
+#### Firma y notarización (`DEC-0017`, `DT-0011`)
+
+El workflow tiene dos caminos según existan o no los secrets de firma, y los mismos comandos valen para ambos:
+
+- **Con secrets** (`MACOS_CERTIFICATE_P12`, `MACOS_CERTIFICATE_PASSWORD`, `MACOS_SIGNING_IDENTITY`, `APPLE_ID`, `APPLE_TEAM_ID`, `APPLE_APP_PASSWORD`): el certificado se importa en un llavero propio del runner y `scripts/sign_and_notarize.sh` firma *inside-out* —cada `.dylib`/`.so` primero, el bundle al final, porque la firma exterior sella los hashes de lo que hay dentro— con hardened runtime y *timestamp*, notariza con `notarytool --wait` y grapa el ticket con `stapler`. Deliberadamente **sin `--deep`**, que Apple desaconseja para firmar, y **sin entitlements**: la aplicación dibuja ventanas y hace HTTPS saliente, y ninguna de las dos cosas necesita uno fuera del App Sandbox.
+- **Sin secrets** (situación actual): build sin firmar, y `docs/INSTALL-macos.md` viaja como segundo asset de la release con el `xattr -dr com.apple.quarantine` que hace falta para abrirla.
+
+Un certificado autofirmado no es una alternativa: Gatekeeper solo confía en los emitidos por Apple, así que dejaría exactamente el mismo aviso (`DEC-0017`).
+
+- Fuera de alcance: solo macOS/arm64, sin Windows/Linux ni Intel (`DT-0011`).
 
 ## Regla de dependencia
 
