@@ -119,11 +119,19 @@ Solo se muestran campos con datos reales. La especificación SCR-004 menciona ca
 
 Los contextos "Solución" y "Algoritmo" de SCR-004 siguen sin cubrirse como vistas propias del Inspector: la información equivalente se muestra en el Comparador (`IDE-0002`, ver más abajo) y en el resumen que `_show_layout_solution()` vuelca en el Inspector tras "Generar".
 
-## Ancho de sierra (kerf) — alcance real
+## Ancho de sierra (kerf)
 
 `StudioProject.kerf_mm` (por defecto `0.0`, persistido en `.bcstudio.json` con migración retrocompatible vía `data.get("kerf_mm", 0.0)`). Se configura en el menú "Proyecto" → "Ancho de sierra…" (`KerfDialog`) y se cambia con `SetKerfCommand`, deshacible como cualquier otro comando.
 
-Hoy **solo lo consume el arrastre interactivo**: `BoardWorkspace.constrain_piece_position()` se lo pasa a `PlacementValidator.constrain_position()`, que ajusta la pieza a `gap_mm` de distancia de sus vecinas al hacer *snap*. **No** lo tienen en cuenta ni el solver (`LayoutService.to_core_project()` no traslada el kerf a `ProjectConstraints`), ni `piece_fits_on_board()`, ni la exportación SVG/PDF/DXF: una disposición generada o un fichero exportado asumen corte de anchura cero. Registrado como deuda técnica (`DT-0020`, `docs/masterplan/DOC-006-DeudaTecnica.md`).
+El Core no sabe qué es un kerf y no necesita saberlo (`DEC-0016`): la traducción vive entera en Studio, en tres sitios que comparten la misma convención — **cada pieza se ensancha un corte a la derecha y otro abajo**.
+
+- **Solver** — `LayoutService.to_core_project()` entrega cada pieza con `length_mm + kerf` y `width_mm + kerf`, y el tablero con `length_mm + kerf` / `width_mm + kerf`. Lo segundo cancela lo primero: N piezas en fila ocupan `suma(largos) + N·kerf` y deben caber en `largo + kerf`, es decir `suma(largos) + (N-1)·kerf ≤ largo` — exactamente los N-1 cortes que hacen falta para separar N piezas. Sin agrandar el tablero, una pieza del ancho completo del tablero (el caso más común: cortes transversales) dejaba de caber, porque reservaba un corte contra el borde del propio tablero, donde no hay nada que cortar.
+- **Encaje fuera del lienzo** — `piece_fits_on_board()` y `find_free_position()` aceptan `kerf_mm` (por defecto `0.0`). Los límites del tablero se comprueban contra la pieza real; el solape, contra la pieza **y su vecina**, ambas ensanchadas. Ensanchar solo la candidata no detectaría a la vecina de la izquierda, cuyo corte es el que se estaría invadiendo; ensanchar las dos exige exactamente un kerf de separación en cualquier dirección, no dos.
+- **Arrastre interactivo** — `BoardWorkspace.constrain_piece_position()` se lo pasa a `PlacementValidator.constrain_position()`, que separa la pieza `gap_mm` de sus vecinas al hacer *snap*.
+
+**El kerf no llega nunca al plano exportado**: `studio_project_to_solution()` dibuja las dimensiones reales de la pieza. La holgura es espacio reservado en el tablero, no parte de la pieza — un plano dibujado 3 mm más grande por lado se cortaría mal.
+
+En dos dimensiones sigue siendo una aproximación conservadora (una pieza puede reservar un corte que su posición concreta no necesita). Reservar de más desperdicia material sobre el papel; reservar de menos produce un plano que no se puede cortar.
 
 ## Lienzo — etiquetas
 

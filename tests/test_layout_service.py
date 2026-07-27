@@ -1,5 +1,6 @@
 from studio.models import StudioBoard, StudioPiece, StudioPlacement, StudioProject
 from studio.services import StudioServices
+from studio.workspace.placement_fit import piece_fits_on_board
 
 
 def _project_with_pieces() -> StudioProject:
@@ -252,3 +253,117 @@ def test_apply_solution_keeps_placements_on_other_boards():
     # clear the whole list and silently empty every other board.
     assert any(placement.board_id == "A" for placement in project.placements)
     assert any(placement.board_id == "B" for placement in project.placements)
+
+
+def _project_with_a_board_filled_to_the_millimetre() -> StudioProject:
+    # 700 + 520 is exactly the board's 1220mm of length: the two pieces fit
+    # side by side with nothing to spare, and stacking them is impossible
+    # (300 + 300 > the board's 400mm of width).
+    return StudioProject(
+        project_id="proj-kerf",
+        name="Demo",
+        boards=[StudioBoard("A", 1220, 400)],
+        pieces=[
+            StudioPiece("p1", 700, 300),
+            StudioPiece("p2", 520, 300),
+        ],
+    )
+
+
+def test_to_core_project_hands_the_solver_pieces_widened_by_the_kerf():
+    services = StudioServices()
+    project = _project_with_pieces()
+    project.kerf_mm = 3
+    services.projects.new_project(project)
+
+    core_project = services.layout.to_core_project()
+
+    by_id = {board.id: board for board in core_project.boards}
+    assert (by_id["p1"].length_mm, by_id["p1"].width_mm) == (703, 303)
+    assert (by_id["p2"].length_mm, by_id["p2"].width_mm) == (523, 303)
+
+
+def test_to_core_project_leaves_pieces_untouched_without_a_kerf():
+    services = StudioServices()
+    services.projects.new_project(_project_with_pieces())
+
+    core_project = services.layout.to_core_project()
+
+    by_id = {board.id: board for board in core_project.boards}
+    assert (by_id["p1"].length_mm, by_id["p1"].width_mm) == (700, 300)
+
+
+def test_to_core_project_grows_the_board_by_one_kerf_to_offset_the_pieces():
+    services = StudioServices()
+    project = _project_with_pieces()
+    project.kerf_mm = 3
+    services.projects.new_project(project)
+
+    core_project = services.layout.to_core_project()
+
+    assert core_project.constraints.max_length_mm == 2003
+    assert core_project.constraints.max_width_mm == 303
+
+
+def test_a_piece_as_wide_as_the_board_still_fits_with_a_kerf_set():
+    # The commonest case in real work: pieces the full width of the board,
+    # cut across it. There is no cut to make along the board's own edge, so
+    # widening every piece without widening the board would have refused to
+    # place a single one of them.
+    services = StudioServices()
+    project = _project_with_pieces()
+    project.kerf_mm = 3
+    services.projects.new_project(project)
+
+    services.layout.solve_current_project("A")
+    services.layout.apply_last_solution_to_current_project("A")
+
+    assert len(services.projects.current_project.placements) == 2
+
+
+def test_a_kerf_costs_a_piece_on_a_board_that_was_full_to_the_millimetre():
+    services = StudioServices()
+    services.projects.new_project(_project_with_a_board_filled_to_the_millimetre())
+
+    services.layout.solve_current_project("A")
+    services.layout.apply_last_solution_to_current_project("A")
+    assert len(services.projects.current_project.placements) == 2
+
+    services = StudioServices()
+    project = _project_with_a_board_filled_to_the_millimetre()
+    project.kerf_mm = 3
+    services.projects.new_project(project)
+
+    services.layout.solve_current_project("A")
+    services.layout.apply_last_solution_to_current_project("A")
+
+    # 703 + 523 no longer clears 1220. Losing the piece is the correct
+    # answer: the layout that placed both could not be cut.
+    assert len(services.projects.current_project.placements) == 1
+
+
+def test_applied_placements_leave_the_cut_between_pieces():
+    services = StudioServices()
+    project = _project_with_pieces()
+    project.kerf_mm = 3
+    services.projects.new_project(project)
+
+    services.layout.solve_current_project("A")
+    services.layout.apply_last_solution_to_current_project("A")
+
+    placements = services.projects.current_project.placements
+    assert len(placements) == 2
+
+    pieces_by_id = {p.piece_id: p for p in services.projects.current_project.pieces}
+    for placement in placements:
+        others = [other for other in placements if other is not placement]
+        assert piece_fits_on_board(
+            services.projects.current_project.boards[0],
+            pieces_by_id[placement.piece_id],
+            placement.x_mm,
+            placement.y_mm,
+            placement.rotated,
+            others,
+            pieces_by_id,
+            kerf_mm=3,
+        )

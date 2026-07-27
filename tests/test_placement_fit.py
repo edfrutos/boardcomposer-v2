@@ -132,3 +132,69 @@ def test_find_free_position_returns_none_on_a_completely_full_board():
         find_free_position(board, 50, 50, [other_placement], {"p2": other_piece})
         is None
     )
+
+
+def test_a_piece_flush_against_a_neighbour_does_not_fit_once_a_kerf_is_set():
+    # p2 ends at x=300. Butting p1 right up against it leaves no room for the
+    # blade, so neither piece could actually come off the board.
+    board = StudioBoard("B1", 1000, 500)
+    piece = StudioPiece("p1", 300, 200)
+    other_piece = StudioPiece("p2", 300, 200)
+    other_placement = StudioPlacement("p2", 0, 0, board_id="B1")
+
+    assert (
+        piece_fits_on_board(
+            board,
+            piece,
+            300,
+            0,
+            False,
+            [other_placement],
+            {"p2": other_piece},
+            kerf_mm=3,
+        )
+        is False
+    )
+
+
+def test_exactly_one_kerf_of_clearance_is_enough():
+    board = StudioBoard("B1", 1000, 500)
+    piece = StudioPiece("p1", 300, 200)
+    other_piece = StudioPiece("p2", 300, 200)
+    other_placement = StudioPlacement("p2", 0, 0, board_id="B1")
+
+    assert (
+        piece_fits_on_board(
+            board,
+            piece,
+            303,
+            0,
+            False,
+            [other_placement],
+            {"p2": other_piece},
+            kerf_mm=3,
+        )
+        is True
+    )
+
+
+def test_the_boards_own_edge_needs_no_kerf():
+    # A piece as long as the board still fits: the board's edge is not a cut
+    # between two pieces. Only neighbours demand clearance.
+    board = StudioBoard("B1", 1000, 500)
+    piece = StudioPiece("p1", 1000, 500)
+
+    assert piece_fits_on_board(board, piece, 0, 0, False, [], {}, kerf_mm=3) is True
+
+
+def test_find_free_position_leaves_room_for_the_cut():
+    board = StudioBoard("B1", 1000, 500)
+    other_piece = StudioPiece("p2", 300, 200)
+    other_placement = StudioPlacement("p2", 0, 0, board_id="B1")
+
+    position = find_free_position(
+        board, 100, 100, [other_placement], {"p2": other_piece}, kerf_mm=3
+    )
+
+    # Without a kerf this would be (300, 0) — flush against p2's right edge.
+    assert position == (303, 0)
