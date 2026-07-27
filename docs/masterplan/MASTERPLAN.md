@@ -28,8 +28,10 @@ No hay ningún IDE en desarrollo ni planificado.
 
 Deuda técnica (`DOC-006-DeudaTecnica.md`): 20 registros, 19 resueltos.
 Abierta: `DT-0011` (el `.app` de macOS no está firmado ni notarizado, y solo
-se genera para macOS/arm64) — a abordar solo si se necesita distribución
-pública o fuera de macOS Apple Silicon.
+se genera para macOS/arm64). Mitigada el 27/07/2026 con todo lo que no exige
+cuenta de pago — bundle identifier propio, `docs/INSTALL-macos.md` en cada
+release, y firma+notarización ya automatizadas a la espera de credenciales
+(`DEC-0017`). Cerrarla del todo cuesta 99 USD/año.
 
 Despliegue privado en marcha (`IDE-0017`): API en `bc.efjdefrutos.com` y
 Studio por navegador (noVNC) en `studio.efjdefrutos.com`.
@@ -60,8 +62,9 @@ Con el backlog a cero y sin más deuda que dé resultados incorrectos, la
 siguiente es una decisión de producto, no técnica. Candidatas, de menor a
 mayor alcance (`DOC-999-Ideas.md`):
 
-1. Cerrar `DT-0011` (firma y notarización de Apple) si se quiere distribuir
-   el `.app` fuera del entorno propio.
+1. Contratar la cuenta de Apple Developer (99 USD/año) para cerrar `DT-0011`.
+   Ya no queda trabajo técnico: cargar los seis secrets en GitHub basta para
+   que la siguiente release salga firmada y notarizada (`DEC-0017`).
 2. Instancia demo pública — acotada, pero implica infraestructura de pago.
 3. Marketplace público de plugins — requiere decidir antes si el mecanismo de
    plugins es para un ecosistema abierto o solo para uso interno.

@@ -1,0 +1,57 @@
+# Instalar BoardComposer Studio en macOS
+
+Esta build **no está firmada con un certificado de Apple**, así que macOS
+avisará la primera vez. No es un fallo de la aplicación ni una señal de que
+algo vaya mal: es el comportamiento normal de Gatekeeper con cualquier
+programa descargado que no venga de la App Store ni de un desarrollador
+registrado en Apple.
+
+## Instalación
+
+1. Descarga `BoardComposerStudio-macos.zip` desde la release y descomprímelo.
+2. Arrastra `BoardComposerStudio.app` a tu carpeta `Aplicaciones`.
+3. Abre el Terminal y ejecuta:
+
+       xattr -dr com.apple.quarantine /Applications/BoardComposerStudio.app
+
+4. Abre la aplicación con normalidad.
+
+Sin el paso 3 verás *"No se puede abrir porque Apple no puede comprobar que
+no contiene software malicioso"*.
+
+### Alternativa sin Terminal
+
+Si prefieres no usar comandos: **clic derecho** sobre la aplicación →
+**Abrir** → **Abrir** en el diálogo. Hay que hacerlo solo la primera vez.
+
+## Qué hace ese comando, exactamente
+
+Al descargar un fichero, macOS le pone una marca llamada
+`com.apple.quarantine`. Cuando abres algo que la lleva, Gatekeeper comprueba
+si está firmado por un desarrollador identificado por Apple y notarizado; si
+no lo está, bloquea la apertura. `xattr -dr` quita esa marca, y con ella la
+comprobación.
+
+Es la razón de que una build compilada por ti en tu propio Mac
+(`make package`) se abra sin ningún aviso: nunca pasó por una descarga, así
+que nunca llevó la marca. El binario es exactamente el mismo.
+
+## Lo que esto no arregla
+
+Quitar la cuarentena desactiva la verificación **para este fichero
+concreto**. Hazlo solo con aplicaciones cuyo origen conozcas — en este caso,
+una build generada por GitHub Actions a partir del código de este
+repositorio, cuyo registro completo es público en la pestaña *Actions*.
+
+La solución de verdad es firmar con un certificado **Developer ID
+Application** y notarizar, y eso requiere una cuenta de Apple Developer de
+pago. Está registrado como `DT-0011` en
+`docs/masterplan/DOC-006-DeudaTecnica.md`, y la automatización ya está
+escrita (`scripts/sign_and_notarize.sh`): el día que existan las
+credenciales, las releases saldrán firmadas sin cambiar una línea de código
+y este fichero dejará de acompañarlas.
+
+## Requisitos
+
+- macOS con Apple Silicon (arm64). No hay build para Intel ni para
+  Windows/Linux.
