@@ -11,7 +11,7 @@
 
 Rama: `main`
 Versión publicada: `0.3.0` (26/07/2026, tag `v0.3.0`)
-Tests: 673, en verde.
+Tests: 684, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -26,15 +26,10 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0018`, todos 🟢 completados.
 No hay ningún IDE en desarrollo ni planificado.
 
-Deuda técnica (`DOC-006-DeudaTecnica.md`): 20 registros, 18 resueltos. Abiertas:
-
-- `DT-0011` — el `.app` de macOS no está firmado ni notarizado, y solo se
-  genera para macOS/arm64. A abordar solo si se necesita distribución pública
-  o fuera de macOS Apple Silicon.
-- `DT-0020` — el ancho de sierra (kerf) se configura y persiste, pero solo lo
-  aplica el arrastre interactivo: ni el solver, ni el encaje fuera del lienzo,
-  ni la exportación lo tienen en cuenta. Requiere decidir antes si el kerf
-  pertenece al dominio del Core o se queda como ayuda visual de Studio.
+Deuda técnica (`DOC-006-DeudaTecnica.md`): 20 registros, 19 resueltos.
+Abierta: `DT-0011` (el `.app` de macOS no está firmado ni notarizado, y solo
+se genera para macOS/arm64) — a abordar solo si se necesita distribución
+pública o fuera de macOS Apple Silicon.
 
 Despliegue privado en marcha (`IDE-0017`): API en `bc.efjdefrutos.com` y
 Studio por navegador (noVNC) en `studio.efjdefrutos.com`.
@@ -54,25 +49,27 @@ del masterplan (`INDEX.md`, hasta entonces vacío), referencia de usuario de la
 línea de comandos (`docs/cli.md`, nueva), y `README.md`, `docs/studio.md` y
 `docs/architecture.md` alineados con el código actual.
 
-La sección "Sin publicar" de `CHANGELOG.md` vuelve a estar vacía.
+Después de `v0.3.0`, la sección "Sin publicar" de `CHANGELOG.md` recoge el
+cierre de `DT-0020`: el ancho de sierra ya lo aplican el solver y el encaje
+fuera del lienzo, no solo el arrastre (`DEC-0016`, el kerf se traduce en
+Studio y el Core sigue sin saber qué es).
 
 ## Próxima decisión
 
-Con el backlog a cero, la siguiente es una decisión de producto, no técnica.
-Candidatas, de menor a mayor alcance (`DOC-999-Ideas.md`):
+Con el backlog a cero y sin más deuda que dé resultados incorrectos, la
+siguiente es una decisión de producto, no técnica. Candidatas, de menor a
+mayor alcance (`DOC-999-Ideas.md`):
 
-1. Cerrar `DT-0020` (ancho de sierra): decidir si el kerf pertenece al dominio
-   del Core — y entonces afecta a `ProjectConstraints` y a todos los
-   generadores — o se queda como ayuda visual del arrastre en Studio. Es la
-   única deuda abierta que puede dar un resultado incorrecto al usuario: hoy
-   una disposición generada o un plano exportado asumen corte de anchura cero.
-2. Cerrar `DT-0011` (firma y notarización de Apple) si se quiere distribuir
+1. Cerrar `DT-0011` (firma y notarización de Apple) si se quiere distribuir
    el `.app` fuera del entorno propio.
-3. Instancia demo pública — acotada, pero implica infraestructura de pago.
-4. Marketplace público de plugins — requiere decidir antes si el mecanismo de
+2. Instancia demo pública — acotada, pero implica infraestructura de pago.
+3. Marketplace público de plugins — requiere decidir antes si el mecanismo de
    plugins es para un ecosistema abierto o solo para uso interno.
-5. SaaS real (cuentas, persistencia por usuario, facturación) — no es una
+4. SaaS real (cuentas, persistencia por usuario, facturación) — no es una
    tarea, es una fase nueva del producto.
+
+Si el kerf tiene que importar también fuera de Studio (CLI y API hoy no lo
+tienen), `DEC-0016` es la decisión a revisitar.
 
 Formalmente sigue pendiente el andamiaje de proceso que declaran `DOC-003`,
 `DOC-004` y `DOC-006` en su estado 🟡 "En revisión": descomponer las fases en

@@ -934,7 +934,12 @@ class MainWindow(QMainWindow):
             pieces_by_id = {p.piece_id: p for p in project.pieces}
             free_position = (
                 find_free_position(
-                    board, length_mm, width_mm, other_placements, pieces_by_id
+                    board,
+                    length_mm,
+                    width_mm,
+                    other_placements,
+                    pieces_by_id,
+                    kerf_mm=project.kerf_mm,
                 )
                 if board is not None
                 else None
@@ -1096,6 +1101,7 @@ class MainWindow(QMainWindow):
                 placement.rotated,
                 other_placements,
                 pieces_by_id,
+                kerf_mm=project.kerf_mm,
             ):
                 self.statusBar().showMessage(
                     f"La pieza '{piece.piece_id}' ya no cabría en el tablero "
@@ -1229,6 +1235,7 @@ class MainWindow(QMainWindow):
                     placement.rotated,
                     other_placements,
                     pieces_by_id,
+                    kerf_mm=project.kerf_mm,
                 ):
                     self.statusBar().showMessage(
                         f"La pieza no cabría en el tablero "
@@ -1314,13 +1321,19 @@ class MainWindow(QMainWindow):
             placement.rotated,
             other_placements,
             pieces_by_id,
+            kerf_mm=project.kerf_mm,
         ):
             length_mm, width_mm = piece.length_mm, piece.width_mm
             if placement.rotated:
                 length_mm, width_mm = width_mm, length_mm
 
             free_position = find_free_position(
-                target_board, length_mm, width_mm, other_placements, pieces_by_id
+                target_board,
+                length_mm,
+                width_mm,
+                other_placements,
+                pieces_by_id,
+                kerf_mm=project.kerf_mm,
             )
             if free_position is None:
                 self.statusBar().showMessage(

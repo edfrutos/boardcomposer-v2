@@ -53,6 +53,24 @@ def test_studio_project_to_solution_skips_placements_without_a_matching_piece():
     assert solution.placements == []
 
 
+def test_the_kerf_never_reaches_the_exported_plan():
+    # The kerf is packing slack, not part of the piece: LayoutService adds it
+    # when handing pieces to the solver, and it has to stop there. A plan
+    # drawn 3mm too big on every side would be cut wrong.
+    project = StudioProject(
+        project_id="proj-1",
+        name="Demo",
+        kerf_mm=3,
+        boards=[StudioBoard("A", 2000, 300)],
+        pieces=[StudioPiece("p1", 500, 200)],
+        placements=[StudioPlacement("p1", 10, 20, board_id="A")],
+    )
+
+    placement = studio_project_to_solution(project).placements[0]
+
+    assert (placement.length_mm, placement.width_mm) == (500, 200)
+
+
 def test_studio_project_to_solution_with_no_placements_is_empty():
     project = StudioProject(project_id="proj-1", name="Demo")
 

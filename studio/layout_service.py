@@ -31,11 +31,17 @@ class LayoutService:
         )
 
         source_board = self._resolve_board(studio_project, active_board_id)
+        kerf_mm = studio_project.kerf_mm
 
         if source_board is not None:
+            # The board is handed over one kerf larger than it is, to cancel
+            # out the one kerf too many the pieces carry (see below). N
+            # pieces in a row then take sum(lengths) + N kerfs and have to
+            # clear length + 1 kerf — which is exactly the N-1 cuts that
+            # separating N pieces really needs.
             core_project.constraints = ProjectConstraints(
-                max_length_mm=source_board.length_mm,
-                max_width_mm=source_board.width_mm,
+                max_length_mm=source_board.length_mm + kerf_mm,
+                max_width_mm=source_board.width_mm + kerf_mm,
                 allow_rotation=True,
                 allow_cutting=False,
             )
@@ -67,11 +73,26 @@ class LayoutService:
             ):
                 continue
 
+            # Each piece is handed to the solver one saw cut wider and one
+            # taller than it really is, so the gap the blade needs is packed
+            # along with it. The Core has no concept of a kerf and doesn't
+            # need one: to it these are just slightly larger boards. The
+            # placement that comes back is the top-left corner of the piece
+            # *plus* its cut, which is also the corner of the piece itself —
+            # so _apply_solution() can store it unchanged.
+            #
+            # Every piece carries a cut it may not need — the last one in a
+            # row is cut off by the board's own edge — which is why the board
+            # above is grown by one kerf to compensate. Exact for cuts along
+            # one axis; in two dimensions it still errs towards reserving too
+            # much, and that is the right way to be wrong: reserving too much
+            # wastes material on paper, reserving too little yields a plan
+            # that cannot be cut.
             core_project.add_board(
                 Board(
                     id=piece.piece_id,
-                    length_mm=piece.length_mm,
-                    width_mm=piece.width_mm,
+                    length_mm=piece.length_mm + kerf_mm,
+                    width_mm=piece.width_mm + kerf_mm,
                     thickness_mm=piece.thickness_mm,
                 )
             )

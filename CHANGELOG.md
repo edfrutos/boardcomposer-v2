@@ -2,6 +2,10 @@
 
 ## Sin publicar
 
+### Corregido
+
+- El ancho de sierra (kerf) solo lo aplicaba el arrastre interactivo: el solver y el encaje fuera del lienzo lo ignoraban, así que "Generar" producía disposiciones con las piezas pegadas y el plano exportado no se podía cortar (`DT-0020`). Ahora `LayoutService.to_core_project()` entrega al solver cada pieza ensanchada un corte a la derecha y otro abajo, **y el tablero también**: lo segundo cancela lo primero, de forma que N piezas en fila exigen los N-1 cortes que realmente hacen falta y no N. Sin agrandar el tablero, una pieza del ancho completo del tablero —el caso más común, cortes transversales— dejaba de caber, porque reservaba un corte contra el borde del propio tablero donde no hay nada que cortar. `piece_fits_on_board()` y `find_free_position()` (`studio/workspace/placement_fit.py`) aceptan ahora `kerf_mm`: los límites del tablero se comprueban contra la pieza real y el solape contra la pieza y su vecina, ambas ensanchadas —ensanchar solo la candidata no veía a la vecina de la izquierda, cuyo corte es el que se invadía—, con lo que la separación exigida es exactamente un corte en cualquier dirección, nunca dos. El kerf no llega al plano exportado: `studio_project_to_solution()` sigue dibujando las dimensiones reales, porque la holgura es espacio reservado en el tablero, no parte de la pieza. El Core no sabe qué es un kerf y sigue sin saberlo (`DEC-0016`): con `kerf_mm` a 0 —el valor por defecto— nada cambia respecto a `v0.3.0`.
+
 ---
 
 ## 0.3.0 - 2026-07-26
