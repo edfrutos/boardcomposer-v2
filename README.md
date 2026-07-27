@@ -70,7 +70,11 @@ o directamente `boardcomposer-studio` una vez instalado el paquete.
     pip install -e ".[package]"
     make package
 
-Genera `studio/dist/BoardComposerStudio.app` (con `pyside6-deploy`, sin firmar ni notarizar por Apple — Gatekeeper avisará de "desarrollador no identificado" al primer arranque). Al crear un tag `v*` en GitHub, `.github/workflows/package-studio.yml` compila el `.app` y lo publica automáticamente como asset de una release.
+Genera `studio/dist/BoardComposerStudio.app` (con `pyside6-deploy`). Al crear un tag `v*` en GitHub, `.github/workflows/package-studio.yml` compila el `.app` y lo publica automáticamente como asset de una release.
+
+Las releases actuales **no van firmadas con un certificado de Apple**, así que macOS avisa la primera vez que se abre una descargada — no una compilada en local, que nunca pasa por la cuarentena del navegador. Instrucciones para quien la descargue: **`docs/INSTALL-macos.md`**, que acompaña al `.zip` en cada release.
+
+El workflow ya sabe firmar y notarizar (`scripts/sign_and_notarize.sh`); solo espera a que existan los secrets de una cuenta de Apple Developer, y entonces lo hace sin cambiar nada más (`DEC-0017`, `DT-0011`). Un certificado autofirmado no sirve: Gatekeeper solo confía en los emitidos por Apple.
 
 ## CSV/Excel de entrada
 

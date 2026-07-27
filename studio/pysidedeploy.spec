@@ -77,7 +77,16 @@ macos.permissions =
 mode = onefile
 
 # specify any extra nuitka arguments
-extra_args = --quiet --noinclude-qt-translations
+#
+# --macos-signed-app-name sets the bundle identifier. without it nuitka
+# derives it from the entry point's filename, so every build so far shipped
+# with cfbundleidentifier = "app": not unique to anything, shared with any
+# other app built the same careless way, and rejected by notarisation. it
+# has to stay in reverse-dns form and must never change once a release is
+# out — macos keys per-app settings and permissions off this string.
+# --macos-app-version must match the version in pyproject.toml.
+# scripts/check_project.py fails the build if the two drift apart.
+extra_args = --quiet --noinclude-qt-translations --macos-signed-app-name=com.efjdefrutos.boardcomposer.studio --macos-app-version=0.3.0
 
 [buildozer]
 

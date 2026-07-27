@@ -74,6 +74,7 @@ anotada en `docs/studio.md`, no en la propia SCR.
 | [`../data_model.md`](../data_model.md) | Modelo de datos del Core. |
 | [`../plugins.md`](../plugins.md) | Guía para desarrolladores de plugins. |
 | [`../deploy.md`](../deploy.md), [`../deploy-studio-remote.md`](../deploy-studio-remote.md) | Despliegue de la API y de Studio remoto. |
+| [`../INSTALL-macos.md`](../INSTALL-macos.md) | Instalar el `.app` descargado de una release (se publica junto al `.zip`). |
 | [`../../CHANGELOG.md`](../../CHANGELOG.md) | Historial de versiones. |
 
 Ficheros de la raíz marcados **Superado** (`ROADMAP.md`, `TODO.md`,
