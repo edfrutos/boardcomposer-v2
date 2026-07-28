@@ -37,6 +37,7 @@ from studio.theme import (
     apply_theme,
     detect_color_scheme,
     palette_for,
+    panel_html_stylesheet,
 )
 from studio.models import (
     StudioBoard,
@@ -302,7 +303,31 @@ class MainWindow(QMainWindow):
 
     def _set_theme(self, key: str):
         scheme = None if key == "auto" else key
-        apply_theme(QApplication.instance(), scheme)
+        resolved = apply_theme(QApplication.instance(), scheme)
+        self._apply_panel_stylesheets(resolved)
+
+    def _apply_panel_stylesheets(self, scheme: str):
+        """Re-themes the Inspector/Comparador/Asistente docks' HTML and
+        redraws whatever they're currently showing — setDefaultStyleSheet()
+        only affects content set *after* it, so a bare re-apply would leave
+        already-rendered panels on the old theme's colors until the next
+        selection change or solve.
+
+        `scheme` must be the value apply_theme() actually resolved and
+        applied, not a fresh detect_color_scheme() call: picking "Oscuro"
+        from the Ver menu while macOS itself is set to light forces a QSS
+        override that has nothing to do with the OS's own scheme, and
+        re-detecting here would silently put these three panels back on
+        light colors under dark chrome the moment the user chose otherwise
+        — confirmed against a real render, not just reasoned about."""
+        stylesheet = panel_html_stylesheet(scheme)
+        self.inspector.document().setDefaultStyleSheet(stylesheet)
+        self.comparator.document().setDefaultStyleSheet(stylesheet)
+        self.assistant_history.document().setDefaultStyleSheet(stylesheet)
+
+        self._on_explorer_selection_changed()
+        self.comparator.setHtml(render_comparison(self.services.layout.last_solutions))
+        self.assistant_history.setHtml(render_chat(self.services.assistant.history))
 
     # Shared by the menu bar (via QAction.icon(), themed for contrast against
     # the menu's own surface) and the toolbar (always white — see
@@ -387,6 +412,9 @@ class MainWindow(QMainWindow):
 
         self.inspector = QTextEdit()
         self.inspector.setReadOnly(True)
+        self.inspector.document().setDefaultStyleSheet(
+            panel_html_stylesheet(detect_color_scheme())
+        )
         self.inspector.setHtml(render_empty())
 
         inspector_dock = QDockWidget("Inspector", self)
@@ -416,6 +444,9 @@ class MainWindow(QMainWindow):
 
         self.comparator = QTextEdit()
         self.comparator.setReadOnly(True)
+        self.comparator.document().setDefaultStyleSheet(
+            panel_html_stylesheet(detect_color_scheme())
+        )
         self.comparator.setHtml(render_comparison([]))
 
         comparator_dock = QDockWidget("Comparador", self)
@@ -435,6 +466,9 @@ class MainWindow(QMainWindow):
     def _build_assistant_panel(self):
         self.assistant_history = QTextEdit()
         self.assistant_history.setReadOnly(True)
+        self.assistant_history.document().setDefaultStyleSheet(
+            panel_html_stylesheet(detect_color_scheme())
+        )
         self.assistant_history.setHtml(render_chat([]))
 
         self._assistant_attachment_path: str | None = None
@@ -622,15 +656,20 @@ class MainWindow(QMainWindow):
         if project is None:
             return
 
+        icons = build_icons(palette_for(detect_color_scheme()).text_muted)
+
         root = QTreeWidgetItem([project.name])
         root.setData(0, Qt.ItemDataRole.UserRole, f"project:{project.project_id}")
         boards_root = QTreeWidgetItem(["Tableros"])
+        boards_root.setIcon(0, icons["board_row"])
         pieces_root = QTreeWidgetItem(["Piezas"])
+        pieces_root.setIcon(0, icons["piece_row"])
 
         for board in project.boards:
             item = QTreeWidgetItem(
                 [f"{board.board_id} — {board.length_mm:g} x {board.width_mm:g} mm"]
             )
+            item.setIcon(0, icons["board_row"])
             item.setData(
                 0,
                 Qt.ItemDataRole.UserRole,
@@ -642,6 +681,7 @@ class MainWindow(QMainWindow):
             item = QTreeWidgetItem(
                 [f"{piece.piece_id} — {piece.length_mm:g} x {piece.width_mm:g} mm"]
             )
+            item.setIcon(0, icons["piece_row"])
             item.setData(
                 0,
                 Qt.ItemDataRole.UserRole,

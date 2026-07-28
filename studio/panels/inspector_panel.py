@@ -11,7 +11,12 @@ from studio.models import StudioBoard, StudioPiece, StudioPlacement, StudioProje
 
 
 def render_empty() -> str:
-    return "<h3>Inspector</h3><p>Sin selección</p>"
+    return (
+        '<table id="empty-state-table"><tr><td id="empty-state">'
+        "<h3>Inspector</h3>"
+        "<p>Sin selección. Elige un tablero o una pieza en el Explorer.</p>"
+        "</td></tr></table>"
+    )
 
 
 def render_project(project: StudioProject) -> str:

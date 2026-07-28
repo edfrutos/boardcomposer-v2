@@ -318,6 +318,69 @@ def build_stylesheet(scheme: str) -> str:
     """
 
 
+def panel_html_stylesheet(scheme: str) -> str:
+    """CSS for the HTML the Inspector/Comparador/Asistente docks render.
+
+    Those three render functions (studio/panels/) are deliberately Qt-free
+    pure functions, tested by asserting substrings — so they emit plain
+    semantic markup (h3/p/table/#empty-state) with no colors of their own,
+    and this stylesheet is the only place that paints them, the same split
+    build_icons(color) already uses for toolbar icons. Applied once per
+    QTextEdit via `.document().setDefaultStyleSheet(...)`, so a render
+    function's output picks up the theme without knowing it exists.
+
+    Only the subset of CSS Qt's rich text engine actually understands
+    (https://doc.qt.io/qt-6/richtext-html-subset.html) — no flexbox, no
+    box-shadow, no CSS variables.
+    """
+    p = palette_for(scheme)
+
+    return f"""
+    /* Qt's rich text engine paints the HTML document on its own white
+    "page" by default, independent of the QTextEdit widget's own QSS
+    background — in dark mode that leaves a stark white rectangle behind
+    otherwise-correctly-dark chrome (verified against a real render, not
+    just theory: sampled pixels came back rgb(255,255,255) with the dark
+    palette active). Explicit background-color here is what actually
+    fixes it; the widget-level `background` rule alone does not. */
+    body {{ color: {p.text}; background-color: {p.surface}; }}
+    h3 {{ color: {p.accent}; font-size: 15px; margin: 2px 0 10px 0; }}
+    h4 {{
+        color: {p.text_muted}; font-size: 11px; margin: 18px 0 6px 0;
+        text-transform: uppercase;
+    }}
+    p {{ margin: 0 0 8px 0; line-height: 1.5; }}
+    b {{ color: {p.text}; }}
+    i {{ color: {p.text_muted}; }}
+
+    table {{ border-collapse: collapse; margin: 10px 0 14px 0; width: 100%; }}
+    th, td {{
+        border: 1px solid {p.border}; padding: 6px 10px; text-align: left;
+        font-size: 13px;
+    }}
+    th {{ background: {p.surface_alt}; color: {p.text}; }}
+
+    /* A single-cell table, not a div: Qt's rich text engine renders
+    table/td padding and background-color reliably, but largely ignores
+    padding/border/border-radius on a plain <div> (verified against a real
+    render — a div came out as a flat, edge-to-edge, unpadded block).
+
+    Both ids below are SIMPLE selectors on purpose — id="empty-state" sits
+    directly on the <td>, not nested under a "table#empty-state td"
+    descendant selector. Qt's engine silently drops rules it can't match
+    rather than erroring, so a descendant selector doesn't fail loudly: it
+    just never applies, and the cell quietly falls back to Qt's own
+    default (a flat light gray, wrong in dark mode) — caught this only by
+    sampling actual rendered pixels, not by reading the stylesheet. */
+    #empty-state-table {{ width: 100%; margin: 4px 0 8px 0; }}
+    #empty-state {{
+        background: {p.surface_alt};
+        padding: 16px 18px;
+        border: none;
+    }}
+    """
+
+
 def apply_theme(app: QApplication, scheme: str | None = None) -> str:
     """Applies the light/dark stylesheet; returns the scheme actually used."""
     resolved = scheme or detect_color_scheme()
