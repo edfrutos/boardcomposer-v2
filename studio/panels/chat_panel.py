@@ -11,9 +11,11 @@ solver strings.
 def render_chat(history: list[tuple[str, str]]) -> str:
     if not history:
         return (
+            '<table id="empty-state-table"><tr><td id="empty-state">'
             "<h3>Asistente</h3>"
             "<p>Escribe una pregunta sobre el proyecto, los resultados o "
             "cómo usar BoardComposer Studio.</p>"
+            "</td></tr></table>"
         )
 
     entries = []

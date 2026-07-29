@@ -22,9 +22,11 @@ from boardcomposer.domain import AssemblySolution
 def render_comparison(solutions: list[AssemblySolution]) -> str:
     if not solutions:
         return (
+            '<table id="empty-state-table"><tr><td id="empty-state">'
             "<h3>Comparador</h3>"
             "<p>No hay soluciones para comparar. Usa "
             '"Comparar → Generar comparación".</p>'
+            "</td></tr></table>"
         )
 
     headers = "".join(f"<th>Solución {i + 1}</th>" for i in range(len(solutions)))
@@ -55,7 +57,7 @@ def render_comparison(solutions: list[AssemblySolution]) -> str:
 
     return (
         "<h3>Comparador de Soluciones</h3>"
-        f"<table border='1' cellpadding='4' cellspacing='0'>"
+        "<table>"
         f"<tr><th></th>{headers}</tr>"
         f"{''.join(rows)}"
         "</table>"
@@ -68,7 +70,7 @@ def render_comparison(solutions: list[AssemblySolution]) -> str:
 
 def _row(label: str, values: list[str]) -> str:
     cells = "".join(f"<td>{value}</td>" for value in values)
-    return f"<tr><td><b>{label}</b></td>{cells}</tr>"
+    return f"<tr><th>{label}</th>{cells}</tr>"
 
 
 def _piece_order(solution: AssemblySolution) -> str:

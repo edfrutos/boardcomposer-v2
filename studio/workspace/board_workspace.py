@@ -3,7 +3,7 @@
 from __future__ import annotations
 from studio.workspace.workspace_camera import WorkspaceCamera
 from PySide6.QtCore import QPoint, QPointF, QRectF, Qt
-from PySide6.QtGui import QMouseEvent, QPainter, QWheelEvent
+from PySide6.QtGui import QMouseEvent, QPainter, QResizeEvent, QWheelEvent
 from PySide6.QtWidgets import (
     QGraphicsRectItem,
     QGraphicsScene,
@@ -35,6 +35,16 @@ class BoardWorkspace(QGraphicsView):
         self.selection = SelectionController(services)
         self._drag = DragController()
         self._drag_start: tuple[str, float, float] | None = None
+        # reload_project() calls fit_board() right away, but the dock is
+        # usually still at its default construction-time size then — real
+        # layout (the window opening, a dock resizing to its docked share
+        # of the screen) happens afterwards, leaving the board fit to a
+        # size it never actually has, stranded small in a corner with a
+        # sea of empty grid around it. Tracks whether a real fit has
+        # happened yet for the current board so resizeEvent can catch that
+        # first real size without re-fitting (and undoing the user's own
+        # zoom/pan) on every later resize.
+        self._fitted_once = False
 
         self.setScene(self._scene)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -57,6 +67,7 @@ class BoardWorkspace(QGraphicsView):
         self._piece_items.clear()
         self._board_item = None
         self._scene.setSceneRect(QRectF(-5000, -5000, 13000, 11000))
+        self._fitted_once = False
 
         project = self.services.projects.current_project
         if project is not None and project.boards:
@@ -148,6 +159,15 @@ class BoardWorkspace(QGraphicsView):
         self._camera.zoom = self._camera.clamp_zoom(min(x_zoom, y_zoom) * 0.75)
         self._camera.center = board_rect.center()
         self._apply_camera()
+        self._fitted_once = True
+
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        super().resizeEvent(event)
+        # Only the size the dock settles into after its first real layout
+        # pass — not every resize after that, which would undo a user's own
+        # zoom/pan the moment they nudge a splitter (see _fitted_once).
+        if not self._fitted_once:
+            self.fit_board()
 
     def wheelEvent(self, event: QWheelEvent) -> None:
         mouse_scene_before = self.mapToScene(event.position().toPoint())

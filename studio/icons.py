@@ -45,6 +45,13 @@ _PATHS = {
     "attach": '<path d="M20.4 11.05 12 19.45a5.5 5.5 0 0 1-7.78-7.78l8.4-8.4a'
     '3.67 3.67 0 0 1 5.19 5.19l-8.41 8.4a1.83 1.83 0 0 1-2.6-2.6l7.78-7.77"/>',
     "send": '<path d="M4 12h14"/><path d="M13 6l6 6-6 6"/>',
+    # Explorer tree rows: a full board is one wide flat rectangle; a piece
+    # is two smaller offset rectangles, evoking cut-out material rather
+    # than a single sheet — silhouette does the distinguishing, not just
+    # the label text next to it.
+    "board_row": '<rect x="3" y="8" width="18" height="8" rx="1.5"/>',
+    "piece_row": '<rect x="4" y="5" width="8" height="8" rx="1"/>'
+    '<rect x="13" y="10" width="7" height="7" rx="1"/>',
 }
 
 

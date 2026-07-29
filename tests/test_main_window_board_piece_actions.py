@@ -2,6 +2,7 @@ import pytest
 from PySide6.QtWidgets import QApplication, QDialog
 
 from studio.main_window import MainWindow
+from studio.models import StudioBoard, StudioPiece, StudioPlacement, StudioProject
 from studio.services import StudioServices
 
 
@@ -291,6 +292,65 @@ def test_delete_selected_piece_removes_it_from_the_explorer(window):
     window._delete_selected_piece()
 
     assert not any(text.startswith("P-001") for text in _explorer_piece_texts(window))
+
+
+def _explorer_piece_item(window, piece_id: str):
+    root = window.explorer.topLevelItem(0)
+    pieces_root = next(
+        root.child(i)
+        for i in range(root.childCount())
+        if root.child(i).text(0) == "Piezas"
+    )
+    return next(
+        pieces_root.child(i)
+        for i in range(pieces_root.childCount())
+        if pieces_root.child(i).text(0).startswith(f"{piece_id} ")
+    )
+
+
+def test_selecting_a_piece_from_another_board_switches_the_active_board(window):
+    # select_piece() only matches items the workspace actually loaded, and
+    # _add_pieces() only loads placements on the active board — selecting a
+    # piece placed on a different board used to silently select nothing,
+    # with no board switch and no error.
+    project = StudioProject(
+        project_id="cross-board",
+        name="Demo",
+        boards=[StudioBoard("A", 1000, 500), StudioBoard("B", 1000, 500)],
+        pieces=[StudioPiece("p1", 300, 200)],
+        placements=[StudioPlacement("p1", 0, 0, board_id="B")],
+    )
+    window.services.projects.new_project(project)
+    window.workspace.set_active_board("A")
+    window._reload_explorer()
+
+    item = _explorer_piece_item(window, "p1")
+    window.explorer.setCurrentItem(item)
+    item.setSelected(True)
+    window._on_explorer_selection_changed()
+
+    assert window.workspace.active_board_id == "B"
+    assert window.services.selection.selected_ids == ("p1",)
+
+
+def test_selecting_a_piece_already_on_the_active_board_does_not_switch(window):
+    project = StudioProject(
+        project_id="same-board",
+        name="Demo",
+        boards=[StudioBoard("A", 1000, 500), StudioBoard("B", 1000, 500)],
+        pieces=[StudioPiece("p1", 300, 200)],
+        placements=[StudioPlacement("p1", 0, 0, board_id="A")],
+    )
+    window.services.projects.new_project(project)
+    window.workspace.set_active_board("A")
+    window._reload_explorer()
+
+    item = _explorer_piece_item(window, "p1")
+    window.explorer.setCurrentItem(item)
+    item.setSelected(True)
+    window._on_explorer_selection_changed()
+
+    assert window.workspace.active_board_id == "A"
 
 
 class _FakeMoveDialog:
