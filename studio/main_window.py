@@ -730,6 +730,20 @@ class MainWindow(QMainWindow):
             return
 
         if kind == "piece":
+            # select_piece() only finds a match among the items the
+            # workspace has actually loaded, which is only the active
+            # board's placements (_add_pieces() filters by board_id) — a
+            # piece placed on a different board would silently select
+            # nothing, with no error and no board switch. Selecting a
+            # piece from the Explorer should show where it is, not fail
+            # quietly if it isn't on whatever board happens to be open.
+            placement = project.placement_by_piece_id(object_id)
+            if (
+                placement is not None
+                and placement.board_id != self.workspace.active_board_id
+            ):
+                self.workspace.set_active_board(placement.board_id)
+
             self.services.selection.select_one(object_id)
             self.workspace.select_piece(object_id)
 
