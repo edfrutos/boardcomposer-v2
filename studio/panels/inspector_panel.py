@@ -8,6 +8,7 @@ data — no placeholder values for fields the domain doesn't model yet
 """
 
 from studio.models import StudioBoard, StudioPiece, StudioPlacement, StudioProject
+from studio.panels.board_metrics import board_utilization
 
 
 def render_empty() -> str:
@@ -38,14 +39,7 @@ def render_board(
     placements: list[StudioPlacement],
     pieces_by_id: dict[str, StudioPiece],
 ) -> str:
-    board_area = board.length_mm * board.width_mm
-    used_area = sum(
-        pieces_by_id[placement.piece_id].length_mm
-        * pieces_by_id[placement.piece_id].width_mm
-        for placement in placements
-        if placement.piece_id in pieces_by_id
-    )
-    utilization = used_area / board_area if board_area else 0.0
+    utilization = board_utilization(board, placements, pieces_by_id)
 
     return (
         f"<h3>Tablero: {board.board_id}</h3>"

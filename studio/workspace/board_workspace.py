@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QGraphicsScene,
     QGraphicsView,
 )
+from studio.activity_log import ACTIVITY_EVENT
 from studio.commands import MovePieceCommand
 from studio.workspace.board_piece_item import BoardPieceItem
 from studio.workspace.drag_controller import DragController
@@ -271,6 +272,10 @@ class BoardWorkspace(QGraphicsView):
 
         self.services.commands.execute(command)
         self.services.projects.mark_modified()
+        # No MainWindow reference to reach _execute()/_log_activity() with —
+        # ADR-003's EventBus is exactly for this: publish and let whatever's
+        # subscribed (MainWindow._on_activity_event) handle showing it.
+        self.services.events.publish(ACTIVITY_EVENT, {"message": command.name})
 
         window = self.window()
 

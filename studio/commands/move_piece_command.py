@@ -12,7 +12,9 @@ class MovePieceCommand:
     new_x: float
     new_y: float
 
-    name = "Move piece"
+    @property
+    def name(self) -> str:
+        return f"Pieza movida: {self.piece_id}"
 
     def redo(self):
         self._apply(self.new_x, self.new_y)

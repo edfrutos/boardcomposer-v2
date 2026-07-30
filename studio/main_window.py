@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QMenuBar,
     QMessageBox,
     QStatusBar,
+    QTabWidget,
     QTextEdit,
     QToolBar,
     QToolButton,
@@ -45,11 +46,14 @@ from studio.models import (
     StudioPlacement,
     StudioProject,
 )
+from studio.activity_log import ACTIVITY_EVENT
 from studio.panels import (
+    render_activity,
     render_board,
     render_chat,
     render_comparison,
     render_empty,
+    render_overview,
     render_piece,
     render_project,
 )
@@ -324,10 +328,16 @@ class MainWindow(QMainWindow):
         self.inspector.document().setDefaultStyleSheet(stylesheet)
         self.comparator.document().setDefaultStyleSheet(stylesheet)
         self.assistant_history.document().setDefaultStyleSheet(stylesheet)
+        self.timeline_overview.document().setDefaultStyleSheet(stylesheet)
+        self.timeline_activity.document().setDefaultStyleSheet(stylesheet)
 
         self._on_explorer_selection_changed()
         self.comparator.setHtml(render_comparison(self.services.layout.last_solutions))
         self.assistant_history.setHtml(render_chat(self.services.assistant.history))
+        self.timeline_overview.setHtml(
+            render_overview(self.services.projects.current_project)
+        )
+        self.timeline_activity.setHtml(render_activity(self.services.activity.entries))
 
     # Shared by the menu bar (via QAction.icon(), themed for contrast against
     # the menu's own surface) and the toolbar (always white — see
@@ -428,13 +438,33 @@ class MainWindow(QMainWindow):
         apply_elevation(inspector_dock)
         self._inspector_dock = inspector_dock
 
-        console = QTextEdit()
-        console.setReadOnly(True)
-        console.setText("Timeline / Consola / Eventos")
+        self.timeline_overview = QTextEdit()
+        self.timeline_overview.setReadOnly(True)
+        self.timeline_overview.document().setDefaultStyleSheet(
+            panel_html_stylesheet(detect_color_scheme())
+        )
+        self.timeline_overview.setHtml(render_overview(None))
+
+        self.timeline_activity = QTextEdit()
+        self.timeline_activity.setReadOnly(True)
+        self.timeline_activity.document().setDefaultStyleSheet(
+            panel_html_stylesheet(detect_color_scheme())
+        )
+        self.timeline_activity.setHtml(render_activity([]))
+        # Subscribing here — rather than having _log_activity() publish and
+        # redraw in one call — is what makes the EventBus useful for real:
+        # anything with a `services` reference can publish ACTIVITY_EVENT
+        # and this dock updates, with no need to reach back into MainWindow
+        # or know it exists (see BoardWorkspace._finish_piece_drag()).
+        self.services.events.subscribe(ACTIVITY_EVENT, self._on_activity_event)
+
+        timeline_tabs = QTabWidget()
+        timeline_tabs.addTab(self.timeline_overview, "Resumen")
+        timeline_tabs.addTab(self.timeline_activity, "Actividad")
 
         console_dock = QDockWidget("Timeline", self)
         console_dock.setObjectName("Timeline")
-        console_dock.setWidget(console)
+        console_dock.setWidget(timeline_tabs)
         self.addDockWidget(
             Qt.DockWidgetArea.BottomDockWidgetArea,
             console_dock,
@@ -652,6 +682,7 @@ class MainWindow(QMainWindow):
     def _reload_explorer(self):
         project = self.services.projects.current_project
         self.explorer.clear()
+        self.timeline_overview.setHtml(render_overview(project))
 
         if project is None:
             return
@@ -693,6 +724,24 @@ class MainWindow(QMainWindow):
         root.addChild(pieces_root)
         self.explorer.addTopLevelItem(root)
         self.explorer.expandAll()
+
+    def _log_activity(self, message: str) -> None:
+        self.services.events.publish(ACTIVITY_EVENT, {"message": message})
+
+    def _on_activity_event(self, _event_name: str, _payload: dict) -> None:
+        """EventBus subscriber (ADR-003), registered in _build_panels().
+        ActivityLog is subscribed first (StudioServices.__post_init__), so
+        by the time this runs — publish() calls subscribers in order — its
+        entries already include what was just published."""
+        self.timeline_activity.setHtml(render_activity(self.services.activity.entries))
+
+    def _execute(self, command) -> None:
+        """Runs `command` through CommandManager and logs it — the one
+        chokepoint every board/piece mutation already passes through
+        (docs/studio.md), so this is the only place that needs to know
+        about the activity log rather than instrumenting each call site."""
+        self.services.commands.execute(command)
+        self._log_activity(command.name)
 
     def _on_explorer_selection_changed(self):
         selected = self.explorer.selectedItems()
@@ -760,6 +809,7 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("Nuevo proyecto creado", 3000)
         self._update_window_title()
         self._update_undo_redo()
+        self._log_activity("Proyecto nuevo creado")
 
     def _open_project(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -793,6 +843,7 @@ class MainWindow(QMainWindow):
         self._update_undo_redo()
         self.statusBar().showMessage(f"Proyecto abierto: {path}", 3000)
         self._report_load_warnings(load_warnings)
+        self._log_activity(f"Proyecto abierto: {project.name}")
 
     def _import_pieces_csv(self):
         project = self.services.projects.current_project
@@ -825,7 +876,7 @@ class MainWindow(QMainWindow):
         for piece in pieces:
             placement = StudioPlacement(piece.piece_id, 0, 0, board_id=active_board_id)
             command = AddPieceCommand(self.services, piece, placement)
-            self.services.commands.execute(command)
+            self._execute(command)
         self.services.projects.mark_modified()
 
         self.workspace.reload_project()
@@ -835,6 +886,7 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(
             f"{len(pieces)} pieza(s) importadas de {path}", 4000
         )
+        self._log_activity(f"{len(pieces)} pieza(s) importadas desde CSV")
 
     def _save_project(self):
         project = self.services.projects.current_project
@@ -867,6 +919,7 @@ class MainWindow(QMainWindow):
         self._remember_last_project_path(path)
         self._update_window_title()
         self.statusBar().showMessage(f"Proyecto guardado: {path}", 3000)
+        self._log_activity(f"Proyecto guardado: {project.name}")
 
     def closeEvent(self, event: QCloseEvent) -> None:
         if not self.services.projects.is_modified:
@@ -928,14 +981,22 @@ class MainWindow(QMainWindow):
         self._actions["redo"].setShortcut("Ctrl+Shift+Z")
 
     def _undo(self):
-        self.services.commands.undo()
+        command = self.services.commands.undo()
         self.workspace.reload_project()
+        self._reload_explorer()
         self._update_undo_redo()
 
+        if command is not None:
+            self._log_activity(f"Deshecho: {command.name}")
+
     def _redo(self):
-        self.services.commands.redo()
+        command = self.services.commands.redo()
         self.workspace.reload_project()
+        self._reload_explorer()
         self._update_undo_redo()
+
+        if command is not None:
+            self._log_activity(f"Rehecho: {command.name}")
 
     def _rotate_selected_piece(self):
         selected = self.workspace.scene().selectedItems()
@@ -1016,7 +1077,7 @@ class MainWindow(QMainWindow):
             new_x=new_x,
             new_y=new_y,
         )
-        self.services.commands.execute(command)
+        self._execute(command)
 
         self.workspace.reload_project()
         self.workspace.select_piece(piece_id)
@@ -1031,7 +1092,7 @@ class MainWindow(QMainWindow):
             return
 
         command = DeletePieceCommand(self.services, piece_id)
-        self.services.commands.execute(command)
+        self._execute(command)
 
         self.workspace.reload_project()
         self.workspace.selection.clear()
@@ -1069,7 +1130,7 @@ class MainWindow(QMainWindow):
                 self.services,
                 StudioBoard(new_board_id, length_mm, width_mm, material, thickness_mm),
             )
-            self.services.commands.execute(command)
+            self._execute(command)
         self.services.projects.mark_modified()
 
         self.workspace.set_active_board(board_ids[0])
@@ -1165,7 +1226,7 @@ class MainWindow(QMainWindow):
                 return
 
         command = EditBoardCommand(self.services, old_board, new_board)
-        self.services.commands.execute(command)
+        self._execute(command)
         self.services.projects.mark_modified()
 
         self.workspace.reload_project()
@@ -1206,7 +1267,7 @@ class MainWindow(QMainWindow):
             )
             placement = StudioPlacement(new_piece_id, 0, 0, board_id=active_board_id)
             command = AddPieceCommand(self.services, piece, placement)
-            self.services.commands.execute(command)
+            self._execute(command)
         self.services.projects.mark_modified()
 
         self.workspace.reload_project()
@@ -1299,7 +1360,7 @@ class MainWindow(QMainWindow):
                     return
 
         command = EditPieceCommand(self.services, old_piece, new_piece)
-        self.services.commands.execute(command)
+        self._execute(command)
         self.services.projects.mark_modified()
 
         self.workspace.reload_project()
@@ -1408,7 +1469,7 @@ class MainWindow(QMainWindow):
             new_x=new_x,
             new_y=new_y,
         )
-        self.services.commands.execute(command)
+        self._execute(command)
         self.services.projects.mark_modified()
 
         self.workspace.reload_project()
@@ -1430,7 +1491,7 @@ class MainWindow(QMainWindow):
 
         new_kerf_mm = dialog.kerf_mm()
         command = SetKerfCommand(self.services, project.kerf_mm, new_kerf_mm)
-        self.services.commands.execute(command)
+        self._execute(command)
         self.services.projects.mark_modified()
 
         self._update_undo_redo()
@@ -1451,6 +1512,10 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(
             f"Layout calculado: {len(solution.placements)} piezas",
             3000,
+        )
+        self._log_activity(
+            f"Layout calculado para {self.workspace.active_board_id}: "
+            f"{len(solution.placements)} pieza(s)"
         )
 
     def _show_layout_solution(self, solution):
@@ -1497,8 +1562,12 @@ class MainWindow(QMainWindow):
                 f"{', '.join(unplaced)}",
                 6000,
             )
+            self._log_activity(
+                f"Layout aplicado — {len(unplaced)} pieza(s) sin colocar"
+            )
         else:
             self.statusBar().showMessage("Layout aplicado al proyecto", 3000)
+            self._log_activity("Layout aplicado al proyecto")
 
     def _compare_solutions(self):
         solutions = self.services.layout.compare_solutions(
@@ -1515,6 +1584,7 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(
             f"{len(solutions)} solución(es) generada(s) para comparar", 3000
         )
+        self._log_activity(f"{len(solutions)} solución(es) generadas para comparar")
 
     def _apply_comparison_solution(self, index: int):
         if not self.services.layout.apply_comparison_solution(
@@ -1539,8 +1609,12 @@ class MainWindow(QMainWindow):
                 f"colocar: {', '.join(unplaced)}",
                 6000,
             )
+            self._log_activity(
+                f"Solución {index + 1} aplicada — {len(unplaced)} pieza(s) sin colocar"
+            )
         else:
             self.statusBar().showMessage(f"Solución {index + 1} aplicada", 3000)
+            self._log_activity(f"Solución {index + 1} aplicada")
 
     def _ask_assistant(self):
         question = self.assistant_input.toPlainText().strip()

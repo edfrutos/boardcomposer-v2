@@ -8,12 +8,15 @@ from studio.panels.inspector_panel import (
     render_piece,
     render_project,
 )
+from studio.panels.timeline_panel import render_activity, render_overview
 
 __all__ = [
+    "render_activity",
     "render_board",
     "render_chat",
     "render_comparison",
     "render_empty",
+    "render_overview",
     "render_piece",
     "render_project",
 ]

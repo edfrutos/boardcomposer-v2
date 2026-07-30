@@ -47,3 +47,38 @@ def test_undo_after_clear_does_not_touch_the_new_project():
     assert [board.board_id for board in services.projects.current_project.boards] == [
         "B2"
     ]
+
+
+def test_undo_returns_the_command_it_reverted():
+    # Callers that want to log/announce what happened used to reach into
+    # redo_stack[-1] after calling undo() with no other way to know which
+    # command it was — undo() just returning it removes the need to know
+    # the stacks exist at all.
+    services = _services_with_project()
+    manager = CommandManager()
+    command = AddBoardCommand(services, StudioBoard("B1", 2000, 300))
+    manager.execute(command)
+
+    assert manager.undo() is command
+
+
+def test_undo_on_an_empty_stack_returns_none():
+    manager = CommandManager()
+
+    assert manager.undo() is None
+
+
+def test_redo_returns_the_command_it_reapplied():
+    services = _services_with_project()
+    manager = CommandManager()
+    command = AddBoardCommand(services, StudioBoard("B1", 2000, 300))
+    manager.execute(command)
+    manager.undo()
+
+    assert manager.redo() is command
+
+
+def test_redo_on_an_empty_stack_returns_none():
+    manager = CommandManager()
+
+    assert manager.redo() is None

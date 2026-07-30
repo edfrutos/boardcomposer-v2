@@ -7,6 +7,10 @@ class AddBoardCommand(Command):
         self.services = services
         self.board = board
 
+    @property
+    def name(self) -> str:
+        return f"Tablero añadido: {self.board.board_id}"
+
     def execute(self):
         project = self.services.projects.current_project
         if project is None:

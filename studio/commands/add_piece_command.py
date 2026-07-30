@@ -12,6 +12,10 @@ class AddPieceCommand(Command):
         self.piece = piece
         self.placement = placement
 
+    @property
+    def name(self) -> str:
+        return f"Pieza añadida: {self.piece.piece_id}"
+
     def execute(self):
         project = self.services.projects.current_project
         if project is None:

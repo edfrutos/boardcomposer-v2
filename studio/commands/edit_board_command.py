@@ -8,6 +8,10 @@ class EditBoardCommand(Command):
         self.old_board = old_board
         self.new_board = new_board
 
+    @property
+    def name(self) -> str:
+        return f"Tablero editado: {self.new_board.board_id}"
+
     def execute(self):
         self._replace(self.old_board, self.new_board)
 

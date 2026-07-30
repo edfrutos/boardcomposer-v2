@@ -17,21 +17,23 @@ class CommandManager:
         self.undo_stack.append(command)
         self.redo_stack.clear()
 
-    def undo(self) -> None:
+    def undo(self) -> Command | None:
         if not self.undo_stack:
-            return
+            return None
 
         command = self.undo_stack.pop()
         command.undo()
         self.redo_stack.append(command)
+        return command
 
-    def redo(self) -> None:
+    def redo(self) -> Command | None:
         if not self.redo_stack:
-            return
+            return None
 
         command = self.redo_stack.pop()
         command.redo()
         self.undo_stack.append(command)
+        return command
 
     def can_undo(self) -> bool:
         return bool(self.undo_stack)

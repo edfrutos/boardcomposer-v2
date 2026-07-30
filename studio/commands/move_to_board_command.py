@@ -21,7 +21,9 @@ class MoveToBoardCommand:
     new_x: float | None = None
     new_y: float | None = None
 
-    name = "Move piece to board"
+    @property
+    def name(self) -> str:
+        return f"Pieza movida de tablero: {self.piece_id} → {self.new_board_id}"
 
     def redo(self):
         self._apply(self.new_board_id, self.new_x, self.new_y)

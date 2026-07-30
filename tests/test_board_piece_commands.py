@@ -217,3 +217,21 @@ def test_rotate_piece_command_with_reposition_undo_restores_position():
 
     updated = services.projects.current_project.placement_by_piece_id("p1")
     assert (updated.rotation, updated.x_mm, updated.y_mm) == (0, 0, 0)
+
+
+def test_every_command_exposes_a_readable_name():
+    # AddBoardCommand/EditBoardCommand/AddPieceCommand/EditPieceCommand/
+    # RotatePieceCommand/DeletePieceCommand subclass the Command Protocol
+    # directly but never defined `name` — accessing it raised AttributeError.
+    # Nothing read it before the Actividad log did, so it went unnoticed.
+    services = _services_with_project()
+    board = StudioBoard("B1", 2000, 300)
+    piece = StudioPiece("p1", 500, 200)
+    placement = StudioPlacement("p1", 0, 0, board_id="B1")
+
+    assert "B1" in AddBoardCommand(services, board).name
+    assert "B1" in EditBoardCommand(services, board, board).name
+    assert "p1" in AddPieceCommand(services, piece, placement).name
+    assert "p1" in EditPieceCommand(services, piece, piece).name
+    assert "p1" in RotatePieceCommand(services, "p1", 0, 90).name
+    assert "p1" in DeletePieceCommand(services, "p1").name
