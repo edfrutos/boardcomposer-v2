@@ -89,5 +89,7 @@ def test_undo_refreshes_the_explorer(window, monkeypatch):
         for i in range(root.childCount())
         if root.child(i).text(0) == "Tableros"
     )
-    board_texts = [boards_root.child(i).text(0) for i in range(boards_root.childCount())]
+    board_texts = [
+        boards_root.child(i).text(0) for i in range(boards_root.childCount())
+    ]
     assert not any(text.startswith("B2") for text in board_texts)
