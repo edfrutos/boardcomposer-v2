@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QApplication
 
+from studio.activity_log import ACTIVITY_EVENT
 from studio.models import StudioBoard, StudioPiece, StudioPlacement, StudioProject
 from studio.services import StudioServices
 from studio.workspace.board_workspace import BoardWorkspace
@@ -38,6 +39,31 @@ def test_reload_project_defaults_the_active_board_to_the_first_one():
     workspace.reload_project()
 
     assert workspace.active_board_id == "B1"
+
+
+def test_finish_piece_drag_publishes_to_the_activity_event_bus():
+    # BoardWorkspace has no MainWindow reference — before this fix, a
+    # freehand drag-move (the single most common piece-manipulation
+    # gesture) called CommandManager.execute() directly and never reached
+    # the Actividad log, unlike every dialog-driven mutation.
+    workspace = _workspace()
+    workspace.reload_project()
+
+    messages = []
+    workspace.services.events.subscribe(
+        ACTIVITY_EVENT, lambda name, payload: messages.append(payload["message"])
+    )
+
+    item = workspace.piece_item_by_id("p1")
+    workspace._drag.begin("p1", 0, 0)
+    placement = workspace.services.projects.current_project.placement_by_piece_id("p1")
+    placement.x_mm = 300
+    placement.y_mm = 50
+    item.setPos(300, 50)
+
+    workspace._finish_piece_drag()
+
+    assert messages == ["Pieza movida: p1"]
 
 
 def test_reload_project_only_renders_pieces_placed_on_the_active_board():

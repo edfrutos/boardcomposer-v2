@@ -8,6 +8,10 @@ class EditPieceCommand(Command):
         self.old_piece = old_piece
         self.new_piece = new_piece
 
+    @property
+    def name(self) -> str:
+        return f"Pieza editada: {self.new_piece.piece_id}"
+
     def execute(self):
         self._replace(self.old_piece, self.new_piece)
 
