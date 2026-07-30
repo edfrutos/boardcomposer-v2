@@ -10,8 +10,9 @@
 ## Estado actual
 
 Rama: `main`
-Versión publicada: `0.3.1` (28/07/2026, tag `v0.3.1`)
-Tests: 686, en verde (712 en `feat/timeline-overview-and-activity-log`, PR #58, sin mergear).
+Versión publicada: `0.3.1` (28/07/2026, tag `v0.3.1`) — `IDE-0019` (PR #58,
+mergeado 30/07/2026) queda por delante del tag, sin publicar todavía.
+Tests: 712, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -23,10 +24,8 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 | 4 — Inteligencia (IA) | 🟢 Completada |
 | 5 — Ecosistema | 🟡 En curso |
 
-Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0019`, todos 🟢 completados
-(`IDE-0019` — resumen de tableros y log de actividad en Timeline — en
-`feat/timeline-overview-and-activity-log`, sin mergear todavía). No hay
-ningún IDE en desarrollo ni planificado.
+Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0019`, todos 🟢 completados y
+en `main`. No hay ningún IDE en desarrollo ni planificado.
 
 Deuda técnica (`DOC-006-DeudaTecnica.md`): 21 registros, 20 resueltos.
 Abierta: `DT-0011` (el `.app` de macOS no está firmado ni notarizado, y solo
@@ -40,18 +39,19 @@ Studio por navegador (noVNC) en `studio.efjdefrutos.com`.
 
 ## Trabajo en curso
 
-**PR #58 — `IDE-0019`, sin mergear.** El dock "Timeline" mostraba desde su
-creación el texto literal "Timeline / Consola / Eventos"; pasa a tener
-Resumen (tableros con piezas y % de uso) y Actividad (log en vivo, primer
-uso real del `EventBus` de ADR-003, hasta entonces construido y sin
-conectar). Por el camino: 6 de 9 clases de comando no definían `.name` pese
-a que el Protocol lo exige (`AttributeError` dormido, nunca disparado hasta
-que el log lo necesitó), y una revisión `/code-review` sobre el propio diff
-encontró y corrigió tres cosas más antes de comitear — arrastre de pieza sin
-registrar, `Feature Envy` en deshacer/rehacer, cálculo de utilización
-duplicado. 712 tests en verde. El bloque se registró como `IDE-0019`
-*después* de construirse, incumpliendo la norma 1 de este documento —
-registrado también como `DT-0021`.
+Ninguno acotado — `IDE-0019` (PR #58) se mergeó el 30/07/2026. El dock
+"Timeline" mostraba desde su creación el texto literal "Timeline / Consola /
+Eventos"; pasa a tener Resumen (tableros con piezas y % de uso) y Actividad
+(log en vivo, primer uso real del `EventBus` de ADR-003, hasta entonces
+construido y sin conectar). Por el camino: 6 de 9 clases de comando no
+definían `.name` pese a que el Protocol lo exige (`AttributeError` dormido,
+nunca disparado hasta que el log lo necesitó), y una revisión `/code-review`
+sobre el propio diff encontró y corrigió tres cosas más antes de comitear —
+arrastre de pieza sin registrar, `Feature Envy` en deshacer/rehacer, cálculo
+de utilización duplicado. 712 tests en verde. El bloque se registró como
+`IDE-0019` *después* de construirse, incumpliendo la norma 1 de este
+documento — registrado también como `DT-0021`. Aún sin etiquetar: sería
+`v0.3.2`.
 
 Publicada `v0.3.1` (28/07/2026): republica el `.app` de macOS con el
 bundle identifier corregido y el ancho de sierra aplicado por el solver
@@ -68,10 +68,9 @@ línea de comandos (`docs/cli.md`, nueva).
 
 ## Próxima decisión
 
-Inmediato: revisar y mergear `PR #58` (`IDE-0019`). Después de eso, con el
-backlog a cero y sin más deuda que dé resultados incorrectos, la siguiente
-es una decisión de producto, no técnica. Candidatas, de menor a mayor
-alcance (`DOC-999-Ideas.md`):
+Con el backlog a cero y sin más deuda que dé resultados incorrectos, la
+siguiente es una decisión de producto, no técnica. Candidatas, de menor a
+mayor alcance (`DOC-999-Ideas.md`):
 
 1. Contratar la cuenta de Apple Developer (99 USD/año) para cerrar `DT-0011`.
    Ya no queda trabajo técnico: cargar los seis secrets en GitHub basta para
