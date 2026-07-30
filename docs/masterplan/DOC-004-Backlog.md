@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 21/07/2026
+**Última revisión:** 30/07/2026
 
 ---
 
@@ -248,6 +248,21 @@ Alcance dividido en fases, cada una construida sobre la anterior:
 - `load_pieces_from_csv()` (`studio/project/csv_import.py`, función pura sin Qt): mismas columnas obligatorias que el importador CSV del Core/CLI (`id`/`length_mm`/`width_mm`/`thickness_mm`), más `material` opcional. Validación estricta — cualquier fila con una columna ausente, una dimensión no numérica, un id vacío o un id repetido (en el propio fichero o contra el proyecto abierto) aborta toda la importación con `CsvImportError` y el número de fila, sin devolver piezas parciales.
 - `MainWindow._import_pieces_csv()`: nueva acción "Importar piezas (CSV)…" en el menú Archivo. Exige un tablero activo (igual que "Añadir pieza…"), y añade cada pieza válida con un `AddPieceCommand` deshacible (uno por pieza, igual que al añadir varias a mano con "Cantidad"), colocada en el tablero activo.
 - Verificado con tests (`tests/test_csv_import.py`, `tests/test_main_window_import_csv.py`): carga básica, columna `material` opcional, las cuatro validaciones de rechazo, deshacer pieza a pieza, y que un fichero inválido deja el proyecto intacto.
+
+---
+
+## IDE-0019 — Resumen de tableros y log de actividad en el dock Timeline
+
+**Estado:** 🟢 Completado. Registrado a posteriori: el bloque se construyó y comitió (PR #58) antes de darlo de alta aquí, incumpliendo la norma 1 de `MASTERPLAN.md` ("No añadir funcionalidad sin bloque definido") — detectado por `/code-review` sobre el propio diff. El bloque queda formalizado ahora, sin deshacer nada; ver `DOC-006-DeudaTecnica.md` para el registro del incumplimiento de proceso.
+
+El dock "Timeline" mostraba desde su creación el texto literal "Timeline / Consola / Eventos" — ninguna de las tres cosas que nombraba estaba construida. El `EventBus` de ADR-003 (`studio/events/event_bus.py`) estaba instanciado en `StudioServices` sin que nada llamara nunca a `publish()`/`subscribe()` (documentado explícitamente en `docs/studio.md`).
+
+- El dock pasa a `QTabWidget` con dos pestañas, ambas funciones puras (`studio/panels/timeline_panel.py`), pintadas con el mismo `panel_html_stylesheet()` que Inspector/Comparador:
+  - **Resumen** (`render_overview()`) — cada tablero con dimensiones, material, nº de piezas, % de uso (`studio/panels/board_metrics.py::board_utilization()`, extraído para compartirlo con `inspector_panel.render_board()`) y qué piezas contiene; piezas sin colocar aparte.
+  - **Actividad** (`render_activity()`) — log en vivo alimentado por `ActivityLog` (`studio/activity_log.py`), suscrita a un único evento `"studio.activity"`, hasta 200 mensajes. `MainWindow` se suscribe también y se redibuja sola cuando algo publica — desacoplado de verdad, no un par fijo publish+setHtml.
+- Queda registrado: añadir/editar/eliminar/rotar tablero o pieza (incluido el arrastre en el lienzo, `BoardWorkspace._finish_piece_drag()`, publicando directamente sin necesitar una referencia a `MainWindow`), mover a otro tablero, cambiar el kerf, deshacer/rehacer, resolver/aplicar layout, comparar soluciones, importar CSV, proyecto nuevo/abrir/guardar.
+- Cierra un bug de verdad, no solo de estilo: 6 de 9 clases de comando (`AddBoardCommand`, `EditBoardCommand`, `AddPieceCommand`, `EditPieceCommand`, `RotatePieceCommand`, `DeletePieceCommand`) heredaban del Protocol `Command` —que declara `name: str`— sin definirlo nunca; un `AttributeError` dormido que nadie había disparado hasta que el log de actividad necesitó leerlo. `CommandManager.undo()`/`redo()` devuelven ahora el comando en vez de `None`, para que `MainWindow` no tenga que asomarse a `undo_stack`/`redo_stack`.
+- Verificado con tests (`tests/test_activity_log.py`, `tests/test_timeline_panel.py`, `tests/test_board_metrics.py`, `tests/test_main_window_timeline.py`, más los nuevos casos en `tests/test_command_manager.py` y `tests/test_board_workspace.py`) y contra una ventana renderizada de verdad (`grab()`), claro y oscuro. 712 tests en verde.
 
 ---
 

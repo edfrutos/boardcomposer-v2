@@ -1,6 +1,6 @@
 # BoardComposer — MASTERPLAN
 
-**Última revisión:** 26/07/2026
+**Última revisión:** 30/07/2026
 
 > Este documento resume el estado del proyecto y las normas de trabajo.
 > El detalle vivo de cada funcionalidad está en `DOC-004-Backlog.md`, la
@@ -10,8 +10,8 @@
 ## Estado actual
 
 Rama: `main`
-Versión publicada: `0.3.0` (26/07/2026, tag `v0.3.0`)
-Tests: 684, en verde.
+Versión publicada: `0.3.1` (28/07/2026, tag `v0.3.1`)
+Tests: 686, en verde (712 en `feat/timeline-overview-and-activity-log`, PR #58, sin mergear).
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -23,10 +23,12 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 | 4 — Inteligencia (IA) | 🟢 Completada |
 | 5 — Ecosistema | 🟡 En curso |
 
-Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0018`, todos 🟢 completados.
-No hay ningún IDE en desarrollo ni planificado.
+Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0019`, todos 🟢 completados
+(`IDE-0019` — resumen de tableros y log de actividad en Timeline — en
+`feat/timeline-overview-and-activity-log`, sin mergear todavía). No hay
+ningún IDE en desarrollo ni planificado.
 
-Deuda técnica (`DOC-006-DeudaTecnica.md`): 20 registros, 19 resueltos.
+Deuda técnica (`DOC-006-DeudaTecnica.md`): 21 registros, 20 resueltos.
 Abierta: `DT-0011` (el `.app` de macOS no está firmado ni notarizado, y solo
 se genera para macOS/arm64). Mitigada el 27/07/2026 con todo lo que no exige
 cuenta de pago — bundle identifier propio, `docs/INSTALL-macos.md` en cada
@@ -38,29 +40,38 @@ Studio por navegador (noVNC) en `studio.efjdefrutos.com`.
 
 ## Trabajo en curso
 
-Ninguno acotado. `v0.3.0` recoge todo lo acumulado desde `v0.2.0`: corrección
-y endurecimiento sobre funcionalidad ya entregada, no capacidades nuevas —
-validación de números finitos en todas las entradas externas, recuperación de
-proyectos con colocaciones colgantes, errores de fichero con número de línea en
-vez de traceback, y siete correcciones de Studio (validación al editar/mover
-piezas, sincronía de rotación, no vaciar otros tableros al aplicar una
-disposición). Registrado como `DT-0017`–`DT-0019` en `DOC-006-DeudaTecnica.md`.
+**PR #58 — `IDE-0019`, sin mergear.** El dock "Timeline" mostraba desde su
+creación el texto literal "Timeline / Consola / Eventos"; pasa a tener
+Resumen (tableros con piezas y % de uso) y Actividad (log en vivo, primer
+uso real del `EventBus` de ADR-003, hasta entonces construido y sin
+conectar). Por el camino: 6 de 9 clases de comando no definían `.name` pese
+a que el Protocol lo exige (`AttributeError` dormido, nunca disparado hasta
+que el log lo necesitó), y una revisión `/code-review` sobre el propio diff
+encontró y corrigió tres cosas más antes de comitear — arrastre de pieza sin
+registrar, `Feature Envy` en deshacer/rehacer, cálculo de utilización
+duplicado. 712 tests en verde. El bloque se registró como `IDE-0019`
+*después* de construirse, incumpliendo la norma 1 de este documento —
+registrado también como `DT-0021`.
 
-Incluye además la revisión completa de la documentación (26/07/2026): índice
-del masterplan (`INDEX.md`, hasta entonces vacío), referencia de usuario de la
-línea de comandos (`docs/cli.md`, nueva), y `README.md`, `docs/studio.md` y
-`docs/architecture.md` alineados con el código actual.
+Publicada `v0.3.1` (28/07/2026): republica el `.app` de macOS con el
+bundle identifier corregido y el ancho de sierra aplicado por el solver
+(`DT-0020`, `DEC-0016` — el kerf se traduce en Studio, el Core sigue sin
+saber qué es), ninguno de los dos a tiempo para `v0.3.0`. Incluye también
+la corrección de que marcar una pieza en el Explorer no cambiaba al
+tablero donde estaba, y el arreglo de que el tema oscuro elegido a mano no
+llegaba a los paneles de contenido (Inspector/Comparador/Asistente) — los
+tres con estados vacíos reales en vez de texto plano sin tratamiento.
 
-Después de `v0.3.0`, la sección "Sin publicar" de `CHANGELOG.md` recoge el
-cierre de `DT-0020`: el ancho de sierra ya lo aplican el solver y el encaje
-fuera del lienzo, no solo el arrastre (`DEC-0016`, el kerf se traduce en
-Studio y el Core sigue sin saber qué es).
+Sigue completa la revisión de documentación del 26/07/2026: índice del
+masterplan (`INDEX.md`, hasta entonces vacío), referencia de usuario de la
+línea de comandos (`docs/cli.md`, nueva).
 
 ## Próxima decisión
 
-Con el backlog a cero y sin más deuda que dé resultados incorrectos, la
-siguiente es una decisión de producto, no técnica. Candidatas, de menor a
-mayor alcance (`DOC-999-Ideas.md`):
+Inmediato: revisar y mergear `PR #58` (`IDE-0019`). Después de eso, con el
+backlog a cero y sin más deuda que dé resultados incorrectos, la siguiente
+es una decisión de producto, no técnica. Candidatas, de menor a mayor
+alcance (`DOC-999-Ideas.md`):
 
 1. Contratar la cuenta de Apple Developer (99 USD/año) para cerrar `DT-0011`.
    Ya no queda trabajo técnico: cargar los seis secrets en GitHub basta para
