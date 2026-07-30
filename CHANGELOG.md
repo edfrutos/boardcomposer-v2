@@ -4,6 +4,20 @@
 
 ---
 
+## 0.3.2 - 2026-07-30
+
+### Añadido
+
+- El dock "Timeline" mostraba desde su creación el texto literal "Timeline / Consola / Eventos" — ninguna de las tres cosas que nombraba estaba construida (`IDE-0019`). Pasa a `QTabWidget` con dos pestañas, ambas funciones puras (`studio/panels/timeline_panel.py`) pintadas con el mismo `panel_html_stylesheet()` que Inspector/Comparador: **Resumen**, cada tablero con dimensiones, material, nº de piezas, % de uso y qué piezas contiene, con las sin colocar aparte; **Actividad**, un log en vivo alimentado por `ActivityLog` (`studio/activity_log.py`, hasta 200 mensajes), primer uso real del `EventBus` de ADR-003 — instanciado en `StudioServices` desde el principio sin que nada llamara nunca a `publish()`/`subscribe()`. `MainWindow` se suscribe al mismo evento y se redibuja sola cuando algo publica, en vez de un par fijo publish+setHtml: cualquier código con `services` puede loguear actividad sin necesitar una referencia a `MainWindow`, incluido el arrastre de piezas en el lienzo (`BoardWorkspace._finish_piece_drag()`), que antes se saltaba el log por completo. Queda registrado: añadir/editar/eliminar/rotar tablero o pieza, mover a otro tablero, cambiar el kerf, deshacer/rehacer, resolver/aplicar layout, comparar soluciones, importar CSV, proyecto nuevo/abrir/guardar.
+
+### Corregido
+
+- 6 de 9 clases de comando (`AddBoardCommand`, `EditBoardCommand`, `AddPieceCommand`, `EditPieceCommand`, `RotatePieceCommand`, `DeletePieceCommand`) heredaban del Protocol `Command` —que declara `name: str`— sin definirlo nunca: un `AttributeError` dormido desde que existen, nunca disparado porque nada había leído `.name` hasta que el log de actividad lo necesitó. Añadido un `name` de instancia a las 6, y traducidas a español dinámico las 3 que ya lo tenían (estático, en inglés — "Move piece"), ya que ahora es la primera vez que se muestra al usuario.
+- `MainWindow._undo()`/`_redo()` llegaban a `self.services.commands.redo_stack[-1]`/`undo_stack[-1]` para saber qué comando se acababa de deshacer/rehacer — tres niveles dentro de la representación interna de `CommandManager`. `CommandManager.undo()`/`redo()` devuelven ahora el comando (antes `None`), así que `MainWindow` no necesita saber que las pilas existen.
+- El cálculo de utilización (área usada / área del tablero) estaba duplicado casi literal entre `inspector_panel.render_board()` y el nuevo `timeline_panel.render_overview()`. Extraído a `studio/panels/board_metrics.py::board_utilization()`, usado por ambos.
+
+---
+
 ## 0.3.1 - 2026-07-27
 
 ### Añadido
