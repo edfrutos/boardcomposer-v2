@@ -27,6 +27,27 @@ Verificado con una build y arranque reales (no solo revisión del `Dockerfile`):
 
 Sin `BOARDCOMPOSER_API_KEY`, la API queda sin autenticación (mismo comportamiento que en local, `IDE-0009`) — no se recomienda para un despliegue expuesto a Internet. Sin `ANTHROPIC_API_KEY`, `/assist/*` sigue funcionando pero con `MockAIProvider` en vez de respuestas reales de Claude (`default_provider()`, `docs/masterplan/DOC-004-Backlog.md`).
 
+### Claves de cliente y cuota mensual (planes de pago)
+
+`BOARDCOMPOSER_API_KEY` sigue siendo una única clave compartida, sin cuota — pensada para uso interno/admin. Para vender acceso a la API por plan (`src/boardcomposer/billing.py`), añade además:
+
+    docker run -d --name boardcomposer-api -p 5050:5050 \
+      -e BOARDCOMPOSER_DB_PATH="/data/keys.db" \
+      -e REDIS_URL="redis://redis:6379/0" \
+      -v boardcomposer-data:/data \
+      -e ANTHROPIC_API_KEY="sk-ant-..." \
+      boardcomposer-api
+
+`BOARDCOMPOSER_DB_PATH` apunta a un SQLite (registro de claves por cliente, plan `free`/`basico`/`pro`, ver `PLAN_LIMITS` en `billing.py`) — necesita un volumen persistente, no vive dentro del contenedor. `REDIS_URL` es opcional pero recomendado en producción: sin él, el contador de cuota (y el rate limiter existente) es en memoria por proceso, no compartido entre workers de `gunicorn`.
+
+Gestión de claves con `scripts/manage_keys.py` (dentro del contenedor o con el mismo `BOARDCOMPOSER_DB_PATH` montado):
+
+    python scripts/manage_keys.py create taller-perez --plan pro
+    python scripts/manage_keys.py list
+    python scripts/manage_keys.py revoke bc_...
+
+Los planes `free` se bloquean con `402` al agotar la cuota mensual; `basico`/`pro` siguen respondiendo por encima de su cuota y acumulan overage (sin cobro automático todavía — la integración con Stripe queda pendiente, fuera de alcance de esta receta).
+
 ---
 
 ## Opción A — Fly.io (PaaS, recomendada)

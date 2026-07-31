@@ -14,11 +14,25 @@ Auth: if BOARDCOMPOSER_API_KEY is set in the environment (or passed
 explicitly as api_key), every route except /health requires it via the
 X-API-Key header. Unset, no auth is enforced — same permissive behaviour
 as before IDE-0009, so existing local/CI usage keeps working unchanged.
+That single shared key is treated as an unmetered admin key: it bypasses
+quota checks entirely, for internal/local use.
+
+Billing (billing.py): if db_path (or BOARDCOMPOSER_DB_PATH) points at a
+SQLite key registry, X-API-Key is additionally checked against per-customer
+keys issued via billing.create_key(). Each of those keys is on a plan
+(free/basico/pro) with a monthly request quota, enforced on the metered
+endpoints (billing.METERED_ENDPOINTS: /solve, /assist/*). Free-plan keys
+are hard-blocked with 402 once the quota is used up; paid plans stay
+available past their quota and accrue overage for billing. /health,
+/strategies and /plugins are metadata-only and never metered.
 
 Rate limiting: Flask-Limiter with a fixed per-IP default (60/minute),
 exempting /health. Uses the in-memory storage backend — fine for a
 single-process deployment, but limits aren't shared across gunicorn
 workers; see DOC-006-DeudaTecnica.md if that becomes a real constraint.
+Pass redis_url (or set REDIS_URL) to back both the rate limiter and the
+billing quota counter with Redis instead, which fixes that same
+cross-worker gap.
 
 The /assist/* routes expose boardcomposer.ai (IDE-0007) the same way:
 no AI logic of its own, just request/response translation. create_app()
@@ -32,10 +46,11 @@ supply one without changing this module.
 import json
 import os
 
-from flask import Flask, Response, jsonify, request
+from flask import Flask, Response, g, jsonify, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
+from boardcomposer import billing
 from boardcomposer.ai import (
     AIProvider,
     ProjectFromTextError,
@@ -65,6 +80,8 @@ MAX_BOARDS = 100
 API_KEY_ENV_VAR = "BOARDCOMPOSER_API_KEY"
 API_KEY_HEADER = "X-API-Key"
 DEFAULT_RATE_LIMIT = "60 per minute"
+DB_PATH_ENV_VAR = "BOARDCOMPOSER_DB_PATH"
+REDIS_URL_ENV_VAR = "REDIS_URL"
 
 
 def _parse_boards(boards_data) -> list[Board]:
@@ -115,17 +132,35 @@ def create_app(
     ai_provider: AIProvider | None = None,
     api_key: str | None = None,
     rate_limit: str | None = None,
+    db_path: str | None = None,
+    quota_store: billing.QuotaStore | None = None,
+    redis_url: str | None = None,
 ) -> Flask:
     provider = ai_provider or default_provider()
     api_key = api_key if api_key is not None else os.environ.get(API_KEY_ENV_VAR)
     rate_limit = rate_limit or DEFAULT_RATE_LIMIT
+    db_path = db_path if db_path is not None else os.environ.get(DB_PATH_ENV_VAR)
+    redis_url = (
+        redis_url if redis_url is not None else os.environ.get(REDIS_URL_ENV_VAR)
+    )
+
+    if db_path:
+        billing.init_db(db_path)
+
+    if quota_store is None:
+        if redis_url:
+            import redis as redis_lib
+
+            quota_store = billing.RedisQuotaStore(redis_lib.from_url(redis_url))
+        else:
+            quota_store = billing.InMemoryQuotaStore()
 
     app = Flask(__name__)
     limiter = Limiter(
         get_remote_address,
         app=app,
         default_limits=[rate_limit],
-        storage_uri="memory://",
+        storage_uri=redis_url or "memory://",
     )
 
     @app.errorhandler(429)
@@ -135,11 +170,44 @@ def create_app(
         ), 429
 
     @app.before_request
-    def _require_api_key():
-        if not api_key or request.endpoint == "health":
+    def _authenticate_and_meter():
+        if request.endpoint == "health":
             return None
-        if request.headers.get(API_KEY_HEADER) != api_key:
+
+        header_key = request.headers.get(API_KEY_HEADER)
+
+        # Legacy shared admin key: unmetered, bypasses billing entirely.
+        if api_key and header_key == api_key:
+            g.billing_plan = None
+            return None
+
+        if db_path:
+            if not header_key:
+                return jsonify(error="Clave de API inválida o ausente."), 401
+            record = billing.lookup_key(db_path, billing.hash_key(header_key))
+            if record is None or not record["active"]:
+                return jsonify(error="Clave de API inválida o ausente."), 401
+
+            g.billing_plan = record["plan"]
+            g.billing_key_hash = record["key_hash"]
+
+            if request.endpoint in billing.METERED_ENDPOINTS:
+                result = billing.check_quota(
+                    quota_store, record["key_hash"], record["plan"]
+                )
+                if not result.allowed:
+                    return jsonify(
+                        error="Cuota mensual del plan agotada. "
+                        "Actualiza tu plan para continuar.",
+                        plan=result.plan,
+                        used=result.used,
+                        limit=result.limit,
+                    ), 402
+            return None
+
+        if api_key:
             return jsonify(error="Clave de API inválida o ausente."), 401
+
         return None
 
     @app.get("/health")
