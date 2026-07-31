@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from boardcomposer import billing
 from boardcomposer.ai import MockAIProvider
 from boardcomposer.api import API_KEY_HEADER, create_app
@@ -111,3 +113,41 @@ def test_health_never_requires_a_billing_key(tmp_path):
     client = _client(db_path)
 
     assert client.get("/health").status_code == 200
+
+
+def test_overage_reported_to_stripe_once_paid_plan_exceeds_quota(tmp_path):
+    db_path = str(tmp_path / "keys.db")
+    raw_key = billing.create_key(
+        db_path,
+        customer_id="taller-1",
+        plan="basico",
+        stripe_subscription_item_id="si_123",
+    )
+    store = billing.InMemoryQuotaStore()
+    client = _client(db_path, quota_store=store, rate_limit="10000 per minute")
+    headers = {API_KEY_HEADER: raw_key}
+
+    with patch("boardcomposer.api.stripe_billing.report_overage") as report_overage:
+        for _ in range(billing.PLAN_LIMITS["basico"]):
+            client.post("/solve", json=SOLVE_PAYLOAD, headers=headers)
+        report_overage.assert_not_called()
+
+        client.post("/solve", json=SOLVE_PAYLOAD, headers=headers)
+        report_overage.assert_called_once_with("si_123")
+
+
+def test_no_overage_report_while_within_quota(tmp_path):
+    db_path = str(tmp_path / "keys.db")
+    raw_key = billing.create_key(
+        db_path,
+        customer_id="taller-1",
+        plan="free",
+        stripe_subscription_item_id=None,
+    )
+    store = billing.InMemoryQuotaStore()
+    client = _client(db_path, quota_store=store)
+    headers = {API_KEY_HEADER: raw_key}
+
+    with patch("boardcomposer.api.stripe_billing.report_overage") as report_overage:
+        client.post("/solve", json=SOLVE_PAYLOAD, headers=headers)
+        report_overage.assert_not_called()

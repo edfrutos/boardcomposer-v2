@@ -50,7 +50,7 @@ from flask import Flask, Response, g, jsonify, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-from boardcomposer import billing
+from boardcomposer import billing, stripe_billing
 from boardcomposer.ai import (
     AIProvider,
     ProjectFromTextError,
@@ -195,6 +195,10 @@ def create_app(
                 result = billing.check_quota(
                     quota_store, record["key_hash"], record["plan"]
                 )
+                if result.overage > 0:
+                    stripe_billing.report_overage(
+                        record.get("stripe_subscription_item_id")
+                    )
                 if not result.allowed:
                     return jsonify(
                         error="Cuota mensual del plan agotada. "

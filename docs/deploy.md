@@ -46,7 +46,22 @@ Gestión de claves con `scripts/manage_keys.py` (dentro del contenedor o con el 
     python scripts/manage_keys.py list
     python scripts/manage_keys.py revoke bc_...
 
-Los planes `free` se bloquean con `402` al agotar la cuota mensual; `basico`/`pro` siguen respondiendo por encima de su cuota y acumulan overage (sin cobro automático todavía — la integración con Stripe queda pendiente, fuera de alcance de esta receta).
+Los planes `free` se bloquean con `402` al agotar la cuota mensual; `basico`/`pro` siguen respondiendo por encima de su cuota.
+
+### Cobro del overage con Stripe (`src/boardcomposer/stripe_billing.py`)
+
+Opcional — sin configurar, el overage se acumula igual que antes pero no se cobra. Requiere haber creado en Stripe un Price por plan de pago (tarifa graduada: cuota base incluida + precio por unidad extra — `básico` 9€ + 300 incluidas + 0,05€/extra, `pro` 29€ + 1500 incluidas + 0,03€/extra):
+
+    docker run -d --name boardcomposer-api -p 5050:5050 \
+      -e BOARDCOMPOSER_DB_PATH="/data/keys.db" \
+      -v boardcomposer-data:/data \
+      -e STRIPE_SECRET_KEY="sk_live_..." \
+      -e STRIPE_PRICE_BASICO="price_..." \
+      -e STRIPE_PRICE_PRO="price_..." \
+      -e ANTHROPIC_API_KEY="sk-ant-..." \
+      boardcomposer-api
+
+Con estas tres variables presentes, `scripts/manage_keys.py create <cliente> --plan pro` crea también el Customer + Subscription en Stripe (guarda el `subscription_item_id` en `keys.db` junto a la clave); cada solve por encima de la cuota reporta 1 unidad de uso a ese `subscription_item_id` (`SubscriptionItem.create_usage_record`, best-effort — un fallo de Stripe no rompe la petición del cliente, solo esa unidad de overage no se factura ese ciclo). El plan `free` nunca toca Stripe.
 
 ---
 

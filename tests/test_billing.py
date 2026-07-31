@@ -35,6 +35,59 @@ def test_lookup_unknown_key_returns_none(tmp_path):
     assert billing.lookup_key(db_path, "nope") is None
 
 
+def test_create_key_persists_stripe_ids(tmp_path):
+    db_path = str(tmp_path / "keys.db")
+
+    raw_key = billing.create_key(
+        db_path,
+        customer_id="taller-1",
+        plan="pro",
+        stripe_customer_id="cus_123",
+        stripe_subscription_item_id="si_123",
+    )
+    record = billing.lookup_key(db_path, billing.hash_key(raw_key))
+
+    assert record["stripe_customer_id"] == "cus_123"
+    assert record["stripe_subscription_item_id"] == "si_123"
+
+
+def test_create_key_without_stripe_ids_leaves_them_null(tmp_path):
+    db_path = str(tmp_path / "keys.db")
+
+    raw_key = billing.create_key(db_path, customer_id="taller-1", plan="free")
+    record = billing.lookup_key(db_path, billing.hash_key(raw_key))
+
+    assert record["stripe_customer_id"] is None
+    assert record["stripe_subscription_item_id"] is None
+
+
+def test_init_db_migrates_stripe_columns_onto_a_pre_existing_table(tmp_path):
+    """Simulates the real production keys.db, created before IDE-0021 added
+    the Stripe columns — init_db() must ALTER it in place, not just skip
+    table creation because api_keys already exists."""
+    import sqlite3
+
+    db_path = str(tmp_path / "keys.db")
+    with sqlite3.connect(db_path) as conn:
+        conn.execute(
+            """
+            CREATE TABLE api_keys (
+                key_hash TEXT PRIMARY KEY,
+                customer_id TEXT NOT NULL,
+                plan TEXT NOT NULL,
+                active INTEGER NOT NULL DEFAULT 1,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+
+    billing.init_db(db_path)  # must not raise, must add the new columns
+
+    raw_key = billing.create_key(db_path, customer_id="taller-1", plan="free")
+    record = billing.lookup_key(db_path, billing.hash_key(raw_key))
+    assert record["stripe_customer_id"] is None
+
+
 def test_create_key_rejects_unknown_plan(tmp_path):
     db_path = str(tmp_path / "keys.db")
 

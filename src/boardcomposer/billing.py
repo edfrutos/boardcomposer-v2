@@ -60,9 +60,23 @@ def init_db(db_path: str) -> None:
             )
             """
         )
+        # Added for IDE-0021 (Stripe overage billing) after api_keys already
+        # existed in production — ALTER instead of just relying on the
+        # CREATE above, so the VPS's real keys.db picks them up too.
+        for column in ("stripe_customer_id", "stripe_subscription_item_id"):
+            try:
+                conn.execute(f"ALTER TABLE api_keys ADD COLUMN {column} TEXT")
+            except sqlite3.OperationalError:
+                pass  # already migrated
 
 
-def create_key(db_path: str, customer_id: str, plan: str) -> str:
+def create_key(
+    db_path: str,
+    customer_id: str,
+    plan: str,
+    stripe_customer_id: str | None = None,
+    stripe_subscription_item_id: str | None = None,
+) -> str:
     if plan not in PLAN_LIMITS:
         raise ValueError(f"Plan desconocido: {plan!r}. Válidos: {sorted(PLAN_LIMITS)}")
 
@@ -70,13 +84,17 @@ def create_key(db_path: str, customer_id: str, plan: str) -> str:
     init_db(db_path)
     with sqlite3.connect(db_path) as conn:
         conn.execute(
-            "INSERT INTO api_keys (key_hash, customer_id, plan, active, created_at) "
-            "VALUES (?, ?, ?, 1, ?)",
+            "INSERT INTO api_keys "
+            "(key_hash, customer_id, plan, active, created_at, "
+            "stripe_customer_id, stripe_subscription_item_id) "
+            "VALUES (?, ?, ?, 1, ?, ?, ?)",
             (
                 hash_key(raw_key),
                 customer_id,
                 plan,
                 datetime.now(timezone.utc).isoformat(),
+                stripe_customer_id,
+                stripe_subscription_item_id,
             ),
         )
     return raw_key
@@ -94,7 +112,9 @@ def lookup_key(db_path: str, key_hash: str) -> dict | None:
     with sqlite3.connect(db_path) as conn:
         conn.row_factory = sqlite3.Row
         row = conn.execute(
-            "SELECT key_hash, customer_id, plan, active FROM api_keys WHERE key_hash = ?",
+            "SELECT key_hash, customer_id, plan, active, "
+            "stripe_customer_id, stripe_subscription_item_id "
+            "FROM api_keys WHERE key_hash = ?",
             (key_hash,),
         ).fetchone()
         return dict(row) if row else None

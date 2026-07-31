@@ -11,9 +11,9 @@
 
 Rama: `main`
 Versión publicada: `0.3.2` (30/07/2026, tag `v0.3.2`) — incluye `IDE-0019`.
-`IDE-0020` (billing/cuota de API, commit `043caf1`) queda por delante del
-tag, sin publicar todavía.
-Tests: 732, en verde.
+`IDE-0020` (billing/cuota de API) e `IDE-0021` (cobro de overage con
+Stripe) quedan por delante del tag, sin publicar todavía.
+Tests: 748, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -25,7 +25,7 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 | 4 — Inteligencia (IA) | 🟢 Completada |
 | 5 — Ecosistema | 🟡 En curso |
 
-Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0020`, todos 🟢 completados y
+Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0021`, todos 🟢 completados y
 en `main`. No hay ningún IDE en desarrollo ni planificado.
 
 Deuda técnica (`DOC-006-DeudaTecnica.md`): 22 registros, 21 resueltos.
@@ -43,21 +43,41 @@ reconstruidos y verificados el 31/07/2026 tras el commit `043caf1`
 
 ## Trabajo en curso
 
-Ninguno acotado. `IDE-0020` — claves de API por cliente con cuota mensual,
-primer paso técnico de la decisión de producto resuelta el 31/07/2026:
-Studio gratis + API de pago (modelo híbrido, ver `Próxima decisión` más
-abajo). Planes cerrados con el usuario: `free` (20 solves/mes, 0 €),
-`basico` (300/mes, 9 €/mes, overage 0,05 €/solve), `pro` (1500/mes,
-29 €/mes, overage 0,03 €/solve). `src/boardcomposer/billing.py` (registro
-de claves en SQLite, contador de cuota mensual pluggable — memoria en
-dev/test, Redis en producción) más `scripts/manage_keys.py` (CLI admin) y
+Ninguno acotado. `IDE-0020` + `IDE-0021` — claves de API por cliente con
+cuota mensual y cobro del overage con Stripe, primer y segundo paso técnico
+de la decisión de producto resuelta el 31/07/2026: Studio gratis + API de
+pago (modelo híbrido, ver `Próxima decisión` más abajo). Planes cerrados
+con el usuario: `free` (20 solves/mes, 0 €), `basico` (300/mes, 9 €/mes,
+overage 0,05 €/solve), `pro` (1500/mes, 29 €/mes, overage 0,03 €/solve).
+
+`IDE-0020`: `src/boardcomposer/billing.py` (registro de claves en SQLite,
+contador de cuota mensual pluggable — memoria en dev/test, Redis en
+producción) más `scripts/manage_keys.py` (CLI admin) y
 `_authenticate_and_meter()` en `api.py`, que sustituye a `_require_api_key()`
-manteniendo la clave única legacy como acceso admin sin medir. Falta la
-integración de pagos (Stripe) para cobrar el overage — fuera de alcance de
-este bloque. Repite el mismo incumplimiento de proceso que `IDE-0019`:
-construido y comiteado (`043caf1`) antes de darlo de alta aquí — registrado
-también como `DT-0022`. 732 tests en verde. Aún sin etiquetar: sería
-`v0.3.3`.
+manteniendo la clave única legacy como acceso admin sin medir. Repite el
+mismo incumplimiento de proceso que `IDE-0019`: construido y comiteado
+(`043caf1`) antes de darlo de alta aquí — registrado también como
+`DT-0022`.
+
+`IDE-0021`: `src/boardcomposer/stripe_billing.py` — al superar la cuota en
+un plan de pago, cada request reporta 1 unidad de overage a Stripe
+(`SubscriptionItem.create_usage_record`, best-effort, nunca rompe la
+petición del cliente si Stripe falla). `manage_keys.py create` da de alta
+el Customer+Subscription en Stripe automáticamente cuando el plan es de
+pago. Este sí se dio de alta en el Backlog *antes* de construirse, sin
+generar una `DT` nueva. Inactivo por defecto (mismo patrón que
+`REDIS_URL`): sin `STRIPE_SECRET_KEY`/`STRIPE_PRICE_BASICO`/
+`STRIPE_PRICE_PRO`, nada cambia — el usuario tiene cuenta Stripe de
+pruebas pendiente de pasar a producción, sin Price IDs creados todavía.
+
+Verificado en producción el 31/07/2026 (sin Stripe activo aún): rebuild de
+la VPS con `IDE-0020`, volumen persistente para `keys.db` (con fallo de
+permisos real detectado y corregido — UID del contenedor vs. propietario
+del volumen), clave admin generada y probada desde dos dispositivos
+distintos (bloqueada primero por `auth_basic` de nginx, delante de la API,
+sin relación con este cambio).
+
+748 tests en verde. Aún sin etiquetar: sería `v0.3.3`.
 
 Publicada `v0.3.2` (30/07/2026): incluye `IDE-0019` — el dock "Timeline"
 mostraba desde su creación el texto literal "Timeline / Consola / Eventos";
@@ -96,8 +116,10 @@ Pendiente, de menor a mayor alcance:
    Ya no queda trabajo técnico: cargar los seis secrets en GitHub basta para
    que la siguiente release salga firmada y notarizada (`DEC-0017`). Sin
    activar a 31/07/2026 — depende solo del usuario.
-2. Integración de pagos (Stripe u otro) para cobrar el overage de los
-   planes `basico`/`pro` de `IDE-0020` — hoy se acumula pero no se cobra.
+2. Activar Stripe en producción (`IDE-0021` ya construido, inactivo): crear
+   los Price de `básico`/`pro` en la cuenta Stripe del usuario (hoy solo
+   probada en modo test) y configurar `STRIPE_SECRET_KEY`/
+   `STRIPE_PRICE_BASICO`/`STRIPE_PRICE_PRO` en la VPS.
 3. Alta de cliente self-service (hoy `scripts/manage_keys.py` es manual,
    sin landing ni registro automático).
 4. Automatizar el rebuild/despliegue del VPS (hoy manual por SSH, ver

@@ -89,6 +89,7 @@ Observaciones:
 | IDE-0018 | Importación de piezas desde CSV en Studio | 🟢 | P2 |
 | IDE-0019 | Resumen de tableros y log de actividad en el dock Timeline | 🟢 | P2 |
 | IDE-0020 | Claves de API por cliente con cuota mensual (planes de pago) | 🟢 | P1 |
+| IDE-0021 | Integración de Stripe para cobro de overage | 🟢 | P1 |
 
 ---
 
@@ -279,6 +280,21 @@ Primer paso técnico de la decisión de producto "Studio gratis, API de pago" (v
 - `scripts/manage_keys.py` (nuevo): CLI admin `create`/`revoke`/`list` sobre el mismo `billing.py`.
 - `docs/deploy.md`: sección nueva con variables de entorno (`BOARDCOMPOSER_DB_PATH`, `REDIS_URL`) y ejemplo de despliegue.
 - Verificado con tests nuevos (`tests/test_billing.py`, `tests/test_api_billing.py`) más los ya existentes de auth/rate-limit (`tests/test_api_auth.py`, `tests/test_api_rate_limit.py`). Los propios tests cazaron un bug real antes de comitear: `check_quota()` trataba cualquier plan no reconocido como ilimitado en vez de bloquearlo — corregido con `PAID_PLANS` explícito. 732 tests en verde.
+
+---
+
+## IDE-0021 — Integración de Stripe para cobro de overage
+
+**Estado:** 🟢 Completado. Dado de alta *antes* de construirse, a diferencia de `IDE-0019`/`IDE-0020` (`DT-0021`, `DT-0022`).
+
+Cierra el hueco que dejaba `IDE-0020`: los planes `basico`/`pro` acumulaban overage (`QuotaResult.overage`) pero no se cobraba nada. El usuario ya tiene una cuenta Stripe usada en comercios de prueba, pendiente de pasar a producción — sin Price IDs de `básico`/`pro` creados todavía, así que la integración se construye completa pero inactiva por defecto (mismo patrón que `REDIS_URL`): sin `STRIPE_SECRET_KEY`/`STRIPE_PRICE_BASICO`/`STRIPE_PRICE_PRO`, todo sigue funcionando exactamente igual que antes de este bloque.
+
+- `src/boardcomposer/stripe_billing.py` (nuevo): `is_configured(plan)`, `create_customer_and_subscription(customer_id, plan)` (Customer + Subscription sobre el Price del plan, devuelve `(stripe_customer_id, subscription_item_id)`) y `report_overage(subscription_item_id)` (`SubscriptionItem.create_usage_record`, *best-effort* — atrapa cualquier excepción de Stripe y solo la registra en log, para que un fallo de facturación no tumbe la petición real del cliente). `stripe` se importa de forma perezosa dentro de `_client()`, así que no hace falta el paquete instalado salvo en producción (`[prod]`).
+- `src/boardcomposer/billing.py`: `api_keys` gana `stripe_customer_id`/`stripe_subscription_item_id`, migrados con `ALTER TABLE ... ADD COLUMN` envuelto en `try/except` — necesario porque la `keys.db` real de la VPS ya existía con el esquema de `IDE-0020` antes de este bloque. `create_key()` acepta ambos campos como opcionales.
+- `src/boardcomposer/api.py`: en `_authenticate_and_meter()`, cada vez que `check_quota()` devuelve `overage > 0` se llama a `stripe_billing.report_overage()` con el `subscription_item_id` de la clave — una unidad de overage reportada por request por encima de cuota, coherente con el pricing por-solve ya cerrado con el usuario.
+- `scripts/manage_keys.py`: `create` crea automáticamente el Customer + Subscription en Stripe cuando el plan es de pago y Stripe está configurado; si no lo está, avisa y emite la clave igual, sin facturación automática.
+- `docs/deploy.md`: sección nueva con las tres variables de entorno y el flujo completo.
+- Verificado con tests nuevos (`tests/test_stripe_billing.py`, más los añadidos a `tests/test_billing.py` y `tests/test_api_billing.py`) que mockean el módulo `stripe` vía `sys.modules` — no depende del paquete real ni de credenciales de Stripe para pasar en CI. 748 tests en verde.
 
 ---
 

@@ -16,7 +16,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from boardcomposer import billing  # noqa: E402
+from boardcomposer import billing, stripe_billing  # noqa: E402
 
 
 def _db_path(args) -> str:
@@ -31,7 +31,31 @@ def _db_path(args) -> str:
 
 def _cmd_create(args) -> None:
     db_path = _db_path(args)
-    raw_key = billing.create_key(db_path, args.customer_id, args.plan)
+
+    stripe_customer_id = None
+    stripe_subscription_item_id = None
+    if args.plan in billing.PAID_PLANS:
+        if stripe_billing.is_configured(args.plan):
+            stripe_customer_id, stripe_subscription_item_id = (
+                stripe_billing.create_customer_and_subscription(
+                    args.customer_id, args.plan
+                )
+            )
+            print(f"Cliente Stripe creado: {stripe_customer_id}")
+        else:
+            print(
+                "Aviso: Stripe no configurado (falta STRIPE_SECRET_KEY o el Price "
+                "ID del plan) — la clave se emite igualmente, sin facturación "
+                "automática de overage."
+            )
+
+    raw_key = billing.create_key(
+        db_path,
+        args.customer_id,
+        args.plan,
+        stripe_customer_id=stripe_customer_id,
+        stripe_subscription_item_id=stripe_subscription_item_id,
+    )
     print(f"Clave creada para {args.customer_id!r} (plan {args.plan}):")
     print(raw_key)
     print("\nGuárdala ahora — no se puede recuperar después (solo se guarda el hash).")
