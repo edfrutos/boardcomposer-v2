@@ -10,6 +10,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 COPY pyproject.toml ./
 COPY src/ src/
 COPY studio/ studio/
+COPY scripts/manage_keys.py scripts/manage_keys.py
 
 RUN pip install --no-cache-dir ".[prod]"
 
