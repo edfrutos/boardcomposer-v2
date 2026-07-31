@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 30/07/2026
+**Última revisión:** 31/07/2026
 
 ---
 
@@ -87,6 +87,8 @@ Observaciones:
 | IDE-0016 | Tema visual, iconos y toolbar de Studio | 🟢 | P2 |
 | IDE-0017 | Despliegue privado de la API en VPS propio | 🟢 | P2 |
 | IDE-0018 | Importación de piezas desde CSV en Studio | 🟢 | P2 |
+| IDE-0019 | Resumen de tableros y log de actividad en el dock Timeline | 🟢 | P2 |
+| IDE-0020 | Claves de API por cliente con cuota mensual (planes de pago) | 🟢 | P1 |
 
 ---
 
@@ -263,6 +265,20 @@ El dock "Timeline" mostraba desde su creación el texto literal "Timeline / Cons
 - Queda registrado: añadir/editar/eliminar/rotar tablero o pieza (incluido el arrastre en el lienzo, `BoardWorkspace._finish_piece_drag()`, publicando directamente sin necesitar una referencia a `MainWindow`), mover a otro tablero, cambiar el kerf, deshacer/rehacer, resolver/aplicar layout, comparar soluciones, importar CSV, proyecto nuevo/abrir/guardar.
 - Cierra un bug de verdad, no solo de estilo: 6 de 9 clases de comando (`AddBoardCommand`, `EditBoardCommand`, `AddPieceCommand`, `EditPieceCommand`, `RotatePieceCommand`, `DeletePieceCommand`) heredaban del Protocol `Command` —que declara `name: str`— sin definirlo nunca; un `AttributeError` dormido que nadie había disparado hasta que el log de actividad necesitó leerlo. `CommandManager.undo()`/`redo()` devuelven ahora el comando en vez de `None`, para que `MainWindow` no tenga que asomarse a `undo_stack`/`redo_stack`.
 - Verificado con tests (`tests/test_activity_log.py`, `tests/test_timeline_panel.py`, `tests/test_board_metrics.py`, `tests/test_main_window_timeline.py`, más los nuevos casos en `tests/test_command_manager.py` y `tests/test_board_workspace.py`) y contra una ventana renderizada de verdad (`grab()`), claro y oscuro. 712 tests en verde.
+
+---
+
+## IDE-0020 — Claves de API por cliente con cuota mensual (planes de pago)
+
+**Estado:** 🟢 Completado. Registrado a posteriori: el bloque se construyó y comitió (`043caf1`) antes de darlo de alta aquí, incumpliendo la norma 1 de `MASTERPLAN.md` ("No añadir funcionalidad sin bloque definido") — mismo incumplimiento que `IDE-0019`. Ver `DT-0022` en `DOC-006-DeudaTecnica.md`.
+
+Primer paso técnico de la decisión de producto "Studio gratis, API de pago" (ver `Próxima decisión` de `MASTERPLAN.md`, ahora resuelta a favor del modelo híbrido). Modelo de planes cerrado con el usuario: `free` (20 solves/mes, 0 €), `basico` (300/mes, 9 €/mes, overage 0,05 €/solve), `pro` (1500/mes, 29 €/mes, overage 0,03 €/solve).
+
+- `src/boardcomposer/billing.py` (nuevo): registro de claves por cliente en SQLite (`key_hash` con SHA-256, nunca la clave en claro), `PLAN_LIMITS`, contador de cuota mensual pluggable — `InMemoryQuotaStore` (dev/test) o `RedisQuotaStore` (producción, comparte estado entre workers de `gunicorn`, a diferencia del rate limiter existente — ver `DT-0006`/`DOC-006`).
+- `src/boardcomposer/api.py`: `_authenticate_and_meter()` sustituye a `_require_api_key()`. La clave única legacy (`BOARDCOMPOSER_API_KEY`) sigue funcionando igual, ahora tratada como clave admin sin medir. Las claves nuevas se resuelven contra el registro SQLite (`db_path`/`BOARDCOMPOSER_DB_PATH`); la cuota solo se cuenta en `billing.METERED_ENDPOINTS` (`/solve`, `/assist/*`) — `/health`, `/strategies`, `/plugins` quedan fuera por ser metadata sin coste de cómputo real. Plan `free` agotado responde `402`; `basico`/`pro` siguen respondiendo por encima de su cuota y acumulan overage (sin cobro automático — integración de pagos pendiente, fuera de alcance de este bloque).
+- `scripts/manage_keys.py` (nuevo): CLI admin `create`/`revoke`/`list` sobre el mismo `billing.py`.
+- `docs/deploy.md`: sección nueva con variables de entorno (`BOARDCOMPOSER_DB_PATH`, `REDIS_URL`) y ejemplo de despliegue.
+- Verificado con tests nuevos (`tests/test_billing.py`, `tests/test_api_billing.py`) más los ya existentes de auth/rate-limit (`tests/test_api_auth.py`, `tests/test_api_rate_limit.py`). Los propios tests cazaron un bug real antes de comitear: `check_quota()` trataba cualquier plan no reconocido como ilimitado en vez de bloquearlo — corregido con `PAID_PLANS` explícito. 732 tests en verde.
 
 ---
 

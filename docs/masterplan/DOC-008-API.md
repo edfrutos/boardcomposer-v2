@@ -7,7 +7,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 01/07/2026
+**Última revisión:** 31/07/2026
 
 ---
 
@@ -97,7 +97,7 @@ La especificación definitiva contemplará:
 - limitación de uso cuando proceda;
 - trazabilidad de operaciones.
 
-Nota: ya existe una primera versión mínima de autenticación (clave de API por cabecera, opcional) y limitación de uso (rate limiting por IP) — `IDE-0009`, ver `docs/architecture.md`. No sustituye la especificación definitiva de este documento (sin autorización, sin trazabilidad de operaciones).
+Nota: ya existe una primera versión mínima de autenticación (clave de API por cabecera, opcional) y limitación de uso (rate limiting por IP) — `IDE-0009`, ver `docs/architecture.md`. `IDE-0020` añade una primera forma de autorización real: claves por cliente ligadas a un plan (`free`/`basico`/`pro`) con cuota mensual (`src/boardcomposer/billing.py`), más allá de la clave única compartida original. No sustituye la especificación definitiva de este documento (sin roles, sin trazabilidad de operaciones más allá del conteo de cuota).
 
 ---
 

@@ -1,6 +1,6 @@
 # BoardComposer — MASTERPLAN
 
-**Última revisión:** 30/07/2026
+**Última revisión:** 31/07/2026
 
 > Este documento resume el estado del proyecto y las normas de trabajo.
 > El detalle vivo de cada funcionalidad está en `DOC-004-Backlog.md`, la
@@ -10,9 +10,10 @@
 ## Estado actual
 
 Rama: `main`
-Versión publicada: `0.3.1` (28/07/2026, tag `v0.3.1`) — `IDE-0019` (PR #58,
-mergeado 30/07/2026) queda por delante del tag, sin publicar todavía.
-Tests: 712, en verde.
+Versión publicada: `0.3.2` (30/07/2026, tag `v0.3.2`) — incluye `IDE-0019`.
+`IDE-0020` (billing/cuota de API, commit `043caf1`) queda por delante del
+tag, sin publicar todavía.
+Tests: 732, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -24,34 +25,49 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 | 4 — Inteligencia (IA) | 🟢 Completada |
 | 5 — Ecosistema | 🟡 En curso |
 
-Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0019`, todos 🟢 completados y
+Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0020`, todos 🟢 completados y
 en `main`. No hay ningún IDE en desarrollo ni planificado.
 
-Deuda técnica (`DOC-006-DeudaTecnica.md`): 21 registros, 20 resueltos.
+Deuda técnica (`DOC-006-DeudaTecnica.md`): 22 registros, 21 resueltos.
 Abierta: `DT-0011` (el `.app` de macOS no está firmado ni notarizado, y solo
 se genera para macOS/arm64). Mitigada el 27/07/2026 con todo lo que no exige
 cuenta de pago — bundle identifier propio, `docs/INSTALL-macos.md` en cada
 release, y firma+notarización ya automatizadas a la espera de credenciales
-(`DEC-0017`). Cerrarla del todo cuesta 99 USD/año.
+(`DEC-0017`). Cerrarla del todo cuesta 99 USD/año — a 31/07/2026 la
+suscripción de Apple Developer sigue sin activarse.
 
 Despliegue privado en marcha (`IDE-0017`): API en `bc.efjdefrutos.com` y
-Studio por navegador (noVNC) en `studio.efjdefrutos.com`.
+Studio por navegador (noVNC) en `studio.efjdefrutos.com`. Contenedores
+reconstruidos y verificados el 31/07/2026 tras el commit `043caf1`
+(rebuild manual por SSH, no automatizado — sin CI/CD de despliegue todavía).
 
 ## Trabajo en curso
 
-Ninguno acotado — `IDE-0019` (PR #58) se mergeó el 30/07/2026. El dock
-"Timeline" mostraba desde su creación el texto literal "Timeline / Consola /
-Eventos"; pasa a tener Resumen (tableros con piezas y % de uso) y Actividad
-(log en vivo, primer uso real del `EventBus` de ADR-003, hasta entonces
-construido y sin conectar). Por el camino: 6 de 9 clases de comando no
-definían `.name` pese a que el Protocol lo exige (`AttributeError` dormido,
-nunca disparado hasta que el log lo necesitó), y una revisión `/code-review`
-sobre el propio diff encontró y corrigió tres cosas más antes de comitear —
-arrastre de pieza sin registrar, `Feature Envy` en deshacer/rehacer, cálculo
-de utilización duplicado. 712 tests en verde. El bloque se registró como
-`IDE-0019` *después* de construirse, incumpliendo la norma 1 de este
-documento — registrado también como `DT-0021`. Aún sin etiquetar: sería
-`v0.3.2`.
+Ninguno acotado. `IDE-0020` — claves de API por cliente con cuota mensual,
+primer paso técnico de la decisión de producto resuelta el 31/07/2026:
+Studio gratis + API de pago (modelo híbrido, ver `Próxima decisión` más
+abajo). Planes cerrados con el usuario: `free` (20 solves/mes, 0 €),
+`basico` (300/mes, 9 €/mes, overage 0,05 €/solve), `pro` (1500/mes,
+29 €/mes, overage 0,03 €/solve). `src/boardcomposer/billing.py` (registro
+de claves en SQLite, contador de cuota mensual pluggable — memoria en
+dev/test, Redis en producción) más `scripts/manage_keys.py` (CLI admin) y
+`_authenticate_and_meter()` en `api.py`, que sustituye a `_require_api_key()`
+manteniendo la clave única legacy como acceso admin sin medir. Falta la
+integración de pagos (Stripe) para cobrar el overage — fuera de alcance de
+este bloque. Repite el mismo incumplimiento de proceso que `IDE-0019`:
+construido y comiteado (`043caf1`) antes de darlo de alta aquí — registrado
+también como `DT-0022`. 732 tests en verde. Aún sin etiquetar: sería
+`v0.3.3`.
+
+Publicada `v0.3.2` (30/07/2026): incluye `IDE-0019` — el dock "Timeline"
+mostraba desde su creación el texto literal "Timeline / Consola / Eventos";
+pasa a tener Resumen (tableros con piezas y % de uso) y Actividad (log en
+vivo, primer uso real del `EventBus` de ADR-003, hasta entonces construido
+y sin conectar). Por el camino: 6 de 9 clases de comando no definían
+`.name` pese a que el Protocol lo exige (`AttributeError` dormido, nunca
+disparado hasta que el log lo necesitó). Registrado como `IDE-0019`
+*después* de construirse, incumpliendo la norma 1 de este documento —
+también como `DT-0021`.
 
 Publicada `v0.3.1` (28/07/2026): republica el `.app` de macOS con el
 bundle identifier corregido y el ancho de sierra aplicado por el solver
@@ -68,18 +84,24 @@ línea de comandos (`docs/cli.md`, nueva).
 
 ## Próxima decisión
 
-Con el backlog a cero y sin más deuda que dé resultados incorrectos, la
-siguiente es una decisión de producto, no técnica. Candidatas, de menor a
-mayor alcance (`DOC-999-Ideas.md`):
+Dirección de producto resuelta el 31/07/2026: modelo híbrido — Studio
+gratis (sin cambios, ya empaquetado), API de pago por request
+(`IDE-0020`). Descartadas por ahora: instancia demo pública, marketplace de
+plugins y SaaS completo con cuentas propias (`DOC-999-Ideas.md`) — quedan
+como candidatas futuras si el modelo híbrido no basta.
+
+Pendiente, de menor a mayor alcance:
 
 1. Contratar la cuenta de Apple Developer (99 USD/año) para cerrar `DT-0011`.
    Ya no queda trabajo técnico: cargar los seis secrets en GitHub basta para
-   que la siguiente release salga firmada y notarizada (`DEC-0017`).
-2. Instancia demo pública — acotada, pero implica infraestructura de pago.
-3. Marketplace público de plugins — requiere decidir antes si el mecanismo de
-   plugins es para un ecosistema abierto o solo para uso interno.
-4. SaaS real (cuentas, persistencia por usuario, facturación) — no es una
-   tarea, es una fase nueva del producto.
+   que la siguiente release salga firmada y notarizada (`DEC-0017`). Sin
+   activar a 31/07/2026 — depende solo del usuario.
+2. Integración de pagos (Stripe u otro) para cobrar el overage de los
+   planes `basico`/`pro` de `IDE-0020` — hoy se acumula pero no se cobra.
+3. Alta de cliente self-service (hoy `scripts/manage_keys.py` es manual,
+   sin landing ni registro automático).
+4. Automatizar el rebuild/despliegue del VPS (hoy manual por SSH, ver
+   `Estado actual`) si la cadencia de cambios en la API lo justifica.
 
 Si el kerf tiene que importar también fuera de Studio (CLI y API hoy no lo
 tienen), `DEC-0016` es la decisión a revisitar.
