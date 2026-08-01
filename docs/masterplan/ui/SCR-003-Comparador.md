@@ -11,11 +11,11 @@
 ---
 
 > ⚠️ **Parcialmente implementado.** `comparator_panel.py::render_comparison()`
-> solo construye una tabla HTML de métricas (algoritmo, piezas colocadas,
-> aprovechamiento/desperdicio, puntuación, orden de piezas). No hay
-> miniaturas por candidata, panel de diferencias, "abrir en Workspace" ni
-> "fijar como favorita" — ya señalado en `docs/studio.md`. Verificado
-> 01/08/2026.
+> construye una tabla HTML de métricas (algoritmo, piezas colocadas,
+> aprovechamiento/desperdicio, fragmentación, nº de cortes aproximado,
+> puntuación, orden de piezas), con miniatura por candidata y "fijar como
+> favorita" desde `IDE-0023` (01/08/2026). Sigue sin panel de diferencias
+> ni "abrir en Workspace". Verificado 01/08/2026.
 
 ---
 

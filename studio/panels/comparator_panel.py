@@ -1,11 +1,12 @@
 """Content builder for the Comparador panel (SCR-003 — Comparador de Soluciones).
 
-Pure function, no Qt dependency, so it's unit-testable. Shows only the
-metrics AssemblySolution actually computes today (aprovechamiento,
-desperdicio, piezas colocadas, puntuación, algoritmo, explicación) — the
-spec also lists número de cortes, tiempo de cálculo, fragmentación del
-material and tiempo estimado de mecanizado, none of which the domain
-model tracks yet, so they're called out as not-yet-available instead of
+Pure function, no Qt dependency, so it's unit-testable. Shows the metrics
+AssemblySolution computes (aprovechamiento, desperdicio, piezas colocadas,
+puntuación, algoritmo, explicación) plus, since IDE-0023,
+fragmentación/nº de cortes (`solver/layout_metrics.py` — the latter is a
+labelled approximation, not an exact count, see its docstring). Tiempo de
+cálculo and tiempo estimado de mecanizado still aren't computed anywhere
+in the domain, so they're called out as not-yet-available instead of
 being filled with invented numbers.
 
 Also shows "Orden de piezas" (DT-0016): several candidates from the same
@@ -17,9 +18,14 @@ them — the piece arrangement, read top-to-bottom then left-to-right.
 """
 
 from boardcomposer.domain import AssemblySolution
+from boardcomposer.solver.layout_metrics import cut_count, fragmentation_ratio
 
 
-def render_comparison(solutions: list[AssemblySolution]) -> str:
+def render_comparison(
+    solutions: list[AssemblySolution],
+    thumbnails: list[str] | None = None,
+    favorite_index: int | None = None,
+) -> str:
     if not solutions:
         return (
             '<table id="empty-state-table"><tr><td id="empty-state">'
@@ -29,13 +35,28 @@ def render_comparison(solutions: list[AssemblySolution]) -> str:
             "</td></tr></table>"
         )
 
-    headers = "".join(f"<th>Solución {i + 1}</th>" for i in range(len(solutions)))
+    thumbnails = thumbnails or []
+    headers = "".join(
+        f"<th>{'⭐ ' if i == favorite_index else ''}Solución {i + 1}</th>"
+        for i in range(len(solutions))
+    )
+    thumbnail_cells = "".join(
+        f'<td><img src="{thumbnails[i]}" width="120" height="90"></td>'
+        if i < len(thumbnails) and thumbnails[i]
+        else "<td>—</td>"
+        for i in range(len(solutions))
+    )
     rows = [
         _row("Algoritmo", [" / ".join(s.explanation.notes) or "—" for s in solutions]),
         _row("Piezas colocadas", [str(len(s.placements)) for s in solutions]),
         _row("Orden de piezas", [_piece_order(s) for s in solutions]),
         _row("Aprovechamiento", [f"{1 - s.waste_ratio:.1%}" for s in solutions]),
         _row("Desperdicio", [f"{s.waste_ratio:.1%}" for s in solutions]),
+        _row(
+            "Fragmentación",
+            [f"{fragmentation_ratio(s):.1%}" for s in solutions],
+        ),
+        _row("Nº de cortes (aprox.)", [str(cut_count(s)) for s in solutions]),
         _row("Puntuación", [f"{s.score.total:.1f}" for s in solutions]),
     ]
 
@@ -59,11 +80,13 @@ def render_comparison(solutions: list[AssemblySolution]) -> str:
         "<h3>Comparador de Soluciones</h3>"
         "<table>"
         f"<tr><th></th>{headers}</tr>"
+        f"<tr><th></th>{thumbnail_cells}</tr>"
         f"{''.join(rows)}"
         "</table>"
-        "<p><i>Número de cortes, tiempo de cálculo, fragmentación del material y "
-        "tiempo estimado de mecanizado no se calculan todavía "
-        "(ver docs/masterplan/ui/SCR-003-Comparador.md).</i></p>"
+        "<p><i>Nº de cortes es una aproximación (corte guillotina de línea "
+        "completa, DEC-0016) — puede infracontar en layouts no-guillotina. "
+        "Tiempo de cálculo y tiempo estimado de mecanizado no se calculan "
+        "todavía (ver docs/masterplan/ui/SCR-003-Comparador.md).</i></p>"
         f"{''.join(explanations)}"
     )
 

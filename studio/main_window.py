@@ -62,6 +62,7 @@ from studio.export import (
     export_project_to_json,
     export_project_to_pdf,
     export_project_to_svg,
+    render_solution_thumbnail,
 )
 from studio.panel_plugins import discover_panel_plugins
 from studio.project import (
@@ -258,6 +259,19 @@ class MainWindow(QMainWindow):
             )
             self._comparison_actions.append(action)
 
+        menus["Comparar"].addSeparator()
+
+        self._comparison_favorite_index: int | None = None
+        self._comparison_thumbnails: list[str] = []
+        self._favorite_actions = []
+        for index in range(4):
+            action = QAction(f"Marcar solución {index + 1} como favorita", self)
+            menus["Comparar"].addAction(action)
+            action.triggered.connect(
+                lambda checked=False, i=index: self._mark_favorite_solution(i)
+            )
+            self._favorite_actions.append(action)
+
         self._actions["export_svg"] = QAction("Exportar SVG…", self)
         menus["Exportar"].addAction(self._actions["export_svg"])
         self._actions["export_svg"].triggered.connect(self._export_svg)
@@ -345,7 +359,13 @@ class MainWindow(QMainWindow):
         self.timeline_activity.document().setDefaultStyleSheet(stylesheet)
 
         self._on_explorer_selection_changed()
-        self.comparator.setHtml(render_comparison(self.services.layout.last_solutions))
+        self.comparator.setHtml(
+            render_comparison(
+                self.services.layout.last_solutions,
+                thumbnails=self._comparison_thumbnails,
+                favorite_index=self._comparison_favorite_index,
+            )
+        )
         self.assistant_history.setHtml(render_chat(self.services.assistant.history))
         self.timeline_overview.setHtml(
             render_overview(self.services.projects.current_project)
@@ -1586,7 +1606,17 @@ class MainWindow(QMainWindow):
         solutions = self.services.layout.compare_solutions(
             self.workspace.active_board_id
         )
-        self.comparator.setHtml(render_comparison(solutions))
+        # A fresh comparison invalidates whichever candidate was marked
+        # favorite before — the indices no longer point at the same
+        # solutions. Cached so _mark_favorite_solution() can re-render
+        # without re-running the solver or re-drawing every thumbnail.
+        self._comparison_favorite_index = None
+        self._comparison_thumbnails = [
+            render_solution_thumbnail(solution) for solution in solutions
+        ]
+        self.comparator.setHtml(
+            render_comparison(solutions, thumbnails=self._comparison_thumbnails)
+        )
 
         if not solutions:
             self.statusBar().showMessage(
@@ -1628,6 +1658,27 @@ class MainWindow(QMainWindow):
         else:
             self.statusBar().showMessage(f"Solución {index + 1} aplicada", 3000)
             self._log_activity(f"Solución {index + 1} aplicada")
+
+    def _mark_favorite_solution(self, index: int):
+        solutions = self.services.layout.last_solutions
+        if index >= len(solutions):
+            self.statusBar().showMessage(
+                "No hay una solución generada en esa posición", 3000
+            )
+            return
+
+        self._comparison_favorite_index = index
+        self.comparator.setHtml(
+            render_comparison(
+                solutions,
+                thumbnails=self._comparison_thumbnails,
+                favorite_index=index,
+            )
+        )
+        self.statusBar().showMessage(
+            f"Solución {index + 1} marcada como favorita", 3000
+        )
+        self._log_activity(f"Solución {index + 1} marcada como favorita")
 
     def _ask_assistant(self):
         question = self.assistant_input.toPlainText().strip()

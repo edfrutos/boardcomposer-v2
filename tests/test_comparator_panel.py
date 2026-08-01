@@ -64,8 +64,53 @@ def test_render_comparison_notes_missing_metrics_are_not_fabricated():
     html = render_comparison([_solution("A", 500, 500, 10.0, ["skyline"])])
 
     assert "no se calculan todavía" in html
-    assert "cortes" in html
     assert "mecanizado" in html
+
+
+def test_render_comparison_shows_fragmentation_and_cut_count():
+    solutions = [
+        _solution("A", 500, 500, 10.0, ["skyline"]),
+        _solution("B", 500, 500, 10.0, ["maxrects"]),
+    ]
+
+    html = render_comparison(solutions)
+
+    assert "Fragmentación" in html
+    assert "Nº de cortes" in html
+    # Single-piece solution: nothing to fragment, no interior cut line.
+    assert "0.0%" in html
+
+
+def test_render_comparison_marks_the_favorite_with_a_star():
+    solutions = [
+        _solution("A", 500, 500, 10.0, ["skyline"]),
+        _solution("B", 500, 500, 10.0, ["maxrects"]),
+    ]
+
+    html = render_comparison(solutions, favorite_index=1)
+
+    assert "⭐ Solución 2" in html
+    assert "⭐ Solución 1" not in html
+
+
+def test_render_comparison_without_a_favorite_has_no_star():
+    html = render_comparison([_solution("A", 500, 500, 10.0, ["skyline"])])
+
+    assert "⭐" not in html
+
+
+def test_render_comparison_embeds_provided_thumbnails():
+    solutions = [_solution("A", 500, 500, 10.0, ["skyline"])]
+
+    html = render_comparison(solutions, thumbnails=["data:image/png;base64,AAAA"])
+
+    assert 'src="data:image/png;base64,AAAA"' in html
+
+
+def test_render_comparison_without_thumbnails_shows_a_placeholder():
+    html = render_comparison([_solution("A", 500, 500, 10.0, ["skyline"])])
+
+    assert "<td>—</td>" in html
 
 
 def test_render_comparison_includes_strengths_and_weaknesses():

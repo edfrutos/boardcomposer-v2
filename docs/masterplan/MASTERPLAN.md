@@ -13,8 +13,10 @@ Rama: `main`
 Versión publicada: `0.3.3` (01/08/2026, tag `v0.3.3`) — incluye `IDE-0020`
 (billing/cuota de API) e `IDE-0021` (cobro de overage con Stripe). Primera
 release firmada y notarizada de verdad (`DT-0011`). `IDE-0022` (exportar
-DXF/JSON desde Studio) queda por delante del tag, sin publicar todavía.
-Tests: 752, en verde.
+DXF/JSON desde Studio) e `IDE-0023` (Comparador: miniaturas, favorita,
+fragmentación, nº de cortes) quedan por delante del tag, sin publicar
+todavía.
+Tests: 765, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -26,7 +28,7 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 | 4 — Inteligencia (IA) | 🟢 Completada |
 | 5 — Ecosistema | 🟡 En curso |
 
-Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0022`, todos 🟢 completados y
+Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0023`, todos 🟢 completados y
 en `main`. No hay ningún IDE en desarrollo ni planificado.
 
 Deuda técnica (`DOC-006-DeudaTecnica.md`): 22 registros, los 22 resueltos.
@@ -52,7 +54,23 @@ reutiliza `solution_to_dxf()` del Core (`IDE-0012`) sin código nuevo; JSON
 es un formato propio del layout manual de Studio, no el de varias
 candidatas que usa el CLI/API. Verificado con la app real corriendo:
 las 4 opciones del menú "Exportar" confirmadas, clic en DXF sin error.
-752 tests en verde. Dado de alta en el Backlog antes de construirse.
+Dado de alta en el Backlog antes de construirse.
+
+`IDE-0023` — segundo punto de la misma lista de gaps (`SCR-003-Comparador.md`):
+miniatura por candidata (`studio/export/thumbnail.py`, `QPainter` →
+`data:image/png;base64,...` embebido en el HTML), marcar una como favorita
+(⭐, `MainWindow._mark_favorite_solution()`), y dos métricas que
+`comparator_panel.py` documentaba explícitamente como no calculadas para
+no inventar números — fragmentación (descomposición del hueco libre en
+rectángulos disjuntos) y nº de cortes (aproximación etiquetada como tal,
+asume corte guillotina como ya hace el kerf, `DEC-0016`), ambas en
+`src/boardcomposer/solver/layout_metrics.py`, verificadas a mano con
+geometría conocida. Verificación visual en vivo no concluyente esta vez
+(automatización de Accessibility inestable en la sesión, no del código) —
+se apoya en tests, incluida la generación real de `QPixmap`/`QPainter`.
+Dado de alta en el Backlog antes de construirse.
+
+765 tests en verde.
 
 Publicada `v0.3.3` (01/08/2026): `IDE-0020` + `IDE-0021` — claves de API
 por cliente con cuota mensual y cobro del overage con Stripe, primer y

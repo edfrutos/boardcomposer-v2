@@ -91,6 +91,7 @@ Observaciones:
 | IDE-0020 | Claves de API por cliente con cuota mensual (planes de pago) | 🟢 | P1 |
 | IDE-0021 | Integración de Stripe para cobro de overage | 🟢 | P1 |
 | IDE-0022 | Exportar DXF y JSON desde Studio | 🟢 | P2 |
+| IDE-0023 | Comparador: miniaturas, favorita, fragmentación y nº de cortes | 🟢 | P2 |
 
 ---
 
@@ -309,6 +310,20 @@ Primer punto de la lista de gaps de Studio identificados en la auditoría de doc
 - `studio/export/json_export.py::export_project_to_json()` — formato propio (`project_name`, `placed_pieces`, dimensiones totales, `placements` con `piece_id`/posición/rotación), sin la envoltura de estrategia/pesos que no aplica a un layout manual.
 - `MainWindow`: dos acciones nuevas en el menú "Exportar" (`Exportar DXF…`, `Exportar JSON…`), mismo patrón que las existentes de SVG/PDF.
 - Verificado con tests nuevos (`tests/test_dxf_export.py`, `tests/test_json_export.py`, mismo patrón que `test_svg_export.py`) y con la app real corriendo en macOS: menú "Exportar" confirmado con las 4 opciones, clic en "Exportar DXF…" disparado sin error. 752 tests en verde.
+
+---
+
+## IDE-0023 — Comparador: miniaturas, favorita, fragmentación y nº de cortes
+
+**Estado:** 🟢 Completado. Dado de alta antes de construirse.
+
+Segundo punto de la lista de gaps de Studio (auditoría de documentación del 01/08/2026, `SCR-003-Comparador.md`). Cuatro piezas:
+
+- **Miniaturas**: `src/boardcomposer/solver` no interviene aquí — vive en Studio, `studio/export/thumbnail.py::render_solution_thumbnail()`, mismo mecanismo `QPainter` que `pdf_export.py`, escalado a 120×90 px y codificado como `data:image/png;base64,...` embebido directamente en la tabla HTML del Comparador. `comparator_panel.py` recibe la cadena ya renderizada, sigue sin depender de Qt.
+- **Favorita**: `MainWindow._mark_favorite_solution()`, 4 acciones nuevas en el menú "Comparar" (mismo patrón que "Aplicar solución N"). Marca con ⭐ en la cabecera de columna. Estado de sesión — se resetea al generar una comparación nueva, no persiste entre reinicios (no hay dónde guardarlo sin decidir antes un modelo de persistencia de soluciones, fuera de alcance).
+- **Fragmentación** (`src/boardcomposer/solver/layout_metrics.py::fragmentation_ratio()` — `comparator_panel.py` ya documentaba explícitamente que no se calculaba, a propósito, para no inventar números): `1 - (mayor_rectángulo_libre_mm² / espacio_libre_total_mm²)`, descomponiendo el espacio libre del rectángulo envolvente en rectángulos disjuntos (subtracción rectángulo-menos-rectángulo en 4 partes) tras restar cada pieza colocada. Geometría estándar, sin ambigüedad. Verificado a mano con 3 piezas y dos huecos de tamaño distinto (`tests/test_layout_metrics.py`).
+- **Número de cortes** (`layout_metrics.py::cut_count()`, aproximada — avisado al usuario antes de construir): cuenta de líneas de corte interiores distintas (verticales + horizontales) entre bordes de pieza que no coinciden con el borde del rectángulo envolvente, asumiendo corte guillotina de línea completa — mismo supuesto que ya usa el kerf (`DEC-0016`: N piezas en fila = N-1 cortes). Layouts no-guillotina (posibles en MaxRects/Skyline) pueden infracontar; etiquetado "(aprox.)" en la UI, no como cifra exacta.
+- Verificado con tests nuevos (`tests/test_layout_metrics.py`, `tests/test_thumbnail.py`, más los ampliados en `tests/test_comparator_panel.py`). 765 tests en verde. Verificación visual en vivo no concluyente esta vuelta — automatización de macOS Accessibility inestable en la sesión (proceso corriendo y confirmado por `lsappinfo`, pero sin ventanas expuestas a `System Events`), no relacionado con el código; se apoya en la cobertura de tests, incluida la generación real de `QPixmap`/`QPainter` en `test_thumbnail.py`.
 
 ---
 

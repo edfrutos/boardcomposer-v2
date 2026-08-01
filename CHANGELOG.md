@@ -5,6 +5,7 @@
 ### Añadido
 
 - Exportar DXF y JSON desde Studio (`IDE-0022`): menú "Exportar" gana dos opciones nuevas junto a SVG/PDF. DXF reutiliza `boardcomposer.export.solution_to_dxf()` del Core (`IDE-0012`), sin código nuevo de exportación. JSON es un formato propio del layout actual de Studio (piezas colocadas, dimensiones totales, posición/rotación por pieza) — no el mismo formato que usa el CLI/API para varias soluciones candidatas.
+- Comparador de soluciones: miniatura por candidata, marcar una como favorita (⭐), y dos métricas nuevas — fragmentación del material y nº de cortes aproximado (`IDE-0023`). `comparator_panel.py` ya avisaba explícitamente de que estas dos métricas no se calculaban para no inventar números; ahora se calculan con geometría real (`src/boardcomposer/solver/layout_metrics.py`), con el nº de cortes etiquetado como aproximación (asume corte guillotina, mismo supuesto que el kerf).
 
 ---
 
