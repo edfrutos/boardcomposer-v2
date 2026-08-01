@@ -115,13 +115,30 @@ echo "==> Subiendo a notarizar (puede tardar varios minutos)"
 # the bundle's symlinks and extended attributes intact.
 ditto -c -k --keepParent "$APP_PATH" "$notarization_zip"
 
-xcrun notarytool submit "$notarization_zip" \
+submit_output="$(xcrun notarytool submit "$notarization_zip" \
   --apple-id "$APPLE_ID" \
   --team-id "$APPLE_TEAM_ID" \
   --password "$APPLE_APP_PASSWORD" \
-  --wait
+  --wait)"
+echo "$submit_output"
 
 rm -f "$notarization_zip"
+
+# --wait blocks until Apple reaches a terminal state, but exits 0 either
+# way — a rejected submission ("Invalid") still returns success, so without
+# this check the script sails on into stapling and fails there instead,
+# with a confusing "Record not found" instead of Apple's actual reason.
+submission_id="$(awk '/^  id:/{print $2; exit}' <<< "$submit_output")"
+status="$(awk '/^  status:/{print $2; exit}' <<< "$submit_output")"
+
+if [[ "$status" != "Accepted" ]]; then
+  echo "==> Notarización rechazada (status=$status) — log detallado de Apple:"
+  xcrun notarytool log "$submission_id" \
+    --apple-id "$APPLE_ID" \
+    --team-id "$APPLE_TEAM_ID" \
+    --password "$APPLE_APP_PASSWORD"
+  exit 1
+fi
 
 echo "==> Grapando el ticket"
 # Stapling embeds the notarisation ticket in the bundle, so a machine with
