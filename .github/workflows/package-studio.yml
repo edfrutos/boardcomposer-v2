@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -98,6 +99,7 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent BoardComposerStudio.app BoardComposerStudio-macos.zip
 
       - name: Publish release asset
+        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SIGNED: ${{ steps.signing.outputs.available }}
