@@ -80,13 +80,32 @@ done < <(find "$macos_dir" -type f -print0)
 echo "==> Firmando binarios internos"
 # Inside-out, deliberately not --deep: Apple documents --deep as unsuitable
 # for signing (it applies the same options to nested code that may need
-# different ones, and silently skips some layouts). Every .so and .dylib is
-# signed first, the bundle last — the outer signature seals hashes of what
-# is inside, so anything signed afterwards would invalidate it.
-while IFS= read -r binary; do
-  codesign --force --timestamp --options runtime \
-    --sign "$SIGNING_IDENTITY" "$binary"
-done < <(find "$APP_PATH" -type f \( -name "*.dylib" -o -name "*.so" \))
+# different ones, and silently skips some layouts). The bundle is signed
+# last — the outer signature seals hashes of what is inside, so anything
+# signed afterwards would invalidate it.
+#
+# Detecting binaries by content (Mach-O), not by *.so/*.dylib extension:
+# a real notarization run caught several Qt binaries with no extension at
+# all (QtCore, QtGui, QtQml, QtQuick, QtOpenGL, QtQmlModels, ...) that this
+# loop used to miss entirely. codesign's own nested-code auto-discovery
+# still found and signed them while signing the outer bundle, but without
+# --timestamp/--options runtime, so Apple's notary rejected them: "not
+# signed with a valid Developer ID certificate" + "signature does not
+# include a secure timestamp" on every one of them.
+#
+# The main executable is excluded here on purpose — codesign treats it as
+# part of the bundle it signs last, together with sealing Resources; the
+# comment above already covers why nothing should be (re)signed after that.
+main_executable="$APP_PATH/Contents/MacOS/$(basename "${APP_PATH%.app}")"
+while IFS= read -r -d '' binary; do
+  if [[ "$binary" == "$main_executable" ]]; then
+    continue
+  fi
+  if file "$binary" | grep -q "Mach-O"; then
+    codesign --force --timestamp --options runtime \
+      --sign "$SIGNING_IDENTITY" "$binary"
+  fi
+done < <(find "$APP_PATH" -type f -print0)
 
 cacert="$APP_PATH/Contents/MacOS/certifi/cacert.pem"
 if [[ -e "$cacert" ]]; then
