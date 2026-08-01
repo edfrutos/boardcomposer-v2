@@ -33,15 +33,21 @@ fi
 
 notarization_zip="$(dirname "$APP_PATH")/notarization-upload.zip"
 
+echo "==> Limpiando atributos extendidos heredados"
+# Intento anterior (quitar +x a ficheros que no son Mach-O) no arregló
+# "code object is not signed at all" sobre certifi/cacert.pem — el propio
+# fichero seguía fallando igual en la siguiente vuelta, así que el bit de
+# ejecución no era la causa real. La otra causa conocida de ese mismo
+# mensaje sobre un fichero de datos plano: xattrs heredados de dónde sea
+# que Nuitka copió el fichero (p.ej. un com.apple.cs.CodeDirectory residual
+# de una instalación de Python firmada), que codesign interpreta como "este
+# fichero afirma tener firma propia" y la encuentra inválida. -r recursivo,
+# -c limpia todos los xattrs de golpe.
+xattr -cr "$APP_PATH"
+
 echo "==> Quitando el bit de ejecución de datos que no son binarios reales"
-# codesign trata cualquier fichero con el bit +x como código que necesita su
-# propia firma — Nuitka copia algunos datos (p.ej. certifi/cacert.pem) con
-# ese bit heredado aunque no sean ejecutables, y la firma del bundle entero
-# falla sobre ellos con "code object is not signed at all". Detecta el caso
-# general por contenido (no Mach-O), no solo ese fichero concreto, así que
-# cualquier otro dato con el mismo problema queda cubierto igual. Los
-# binarios reales (el ejecutable principal, el intérprete embebido de
-# Nuitka) son Mach-O y conservan su +x sin tocar.
+# Se mantiene además, por si acaso — no ha demostrado arreglar el fallo por
+# sí solo, pero tampoco hace daño.
 while IFS= read -r -d '' file; do
   if ! file "$file" | grep -q "Mach-O"; then
     chmod -x "$file"
@@ -58,6 +64,14 @@ while IFS= read -r binary; do
   codesign --force --timestamp --options runtime \
     --sign "$SIGNING_IDENTITY" "$binary"
 done < <(find "$APP_PATH" -type f \( -name "*.dylib" -o -name "*.so" \))
+
+cacert="$APP_PATH/Contents/MacOS/certifi/cacert.pem"
+if [[ -e "$cacert" ]]; then
+  echo "==> Diagnóstico de $cacert antes de firmar el bundle"
+  ls -la@ "$cacert" || true
+  file "$cacert" || true
+  codesign -dv "$cacert" 2>&1 || true
+fi
 
 echo "==> Firmando el bundle"
 # No entitlements on purpose: the app draws windows and makes outbound HTTPS
