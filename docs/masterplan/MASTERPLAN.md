@@ -12,8 +12,9 @@
 Rama: `main`
 Versión publicada: `0.3.3` (01/08/2026, tag `v0.3.3`) — incluye `IDE-0020`
 (billing/cuota de API) e `IDE-0021` (cobro de overage con Stripe). Primera
-release firmada y notarizada de verdad (`DT-0011`).
-Tests: 748, en verde.
+release firmada y notarizada de verdad (`DT-0011`). `IDE-0022` (exportar
+DXF/JSON desde Studio) queda por delante del tag, sin publicar todavía.
+Tests: 752, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -25,7 +26,7 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 | 4 — Inteligencia (IA) | 🟢 Completada |
 | 5 — Ecosistema | 🟡 En curso |
 
-Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0021`, todos 🟢 completados y
+Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0022`, todos 🟢 completados y
 en `main`. No hay ningún IDE en desarrollo ni planificado.
 
 Deuda técnica (`DOC-006-DeudaTecnica.md`): 22 registros, los 22 resueltos.
@@ -43,7 +44,15 @@ reconstruidos y verificados el 31/07/2026 tras el commit `043caf1`
 
 ## Trabajo en curso
 
-Ninguno acotado.
+Ninguno acotado. `IDE-0022` — exportar DXF y JSON desde Studio
+(`studio/export/dxf_export.py`/`json_export.py`, dos entradas nuevas en el
+menú "Exportar"), primer punto de la lista de gaps de Studio que destapó la
+auditoría de documentación del 01/08/2026 (`SCR-007-Exportación.md`). DXF
+reutiliza `solution_to_dxf()` del Core (`IDE-0012`) sin código nuevo; JSON
+es un formato propio del layout manual de Studio, no el de varias
+candidatas que usa el CLI/API. Verificado con la app real corriendo:
+las 4 opciones del menú "Exportar" confirmadas, clic en DXF sin error.
+752 tests en verde. Dado de alta en el Backlog antes de construirse.
 
 Publicada `v0.3.3` (01/08/2026): `IDE-0020` + `IDE-0021` — claves de API
 por cliente con cuota mensual y cobro del overage con Stripe, primer y

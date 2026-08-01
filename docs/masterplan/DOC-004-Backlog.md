@@ -90,6 +90,7 @@ Observaciones:
 | IDE-0019 | Resumen de tableros y log de actividad en el dock Timeline | 🟢 | P2 |
 | IDE-0020 | Claves de API por cliente con cuota mensual (planes de pago) | 🟢 | P1 |
 | IDE-0021 | Integración de Stripe para cobro de overage | 🟢 | P1 |
+| IDE-0022 | Exportar DXF y JSON desde Studio | 🟢 | P2 |
 
 ---
 
@@ -295,6 +296,19 @@ Cierra el hueco que dejaba `IDE-0020`: los planes `basico`/`pro` acumulaban over
 - `scripts/manage_keys.py`: `create` crea automáticamente el Customer + Subscription en Stripe cuando el plan es de pago y Stripe está configurado; si no lo está, avisa y emite la clave igual, sin facturación automática.
 - `docs/deploy.md`: sección nueva con las tres variables de entorno y el flujo completo.
 - Verificado con tests nuevos (`tests/test_stripe_billing.py`, más los añadidos a `tests/test_billing.py` y `tests/test_api_billing.py`) que mockean el módulo `stripe` vía `sys.modules` — no depende del paquete real ni de credenciales de Stripe para pasar en CI. 748 tests en verde.
+
+---
+
+## IDE-0022 — Exportar DXF y JSON desde Studio
+
+**Estado:** 🟢 Completado. Dado de alta antes de construirse.
+
+Primer punto de la lista de gaps de Studio identificados en la auditoría de documentación del 01/08/2026 (`SCR-007-Exportación.md`), priorizado por ser el más barato: reutiliza código del Core ya existente sin nada nuevo que inventar. `src/boardcomposer/export/dxf_exporter.py::solution_to_dxf()` (`IDE-0012`) ya existía; solo faltaba conectarlo al flujo de exportación de Studio, que hasta ahora solo tenía SVG/PDF (`studio/export/svg_export.py`/`pdf_export.py`). JSON es un formato nuevo específico de Studio (el `solutions_to_json()` del CLI/API está pensado para varias candidatas con estrategia, no encaja con el layout único y manual de Studio).
+
+- `studio/export/dxf_export.py::export_project_to_dxf()` — mismo patrón exacto que `svg_export.py`: `studio_project_to_solution()` + `solution_to_dxf()` del Core.
+- `studio/export/json_export.py::export_project_to_json()` — formato propio (`project_name`, `placed_pieces`, dimensiones totales, `placements` con `piece_id`/posición/rotación), sin la envoltura de estrategia/pesos que no aplica a un layout manual.
+- `MainWindow`: dos acciones nuevas en el menú "Exportar" (`Exportar DXF…`, `Exportar JSON…`), mismo patrón que las existentes de SVG/PDF.
+- Verificado con tests nuevos (`tests/test_dxf_export.py`, `tests/test_json_export.py`, mismo patrón que `test_svg_export.py`) y con la app real corriendo en macOS: menú "Exportar" confirmado con las 4 opciones, clic en "Exportar DXF…" disparado sin error. 752 tests en verde.
 
 ---
 

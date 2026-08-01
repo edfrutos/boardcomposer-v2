@@ -2,6 +2,10 @@
 
 ## Sin publicar
 
+### Añadido
+
+- Exportar DXF y JSON desde Studio (`IDE-0022`): menú "Exportar" gana dos opciones nuevas junto a SVG/PDF. DXF reutiliza `boardcomposer.export.solution_to_dxf()` del Core (`IDE-0012`), sin código nuevo de exportación. JSON es un formato propio del layout actual de Studio (piezas colocadas, dimensiones totales, posición/rotación por pieza) — no el mismo formato que usa el CLI/API para varias soluciones candidatas.
+
 ---
 
 ## 0.3.3 - 2026-08-01

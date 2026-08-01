@@ -9,11 +9,11 @@
 
 ---
 
-> ⚠️ **Parcialmente implementado.** Solo hay exportación a SVG y PDF
-> (`_export_svg()`/`_export_pdf()`, `studio/export/`) — sin DXF/JSON/CSV/
-> imagen desde Studio (DXF sí existe en el Core, `IDE-0012`, pero no desde
-> esta pantalla). Sin pantalla de opciones/vista previa: es un `QFileDialog`
-> directo. Verificado 01/08/2026.
+> ⚠️ **Parcialmente implementado.** Hay exportación a SVG, PDF, DXF y JSON
+> (`_export_svg()`/`_export_pdf()`/`_export_dxf()`/`_export_json()`,
+> `studio/export/`, `IDE-0022` cierra DXF/JSON el 01/08/2026) — sin CSV ni
+> imagen todavía. Sin pantalla de opciones/vista previa: es un
+> `QFileDialog` directo por formato. Verificado 01/08/2026.
 
 ---
 

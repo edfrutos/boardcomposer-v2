@@ -57,7 +57,12 @@ from studio.panels import (
     render_piece,
     render_project,
 )
-from studio.export import export_project_to_pdf, export_project_to_svg
+from studio.export import (
+    export_project_to_dxf,
+    export_project_to_json,
+    export_project_to_pdf,
+    export_project_to_svg,
+)
 from studio.panel_plugins import discover_panel_plugins
 from studio.project import (
     CsvImportError,
@@ -260,6 +265,14 @@ class MainWindow(QMainWindow):
         self._actions["export_pdf"] = QAction("Exportar PDF…", self)
         menus["Exportar"].addAction(self._actions["export_pdf"])
         self._actions["export_pdf"].triggered.connect(self._export_pdf)
+
+        self._actions["export_dxf"] = QAction("Exportar DXF…", self)
+        menus["Exportar"].addAction(self._actions["export_dxf"])
+        self._actions["export_dxf"].triggered.connect(self._export_dxf)
+
+        self._actions["export_json"] = QAction("Exportar JSON…", self)
+        menus["Exportar"].addAction(self._actions["export_json"])
+        self._actions["export_json"].triggered.connect(self._export_json)
 
         self._actions["undo"].triggered.connect(self._undo)
         self._actions["redo"].triggered.connect(self._redo)
@@ -1698,3 +1711,41 @@ class MainWindow(QMainWindow):
             return
 
         self.statusBar().showMessage(f"PDF exportado: {path}", 3000)
+
+    def _export_dxf(self):
+        project = self.services.projects.current_project
+        if project is None:
+            return
+
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Exportar DXF", f"{project.name}.dxf", "DXF (*.dxf)"
+        )
+        if not path:
+            return
+
+        if not export_project_to_dxf(project, path):
+            self.statusBar().showMessage(
+                "El proyecto no tiene piezas colocadas que exportar", 3000
+            )
+            return
+
+        self.statusBar().showMessage(f"DXF exportado: {path}", 3000)
+
+    def _export_json(self):
+        project = self.services.projects.current_project
+        if project is None:
+            return
+
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Exportar JSON", f"{project.name}.json", "JSON (*.json)"
+        )
+        if not path:
+            return
+
+        if not export_project_to_json(project, path):
+            self.statusBar().showMessage(
+                "El proyecto no tiene piezas colocadas que exportar", 3000
+            )
+            return
+
+        self.statusBar().showMessage(f"JSON exportado: {path}", 3000)
