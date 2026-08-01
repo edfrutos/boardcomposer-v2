@@ -34,25 +34,48 @@ fi
 notarization_zip="$(dirname "$APP_PATH")/notarization-upload.zip"
 
 echo "==> Limpiando atributos extendidos heredados"
-# Intento anterior (quitar +x a ficheros que no son Mach-O) no arregló
-# "code object is not signed at all" sobre certifi/cacert.pem — el propio
-# fichero seguía fallando igual en la siguiente vuelta, así que el bit de
-# ejecución no era la causa real. La otra causa conocida de ese mismo
-# mensaje sobre un fichero de datos plano: xattrs heredados de dónde sea
-# que Nuitka copió el fichero (p.ej. un com.apple.cs.CodeDirectory residual
-# de una instalación de Python firmada), que codesign interpreta como "este
-# fichero afirma tener firma propia" y la encuentra inválida. -r recursivo,
-# -c limpia todos los xattrs de golpe.
+# Defensa barata, aunque el diagnóstico de una vuelta anterior (ls -la@,
+# file, codesign -dv sobre certifi/cacert.pem: 644, ASCII, sin xattrs) ya
+# descartó que xattrs o el bit +x fueran la causa real del fallo de más
+# abajo — se mantiene solo por si acaso, no hace daño.
 xattr -cr "$APP_PATH"
 
-echo "==> Quitando el bit de ejecución de datos que no son binarios reales"
-# Se mantiene además, por si acaso — no ha demostrado arreglar el fallo por
-# sí solo, pero tampoco hace daño.
-while IFS= read -r -d '' file; do
-  if ! file "$file" | grep -q "Mach-O"; then
-    chmod -x "$file"
+echo "==> Moviendo a Resources/ los datos que Nuitka dejó sueltos en MacOS/"
+# La causa real: codesign, al firmar el bundle exterior, exige que TODO
+# fichero regular bajo Contents/MacOS/ sea código real (Mach-O) — cualquier
+# dato plano ahí (p.ej. certifi/cacert.pem) falla con "code object is not
+# signed at all" pase lo que pase con sus permisos o atributos, porque no
+# es lo que codesign espera encontrar en esa carpeta. La convención de
+# bundle de Apple ya sitúa los datos en Contents/Resources/, no junto al
+# ejecutable — así que se mueven ahí y se deja un symlink relativo en el
+# sitio original, para que el código Python que los localiza por ruta
+# relativa a su propio paquete (certifi.where() resuelve cacert.pem junto a
+# su __file__) los siga encontrando exactamente igual en tiempo de
+# ejecución. Generalizado a cualquier fichero no-Mach-O bajo MacOS/, no
+# solo a este caso concreto — si Nuitka deja otro dato suelto ahí en el
+# futuro, queda cubierto igual.
+macos_dir="$APP_PATH/Contents/MacOS"
+resources_dir="$APP_PATH/Contents/Resources"
+mkdir -p "$resources_dir"
+
+while IFS= read -r -d '' f; do
+  if file "$f" | grep -q "Mach-O"; then
+    continue
   fi
-done < <(find "$APP_PATH" -type f -perm -u+x -print0)
+
+  rel="${f#"$macos_dir"/}"
+  dest="$resources_dir/$rel"
+  mkdir -p "$(dirname "$dest")"
+  mv "$f" "$dest"
+
+  rel_dir="$(dirname "$rel")"
+  up=""
+  if [[ "$rel_dir" != "." ]]; then
+    IFS='/' read -ra parts <<< "$rel_dir"
+    for _ in "${parts[@]}"; do up="../$up"; done
+  fi
+  ln -s "${up}../Resources/$rel" "$f"
+done < <(find "$macos_dir" -type f -print0)
 
 echo "==> Firmando binarios internos"
 # Inside-out, deliberately not --deep: Apple documents --deep as unsuitable
