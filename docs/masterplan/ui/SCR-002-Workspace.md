@@ -9,6 +9,16 @@
 
 ---
 
+> ⚠️ **Parcialmente implementado.** La barra superior real es
+> Archivo/Editar/Proyecto/Herramientas/Comparar/Exportar/Ver, no la de este
+> documento (sin "Buscar" ni "Usuario"). El Explorer solo tiene nodos
+> Tableros/Piezas, sin Soluciones/Materiales/Recursos. El panel inferior es
+> el dock Timeline (Resumen+Actividad) tabificado con Comparador — no hay
+> Consola, Métricas ni Diagnóstico. Ver `docs/studio.md` para el estado
+> real — verificado 01/08/2026.
+
+---
+
 ## Objetivo
 
 El Workspace es el núcleo operativo de BoardComposer Studio. Desde esta pantalla el usuario visualiza los tableros, genera soluciones, compara algoritmos e inspecciona cada colocación sin abandonar el contexto de trabajo.

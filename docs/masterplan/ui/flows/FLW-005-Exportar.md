@@ -9,6 +9,12 @@
 
 ---
 
+> ⚠️ **No implementado.** Sin pantalla de opciones/vista previa de
+> exportación ni historial del proyecto — es un `QFileDialog` directo a
+> SVG o PDF (ver `SCR-007`). Verificado 01/08/2026.
+
+---
+
 ## Objetivo
 
 Describir el flujo mediante el cual el usuario transforma una solución de BoardComposer en documentación o datos preparados para fabricación, intercambio o archivo, garantizando la trazabilidad y la fidelidad del resultado exportado.

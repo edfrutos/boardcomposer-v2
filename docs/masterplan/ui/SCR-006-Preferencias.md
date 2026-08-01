@@ -9,6 +9,14 @@
 
 ---
 
+> ⚠️ **No implementado.** No existe pantalla de Preferencias — solo el
+> submenú "Ver → Tema" (claro/oscuro) y la ruta del último proyecto vía
+> `QSettings` (`docs/studio.md`). Nada de idioma, unidades, zoom/grid del
+> workspace, valores por defecto de algoritmo/exportación, rendimiento ni
+> ajustes de desarrollador. Verificado 01/08/2026.
+
+---
+
 ## Objetivo
 
 La pantalla de Preferencias permite personalizar el comportamiento general de BoardComposer Studio sin modificar la configuración específica de ningún proyecto.

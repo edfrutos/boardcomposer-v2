@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 21/07/2026
+**Última revisión:** 01/08/2026
 
 ---
 
@@ -109,7 +109,7 @@ Studio, API, IA, Plugins y Plataforma (antes P0–P2) ya están completos — ve
 
 - Exportación DXF. 🟢 Completado (`IDE-0012`, `solution_to_dxf()`, SDK `ezdxf`).
 - Guía para desarrolladores de plugins. 🟢 Completado (`IDE-0013`, `DEC-0011`, `docs/plugins.md`) — primer paso concreto de Marketplace/Comunidad (Fase 5); biblioteca de materiales y marketplace público siguen sin acotar (`DOC-999-Ideas.md`).
-- Receta de despliegue Cloud. 🟢 Completado (`IDE-0014`, `DEC-0012`, `Dockerfile` + `docs/deploy.md`, Fly.io o VPS+Caddy); instancia demo pública y SaaS real siguen sin acotar (`DOC-999-Ideas.md`).
+- Receta de despliegue Cloud. 🟢 Completado (`IDE-0014`, `DEC-0012`, `Dockerfile` + `docs/deploy.md`, Fly.io o VPS+Caddy); instancia demo pública y SaaS completo (cuentas, persistencia por usuario) siguen sin acotar. Modelo híbrido Studio gratis + API de pago decidido y construido sin esperar al SaaS completo (`DEC-0018`, `IDE-0020`/`IDE-0021`, `DOC-999-Ideas.md`).
 - Visibilidad de plugins instalados. 🟢 Completado (`IDE-0015`, `DEC-0013`, CLI `boardcomposer plugins` + API `GET /plugins`) — segundo paso de Marketplace/Comunidad (Fase 5); biblioteca de materiales y marketplace público siguen sin acotar (`DOC-999-Ideas.md`).
 
 ---

@@ -30,9 +30,11 @@ Existe una **segunda ruta**, con beam search, registrada en `GENERATOR_REGISTRY`
 generators.py (GENERATOR_REGISTRY["maxrects_beam"])
   → generators.py :: maxrects_beam_generator()
     → maxrects_search.py :: generate_beam_maxrects_solution(beam_width=4)
-      → maxrects_beam_runner.py :: iter_beam_maxrects_solutions()
+      → maxrects_search.py :: _beam_candidate()        (bucle propio: MAXRECTS_HEURISTICS × MAXRECTS_BOARD_ORDERINGS)
         → solver/maxrects/beam.py :: search_states()   (beam search genérico sobre MaxRectsState)
 ```
+
+**`_beam_candidate()` está duplicada, no compartida**: existe una copia casi idéntica en `maxrects_beam_runner.py`, usada solo por `iter_beam_maxrects_solutions()` — que a su vez **no la usa `GENERATOR_REGISTRY`**, solo `maxrects_engine.py` (`workbench/app.py`, `tools/visualize_demo.py`, ver más abajo). Es decir: la ruta de producción y la de exploración recorren la misma heurística×orden con dos implementaciones separadas del mismo bucle, no una compartida.
 
 No está incluida en ninguna `OptimizationStrategy` por defecto (`balanced`/`material`/`compact`) — hay que seleccionarla explícitamente pasando `"maxrects_beam"` en `generator_names`. Las herramientas de exploración (`workbench/app.py`, `tools/visualize_demo.py`) usan una tercera vía equivalente, `maxrects_engine.py::iter_maxrects_candidates(project, beam_width)`, que decide entre la ruta clásica y la de beam search según el `beam_width` recibido — útil para comparar ambas variantes en un mismo script, pero no es la que usa `GENERATOR_REGISTRY`.
 
@@ -49,6 +51,7 @@ Todos los ficheros anteriores son *runners* (orquestan iteración de heurística
 | `orderings.py` | `MAXRECTS_BOARD_ORDERINGS` — reexporta los mismos tres órdenes de `board_ordering.py` (ver más abajo). |
 | `strategies.py` | `MAXRECTS_HEURISTICS` — registro de heurísticas disponibles. |
 | `state.py` / `beam.py` / `scoring.py` | `MaxRectsState`, `search_states()`, `score_state()` — solo usados por la ruta de beam search. |
+| `contact.py` | `contact_score()` — sin ningún importador en `src/`/`studio/` fuera de su propio test (`tests/test_maxrects_contact.py`). Código muerto: no lo llama `maxrects.py` ni ninguna heurística activa. |
 
 ## La familia Skyline (más simple, un único camino)
 
@@ -67,7 +70,7 @@ A diferencia de MaxRects, Skyline no tiene variante beam search ni una segunda r
 
 - **`board_ordering.py`** (`original_order`, `largest_area_first`, `longest_edge_first`) — los tres órdenes de tablas están definidos **una sola vez** aquí y los reutilizan tanto `skyline_runner.py` como `maxrects/orderings.py` (que solo los reexporta bajo `MAXRECTS_BOARD_ORDERINGS`). No hay duplicación real pese a que a primera vista parezcan dos registros distintos.
 - **`search.py::search_best_solution()`** — criterio genérico "más piezas colocadas, luego menor anchura, luego menor longitud" usado por `maxrects_search.py` y `skyline_search.py` para elegir la mejor entre varios candidatos generados internamente. **No debe confundirse** con `CandidatePipeline`/`evaluate()` (el sistema de puntuación ponderado de cara al usuario, ver `docs/scoring.md`): este criterio interno solo sirve para que cada algoritmo elija su mejor intento entre heurísticas/órdenes *antes* de entregar una única `AssemblySolution` al pipeline exterior, que es quien la puntúa de verdad.
-- **`beam_search.py`** (genérico, en la raíz de `solver/`) — implementación de beam search independiente del dominio (`State`/`Score` genéricos). Curiosamente, `maxrects/beam.py::search_states()` **no lo usa**: reimplementa su propio bucle de expansión específico para `MaxRectsState`. `beam_search.py` solo está cubierto por su propio test (`test_beam_search.py`) sin otro consumidor en el árbol — candidato a revisar si de verdad hace falta mantener las dos implementaciones.
+- **`beam_search.py`** (genérico, en la raíz de `solver/`) — implementación de beam search independiente del dominio (`State`/`Score` genéricos, `BeamSearchConfig`). `maxrects/beam.py::search_states()` sí lo usa: importa `beam_search`/`BeamSearchConfig` y le pasa `expand=lambda state: state.expand(...)` sobre `MaxRectsState` — es un envoltorio fino, no una reimplementación propia.
 
 ## Generadores "de una sola solución" vs "de varias"
 

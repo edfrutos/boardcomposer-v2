@@ -12,6 +12,15 @@
 
 ---
 
+> ⚠️ **Decisión vigente, catálogo de eventos no construido tal cual.** El
+> `EventBus` en sí existe y está en uso real desde `IDE-0019`
+> (`studio/events/event_bus.py`), pero solo publica un evento genérico,
+> `"studio.activity"` — ninguno de los eventos con nombre por dominio que
+> lista esta ADR (`ProjectCreated`, `SolutionGenerated`, etc.) se llegó a
+> implementar. Ver `docs/studio.md`. Verificado 01/08/2026.
+
+---
+
 ## Contexto
 
 BoardComposer integra múltiples componentes: Core, Studio, CLI, API, exportadores, plugins y futuras automatizaciones. Estas capas necesitan reaccionar a cambios del sistema sin establecer dependencias directas entre ellas.

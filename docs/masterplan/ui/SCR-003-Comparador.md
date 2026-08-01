@@ -10,6 +10,15 @@
 
 ---
 
+> ⚠️ **Parcialmente implementado.** `comparator_panel.py::render_comparison()`
+> solo construye una tabla HTML de métricas (algoritmo, piezas colocadas,
+> aprovechamiento/desperdicio, puntuación, orden de piezas). No hay
+> miniaturas por candidata, panel de diferencias, "abrir en Workspace" ni
+> "fijar como favorita" — ya señalado en `docs/studio.md`. Verificado
+> 01/08/2026.
+
+---
+
 ## Objetivo
 
 El Comparador permite analizar simultáneamente varias soluciones generadas por distintos algoritmos o configuraciones, facilitando una decisión fundamentada basada en datos objetivos y visualización directa.

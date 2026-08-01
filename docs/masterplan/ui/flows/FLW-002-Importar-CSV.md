@@ -9,6 +9,13 @@
 
 ---
 
+> ⚠️ **Parcialmente implementado.** `_import_pieces_csv()` va directo del
+> selector de fichero a crear las piezas (`AddPieceCommand`) — sin paso de
+> vista previa antes de confirmar. Solo CSV; Excel sigue sin acotar. Ver
+> `docs/studio.md`. Verificado 01/08/2026.
+
+---
+
 ## Objetivo
 
 Describir el flujo completo para importar piezas desde un archivo CSV, validando su contenido antes de incorporarlo al proyecto y garantizando la trazabilidad del proceso.

@@ -9,6 +9,13 @@
 
 ---
 
+> ⚠️ **No implementado.** No hay asistente de creación — "Nuevo proyecto"
+> construye directamente un `StudioProject` vacío en memoria
+> (`MainWindow._new_project()`), sin formulario ni validación previa.
+> Verificado 01/08/2026.
+
+---
+
 ## Objetivo
 
 Describir el flujo completo para crear un nuevo proyecto en BoardComposer Studio, desde el acceso inicial hasta la apertura automática del Workspace preparado para comenzar a trabajar.

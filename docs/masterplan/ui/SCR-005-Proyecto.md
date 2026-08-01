@@ -9,6 +9,14 @@
 
 ---
 
+> ⚠️ **No implementado.** No existe una pantalla dedicada "Proyecto" —
+> los metadatos de proyecto se limitan a lo que exponen `StudioProject` y
+> los diálogos existentes (nombre, tableros, piezas, kerf vía `KerfDialog`).
+> Sin catálogo de materiales, selección de algoritmo o "Resumen" como
+> pantalla propia. Verificado 01/08/2026.
+
+---
+
 ## Objetivo
 
 La pantalla de Proyecto centraliza toda la información general del trabajo en curso. Desde ella el usuario define los datos básicos, materiales, restricciones y configuración antes de generar o revisar soluciones.

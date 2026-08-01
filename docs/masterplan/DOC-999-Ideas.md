@@ -4,7 +4,7 @@
 
 **Código:** DOC-999
 **Estado:** En revisión
-**Última revisión:** 19/07/2026
+**Última revisión:** 01/08/2026
 
 ---
 
@@ -28,7 +28,8 @@ El sistema de plugins (`IDE-0008`) ya deja instalar generadores, estrategias, im
 
 - **Guía/receta de despliegue** (Dockerfile + instrucciones para Fly.io/Railway/Render o un VPS con Caddy): lo más acotado y programable ya mismo, no requiere ninguna decisión de producto adicional. **Promovida a `IDE-0014`** (`DEC-0012`, `docs/masterplan/DOC-004-Backlog.md`); ampliada con una tercera opción (VPS con Plesk) en **`IDE-0017`** (`DEC-0014`).
 - **Instancia demo pública**: la API (o Studio) desplegada en algún sitio con una clave de solo lectura, para que cualquiera la pruebe sin instalar nada. Acotado, pero implica mantener infraestructura corriendo y pagar por ella. Sigue sin acotar — no confundir con `IDE-0017`, que es una instancia **privada** de un único usuario (protegida por allowlist de IP, sin acceso abierto al público).
-- **SaaS real** (proyectos persistentes por usuario, gestión de cuentas, autenticación real más allá de una clave compartida): salto arquitectónico grande — base de datos, modelo de usuarios, facturación. No es una tarea, es una fase nueva del producto; requiere decisión de producto antes de diseñar nada técnico.
+- **SaaS real** (proyectos persistentes por usuario, gestión de cuentas, autenticación real más allá de una clave compartida): salto arquitectónico grande — base de datos, modelo de usuarios, facturación. Sigue sin acotar como fase completa.
+- **Modelo híbrido — Studio gratis + API de pago**: decisión de producto tomada el 31/07/2026 (`DEC-0018`, `docs/masterplan/DOC-005-Decisiones.md`) sin esperar al SaaS completo — autenticación por clave ya existía (`IDE-0009`), solo faltaba ligarla a un plan con cuota. **Promovida a `IDE-0020`** (claves de API por cliente con cuota mensual, `src/boardcomposer/billing.py`) e **`IDE-0021`** (cobro de overage con Stripe, `src/boardcomposer/stripe_billing.py`), ambas en `main` desde `v0.3.3`, `docs/masterplan/DOC-004-Backlog.md`.
 
 ---
 

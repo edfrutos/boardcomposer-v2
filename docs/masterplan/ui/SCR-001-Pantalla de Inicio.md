@@ -9,6 +9,14 @@
 
 ---
 
+> ⚠️ **No implementado.** Studio no tiene ninguna pantalla de inicio: al
+> arrancar carga directamente el último proyecto o la demo dentro de la
+> ventana docked única (`docs/studio.md`, `MainWindow._load_last_or_demo_project()`).
+> Este documento describe una pantalla que nunca se construyó — verificado
+> 01/08/2026.
+
+---
+
 ## Objetivo
 
 La pantalla de inicio constituye el punto de entrada a BoardComposer Studio. Debe permitir al usuario comenzar a trabajar en pocos segundos, recuperar proyectos recientes y acceder rápidamente a las funciones principales.

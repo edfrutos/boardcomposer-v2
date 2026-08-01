@@ -1,5 +1,12 @@
 # Instalar BoardComposer Studio en macOS
 
+> Esta guía solo aplica a releases sin firmar. Desde `v0.3.3` (`DT-0011`
+> resuelta el 01/08/2026), `package-studio.yml` firma y notariza cada
+> release cuando los secrets de Apple están cargados — si la tuya lo está,
+> este fichero ni siquiera se publica junto al `.zip` (compruébalo en los
+> *assets* de la release). Sigue existiendo para builds antiguas o para el
+> caso en que los secrets falten en el futuro.
+
 Esta build **no está firmada con un certificado de Apple**, así que macOS
 avisará la primera vez. No es un fallo de la aplicación ni una señal de que
 algo vaya mal: es el comportamiento normal de Gatekeeper con cualquier
@@ -44,12 +51,11 @@ una build generada por GitHub Actions a partir del código de este
 repositorio, cuyo registro completo es público en la pestaña *Actions*.
 
 La solución de verdad es firmar con un certificado **Developer ID
-Application** y notarizar, y eso requiere una cuenta de Apple Developer de
-pago. Está registrado como `DT-0011` en
-`docs/masterplan/DOC-006-DeudaTecnica.md`, y la automatización ya está
-escrita (`scripts/sign_and_notarize.sh`): el día que existan las
-credenciales, las releases saldrán firmadas sin cambiar una línea de código
-y este fichero dejará de acompañarlas.
+Application** y notarizar — ya en marcha desde `v0.3.3` (`DT-0011`,
+`docs/masterplan/DOC-006-DeudaTecnica.md`, `scripts/sign_and_notarize.sh`).
+Si estás leyendo esto es porque tu release concreta no llevaba los secrets
+de firma cargados al publicarse (build antigua, o un fallo puntual de
+configuración) — no porque la firma no exista todavía.
 
 ## Requisitos
 

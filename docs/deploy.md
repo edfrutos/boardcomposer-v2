@@ -110,9 +110,13 @@ Para un VPS propio (cualquier proveedor), con `docker` instalado y Caddy como pr
 
     docker run -d --name boardcomposer-api --restart unless-stopped \
       -p 127.0.0.1:5050:5050 \
+      -v boardcomposer-data:/data \
+      -e BOARDCOMPOSER_DB_PATH="/data/keys.db" \
       -e BOARDCOMPOSER_API_KEY="una-clave-secreta" \
       -e ANTHROPIC_API_KEY="sk-ant-..." \
       boardcomposer-api
+
+Si no vas a vender acceso por plan, omite `-v .../data` y `BOARDCOMPOSER_DB_PATH` — sin esas dos líneas la API funciona igual que antes de `IDE-0020`, solo con la clave única. **Si ya los usas** (planes `free`/`basico`/`pro`), no los omitas al reconstruir: sin `BOARDCOMPOSER_DB_PATH` el proceso arranca sin base de claves y toda clave de cliente que no sea la admin empieza a devolver `401` en vez de aplicar su cuota — la app arranca igual, sin avisar de que el billing quedó desactivado.
 
 **2. `Caddyfile`** (`/etc/caddy/Caddyfile`):
 
@@ -131,9 +135,13 @@ Caddy obtiene y renueva el certificado TLS automáticamente al arrancar (`system
     docker stop boardcomposer-api && docker rm boardcomposer-api
     docker run -d --name boardcomposer-api --restart unless-stopped \
       -p 127.0.0.1:5050:5050 \
+      -v boardcomposer-data:/data \
+      -e BOARDCOMPOSER_DB_PATH="/data/keys.db" \
       -e BOARDCOMPOSER_API_KEY="una-clave-secreta" \
       -e ANTHROPIC_API_KEY="sk-ant-..." \
       boardcomposer-api
+
+Si no vas a vender acceso por plan, omite `-v .../data` y `BOARDCOMPOSER_DB_PATH` — sin esas dos líneas la API funciona igual que antes de `IDE-0020`, solo con la clave única. **Si ya los usas** (planes `free`/`basico`/`pro`), no los omitas al reconstruir: sin `BOARDCOMPOSER_DB_PATH` el proceso arranca sin base de claves y toda clave de cliente que no sea la admin empieza a devolver `401` en vez de aplicar su cuota — la app arranca igual, sin avisar de que el billing quedó desactivado.
 
 ---
 
@@ -153,9 +161,13 @@ Para un VPS con panel Plesk (con la extensión Docker habilitada) en vez de Cadd
 
     docker run -d --name boardcomposer-api --restart unless-stopped \
       -p 127.0.0.1:5050:5050 \
+      -v boardcomposer-data:/data \
+      -e BOARDCOMPOSER_DB_PATH="/data/keys.db" \
       -e BOARDCOMPOSER_API_KEY="una-clave-secreta" \
       -e ANTHROPIC_API_KEY="sk-ant-..." \
       boardcomposer-api
+
+Si no vas a vender acceso por plan, omite `-v .../data` y `BOARDCOMPOSER_DB_PATH` — sin esas dos líneas la API funciona igual que antes de `IDE-0020`, solo con la clave única. **Si ya los usas** (planes `free`/`basico`/`pro`), no los omitas al reconstruir: sin `BOARDCOMPOSER_DB_PATH` el proceso arranca sin base de claves y toda clave de cliente que no sea la admin empieza a devolver `401` en vez de aplicar su cuota — la app arranca igual, sin avisar de que el billing quedó desactivado.
 
 Puede arrancarse igualmente desde la propia extensión Docker de Plesk (*Docker* → *Ejecutar un contenedor* → imagen local `boardcomposer-api`) en vez de por SSH, configurando ahí el mismo mapeo de puerto y las mismas variables de entorno.
 
@@ -202,9 +214,13 @@ location = /health {
     docker stop boardcomposer-api && docker rm boardcomposer-api
     docker run -d --name boardcomposer-api --restart unless-stopped \
       -p 127.0.0.1:5050:5050 \
+      -v boardcomposer-data:/data \
+      -e BOARDCOMPOSER_DB_PATH="/data/keys.db" \
       -e BOARDCOMPOSER_API_KEY="una-clave-secreta" \
       -e ANTHROPIC_API_KEY="sk-ant-..." \
       boardcomposer-api
+
+Si no vas a vender acceso por plan, omite `-v .../data` y `BOARDCOMPOSER_DB_PATH` — sin esas dos líneas la API funciona igual que antes de `IDE-0020`, solo con la clave única. **Si ya los usas** (planes `free`/`basico`/`pro`), no los omitas al reconstruir: sin `BOARDCOMPOSER_DB_PATH` el proceso arranca sin base de claves y toda clave de cliente que no sea la admin empieza a devolver `401` en vez de aplicar su cuota — la app arranca igual, sin avisar de que el billing quedó desactivado.
 
 Uso personal/de un único usuario: con el `auth_basic` del paso 5 ya nadie sin la contraseña llega ni a `/health`, así que es la protección principal, y funciona desde cualquier red; mantener `BOARDCOMPOSER_API_KEY` definida además es defensa en profundidad barata (una segunda credencial independiente, a otro nivel — HTTP vs. aplicación). Con `ANTHROPIC_API_KEY` real (sin `MockAIProvider`), fijar un límite de gasto mensual en la propia consola de Anthropic — BoardComposer no impone ninguno.
 

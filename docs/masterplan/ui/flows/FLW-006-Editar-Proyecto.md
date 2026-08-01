@@ -9,6 +9,13 @@
 
 ---
 
+> ⚠️ **Desactualizado en sentido contrario:** este documento lista
+> "deshacer cambios" como algo de una versión futura — ya está construido
+> y en uso desde hace tiempo (`CommandManager`, `Ctrl+Z`/`Ctrl+Shift+Z`,
+> `docs/studio.md`). Verificado 01/08/2026.
+
+---
+
 ## Objetivo
 
 Describir el flujo mediante el cual el usuario modifica un proyecto existente, manteniendo la coherencia de la información, la trazabilidad de los cambios y la reproducibilidad de las soluciones generadas.

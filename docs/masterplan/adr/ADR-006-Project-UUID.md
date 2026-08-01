@@ -11,6 +11,16 @@
 
 ---
 
+> ⚠️ **Parcialmente implementado.** El UUID permanente solo existe en
+> `StudioProject.project_id` (`uuid.uuid4()`, `main_window.py`). `Project`
+> y `AssemblySolution` del Core no tienen ningún campo de identidad. La
+> convención de ID legible (`SOL-000123`/`PRJ-000042` como capa separada
+> del UUID) no está implementada — el UUID se usa en crudo, con
+> `"PRJ-DEMO-001"` como único caso hardcodeado para el proyecto demo.
+> Verificado 01/08/2026.
+
+---
+
 ## Contexto
 
 BoardComposer gestionará proyectos, soluciones, importaciones, exportaciones, revisiones, plugins y otros artefactos que deberán mantenerse identificables durante toda su vida útil, incluso cuando cambien de nombre, ubicación o formato.

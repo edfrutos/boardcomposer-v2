@@ -11,6 +11,14 @@
 
 ---
 
+> ⚠️ **Parcialmente construido.** El dock Timeline existe (`IDE-0019`,
+> `studio/panels/timeline_panel.py`: pestañas Resumen + Actividad), pero
+> como log plano sin filtrar — no hay filtrado por tipo de evento,
+> algoritmo ni intervalo temporal como describe esta ADR, porque solo hay
+> un evento genérico publicado (ver `ADR-003`). Verificado 01/08/2026.
+
+---
+
 ## Contexto
 
 BoardComposer no solo debe generar soluciones; también debe permitir comprender cómo se han obtenido. Para ello es necesario disponer de una representación cronológica y reproducible de los acontecimientos relevantes ocurridos durante la vida de un proyecto.

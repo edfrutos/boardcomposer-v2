@@ -9,6 +9,13 @@
 
 ---
 
+> ⚠️ **Parcialmente implementado.** "Fijar como referencia"/favorita y la
+> reproducción sincronizada vía Timeline no existen — el Comparador real
+> solo muestra una tabla de métricas (ver `SCR-003`, `docs/studio.md`).
+> Verificado 01/08/2026.
+
+---
+
 ## Objetivo
 
 Describir el flujo que permite al usuario comparar distintas soluciones de optimización para seleccionar la más adecuada según criterios técnicos, económicos y productivos.

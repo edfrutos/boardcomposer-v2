@@ -9,6 +9,14 @@
 
 ---
 
+> ⚠️ **Parcialmente implementado.** Solo hay exportación a SVG y PDF
+> (`_export_svg()`/`_export_pdf()`, `studio/export/`) — sin DXF/JSON/CSV/
+> imagen desde Studio (DXF sí existe en el Core, `IDE-0012`, pero no desde
+> esta pantalla). Sin pantalla de opciones/vista previa: es un `QFileDialog`
+> directo. Verificado 01/08/2026.
+
+---
+
 ## Objetivo
 
 La pantalla de Exportación permite generar la documentación final del proyecto en distintos formatos, garantizando que la información técnica, gráfica y de producción sea consistente, reproducible y adecuada para cada destinatario.

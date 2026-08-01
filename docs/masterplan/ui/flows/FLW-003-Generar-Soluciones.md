@@ -9,6 +9,14 @@
 
 ---
 
+> ⚠️ **Nota:** este documento lista un "Timeline visual... reproducción
+> paso a paso del solver" como trabajo futuro. Desde `IDE-0019` (30/07/2026)
+> existe un dock "Timeline" real, pero es otra cosa: Resumen de tableros +
+> log de actividad (`studio/panels/timeline_panel.py`), no una reproducción
+> del solver. No confundir uno con otro. Verificado 01/08/2026.
+
+---
+
 ## Objetivo
 
 Describir el flujo mediante el cual BoardComposer genera una o varias soluciones de optimización a partir de un proyecto, permitiendo al usuario explorar alternativas en lugar de recibir un único resultado.

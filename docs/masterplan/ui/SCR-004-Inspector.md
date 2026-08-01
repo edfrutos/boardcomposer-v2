@@ -9,6 +9,15 @@
 
 ---
 
+> ⚠️ **Parcialmente implementado.** `inspector_panel.py` solo tiene
+> `render_project`/`render_board`/`render_piece`/`render_empty` — no hay
+> contextos "Solución" ni "Algoritmo". Varios campos listados (Descripción,
+> Restricciones activas, Fecha de modificación del proyecto; Canto,
+> Observaciones de pieza) no existen en `StudioProject`/`StudioPiece`. Ver
+> `docs/studio.md`. Verificado 01/08/2026.
+
+---
+
 ## Objetivo
 
 El Inspector es el panel contextual inteligente de BoardComposer Studio. Su misión es mostrar únicamente la información relevante del elemento actualmente seleccionado, evitando paneles sobrecargados y reduciendo el cambio de contexto.

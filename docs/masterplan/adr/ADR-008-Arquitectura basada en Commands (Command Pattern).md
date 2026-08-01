@@ -11,6 +11,18 @@
 
 ---
 
+> ⚠️ **Decisión vigente, ejemplos desactualizados.** El patrón Command sí
+> se aplica de verdad a las mutaciones de tablero/pieza (`studio/commands/`:
+> añadir/editar/eliminar/rotar pieza, añadir/editar tablero, kerf), pero
+> los ejemplos de esta ADR no existen — `ImportCsvCommand`,
+> `GenerateSolutionsCommand`, `SelectSolutionCommand`, `ExportSolutionCommand`,
+> `CreateProjectCommand`, `UpdateProjectCommand`, `DeleteBoardCommand`.
+> Importar CSV, generar/exportar, y crear/abrir/guardar proyecto siguen
+> siendo métodos directos de `MainWindow`, no Commands deshacibles.
+> Verificado 01/08/2026.
+
+---
+
 ## Contexto
 
 BoardComposer permite realizar numerosas operaciones: crear proyectos, importar piezas, generar soluciones, exportar resultados, modificar configuraciones y, en el futuro, ejecutar automatizaciones, macros y acciones asistidas por IA.
