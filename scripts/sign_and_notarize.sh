@@ -33,6 +33,21 @@ fi
 
 notarization_zip="$(dirname "$APP_PATH")/notarization-upload.zip"
 
+echo "==> Quitando el bit de ejecución de datos que no son binarios reales"
+# codesign trata cualquier fichero con el bit +x como código que necesita su
+# propia firma — Nuitka copia algunos datos (p.ej. certifi/cacert.pem) con
+# ese bit heredado aunque no sean ejecutables, y la firma del bundle entero
+# falla sobre ellos con "code object is not signed at all". Detecta el caso
+# general por contenido (no Mach-O), no solo ese fichero concreto, así que
+# cualquier otro dato con el mismo problema queda cubierto igual. Los
+# binarios reales (el ejecutable principal, el intérprete embebido de
+# Nuitka) son Mach-O y conservan su +x sin tocar.
+while IFS= read -r -d '' file; do
+  if ! file "$file" | grep -q "Mach-O"; then
+    chmod -x "$file"
+  fi
+done < <(find "$APP_PATH" -type f -perm -u+x -print0)
+
 echo "==> Firmando binarios internos"
 # Inside-out, deliberately not --deep: Apple documents --deep as unsuitable
 # for signing (it applies the same options to nested code that may need
@@ -54,14 +69,8 @@ codesign --force --timestamp --options runtime \
   --sign "$SIGNING_IDENTITY" "$APP_PATH"
 
 echo "==> Verificando la firma"
-# Si esto falla, el sitio más probable es Contents/MacOS/certifi/cacert.pem:
-# Nuitka deja ficheros de datos dentro de MacOS/, donde codesign espera solo
-# código, y el bundle sin firmar de hoy ya falla ahí con "code object is not
-# signed at all / In subcomponent: .../certifi/cacert.pem". Firmar el bundle
-# entero debería sellarlos como recursos; si aun así se queja, moverlos a
-# Contents/Resources/ es la salida (no se ha podido comprobar de verdad sin
-# un certificado real). Falla ruidosamente aquí antes que publicar un .app
-# que Gatekeeper rechace en la máquina de quien lo descargue.
+# Falla ruidosamente aquí antes que publicar un .app que Gatekeeper rechace
+# en la máquina de quien lo descargue.
 codesign --verify --strict --verbose=2 "$APP_PATH"
 
 echo "==> Subiendo a notarizar (puede tardar varios minutos)"
