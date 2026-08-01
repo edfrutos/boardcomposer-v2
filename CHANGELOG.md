@@ -4,6 +4,22 @@
 
 ---
 
+## 0.3.3 - 2026-08-01
+
+### Añadido
+
+- Claves de API por cliente con cuota mensual (`IDE-0020`, `src/boardcomposer/billing.py`): primer paso técnico del modelo de producto híbrido decidido con el usuario — Studio gratis, API de pago. Planes `free` (20 solves/mes, 0€), `basico` (300/mes, 9€/mes, overage 0,05€/solve) y `pro` (1500/mes, 29€/mes, overage 0,03€/solve), con registro de claves en SQLite (hasheadas SHA-256) y contador de cuota mensual pluggable (memoria en dev/test, Redis en producción — comparte el mismo problema de estado no compartido entre workers de `gunicorn` que ya tenía el rate limiter, y lo resuelve igual). La clave única legacy (`BOARDCOMPOSER_API_KEY`) sigue funcionando sin cambios, ahora como acceso admin sin medir. `scripts/manage_keys.py` para emitir/revocar/listar claves.
+- Cobro del overage con Stripe (`IDE-0021`, `src/boardcomposer/stripe_billing.py`): cada request por encima de cuota en un plan de pago reporta una unidad de uso a Stripe (*best-effort* — un fallo de Stripe nunca rompe la petición real del cliente). `manage_keys.py create` da de alta el Customer+Subscription en Stripe automáticamente cuando el plan es de pago. Inactivo por defecto (mismo patrón que `REDIS_URL`): sin `STRIPE_SECRET_KEY`/`STRIPE_PRICE_BASICO`/`STRIPE_PRICE_PRO`, nada cambia.
+
+### Corregido
+
+- Primera build de macOS realmente firmada y notarizada desde que existe la infraestructura (`v0.3.1`, `DEC-0017`) — nunca se había podido probar contra un certificado real hasta activar la cuenta de Apple Developer. Tres fallos reales encontrados y corregidos en `scripts/sign_and_notarize.sh`, ninguno visible sin un certificado de verdad:
+  - Datos planos que Nuitka deja sueltos en `Contents/MacOS/` (p.ej. `certifi/cacert.pem`) hacían fallar la firma del bundle completo con `code object is not signed at all` — `codesign` exige que todo lo que hay en esa carpeta sea código real. Se mueven a `Contents/Resources/` (la convención de Apple) con un symlink relativo en su sitio original, para que el código que los busca por ruta relativa a su propio paquete (`certifi.where()`) los siga encontrando igual en tiempo de ejecución.
+  - `notarytool submit --wait` devuelve éxito aunque Apple rechace la build (`status: Invalid`) — el script seguía adelante y fallaba después, al grapar, con un `Record not found` que no explicaba nada. Ahora comprueba el estado explícitamente y, si no es `Accepted`, saca el log detallado de Apple (`notarytool log`) antes de fallar.
+  - Varios binarios de Qt sin extensión (`QtCore`, `QtGui`, `QtQml`, `QtQuick`, `QtOpenGL`, `QtQmlModels`...) se saltaban la firma explícita porque el bucle solo buscaba `*.so`/`*.dylib` por nombre — Apple los rechazaba en notarización ("no firmado con un certificado Developer ID válido", "sin *timestamp* seguro"). Se detectan ahora por contenido (Mach-O), no por extensión.
+
+---
+
 ## 0.3.2 - 2026-07-30
 
 ### Añadido
