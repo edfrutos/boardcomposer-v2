@@ -1,6 +1,6 @@
 # BoardComposer — MASTERPLAN
 
-**Última revisión:** 01/08/2026
+**Última revisión:** 02/08/2026
 
 > Este documento resume el estado del proyecto y las normas de trabajo.
 > El detalle vivo de cada funcionalidad está en `DOC-004-Backlog.md`, la
@@ -10,14 +10,13 @@
 ## Estado actual
 
 Rama: `main`
-Versión publicada: `0.3.3` (01/08/2026, tag `v0.3.3`) — incluye `IDE-0020`
-(billing/cuota de API) e `IDE-0021` (cobro de overage con Stripe). Primera
-release firmada y notarizada de verdad (`DT-0011`). `IDE-0022` (exportar
-DXF/JSON desde Studio), `IDE-0023` (Comparador: miniaturas, favorita,
-fragmentación, nº de cortes), `IDE-0024` (vista previa antes de confirmar
-import CSV), `IDE-0025` (Preferencias: tema), `IDE-0026` (eventos de
-actividad con categoría y filtro en el Timeline) e `IDE-0027` (IDs
-legibles de solución) quedan por delante del tag, sin publicar todavía.
+Versión publicada: `0.3.4` (02/08/2026, tag `v0.3.4`) — incluye `IDE-0022`
+(exportar DXF/JSON desde Studio), `IDE-0023` (Comparador: miniaturas,
+favorita, fragmentación, nº de cortes), `IDE-0024` (vista previa antes de
+confirmar import CSV), `IDE-0025` (Preferencias: tema), `IDE-0026`
+(eventos de actividad con categoría y filtro en el Timeline) e `IDE-0027`
+(IDs legibles de solución). Segunda release firmada y notarizada con la
+cuenta de Apple Developer activa (`DT-0011`, la primera fue `v0.3.3`).
 Tests: 784, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
@@ -48,7 +47,13 @@ reconstruidos y verificados el 31/07/2026 tras el commit `043caf1`
 
 ## Trabajo en curso
 
-Ninguno acotado. `IDE-0022` — exportar DXF y JSON desde Studio
+Ninguno acotado.
+
+Publicada `v0.3.4` (02/08/2026): los seis puntos de la lista de gaps de
+Studio que destapó la auditoría de documentación del 01/08/2026, en el
+orden acordado con el usuario.
+
+`IDE-0022` — exportar DXF y JSON desde Studio
 (`studio/export/dxf_export.py`/`json_export.py`, dos entradas nuevas en el
 menú "Exportar"), primer punto de la lista de gaps de Studio que destapó la
 auditoría de documentación del 01/08/2026 (`SCR-007-Exportación.md`). DXF
