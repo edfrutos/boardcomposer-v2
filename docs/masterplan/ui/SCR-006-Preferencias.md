@@ -9,11 +9,16 @@
 
 ---
 
-> ⚠️ **No implementado.** No existe pantalla de Preferencias — solo el
-> submenú "Ver → Tema" (claro/oscuro) y la ruta del último proyecto vía
-> `QSettings` (`docs/studio.md`). Nada de idioma, unidades, zoom/grid del
+> ⚠️ **Parcialmente implementado.** Desde `IDE-0025` (02/08/2026) existe un
+> diálogo "Preferencias" real (`Editar → Preferencias…`, `Ctrl+,`,
+> `PreferencesDialog`), sustituyendo al submenú "Ver → Tema" — pero solo
+> con el tema (claro/oscuro/automático), ahora persistido entre reinicios
+> vía `QSettings` (antes no lo estaba). Alcance acotado a propósito: idioma
+> y unidades no tienen infraestructura real detrás (sin i18n, dominio en
+> mm de punta a punta) — un control para ninguno de los dos haría nada,
+> así que no se añadieron como placeholders. Sigue sin zoom/grid del
 > workspace, valores por defecto de algoritmo/exportación, rendimiento ni
-> ajustes de desarrollador. Verificado 01/08/2026.
+> ajustes de desarrollador. Verificado 02/08/2026.
 
 ---
 

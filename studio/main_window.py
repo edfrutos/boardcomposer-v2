@@ -6,7 +6,7 @@ import sys
 import uuid
 
 from PySide6.QtCore import QCoreApplication, QSettings, Qt
-from PySide6.QtGui import QAction, QActionGroup, QCloseEvent
+from PySide6.QtGui import QAction, QCloseEvent
 
 from PySide6.QtWidgets import (
     QApplication,
@@ -35,6 +35,7 @@ from studio.dialogs import (
     KerfDialog,
     MoveToBoardDialog,
     PieceDialog,
+    PreferencesDialog,
 )
 from studio.icons import build_icons
 from studio.prompt_input import PromptTextEdit
@@ -95,6 +96,7 @@ RESERVED_PANEL_NAMES = {"Explorer", "Inspector", "Timeline", "Comparador", "Asis
 PROJECT_FILE_FILTER = "BoardComposer Studio (*.bcstudio.json)"
 
 LAST_PROJECT_PATH_SETTINGS_KEY = "last_project/path"
+THEME_SETTINGS_KEY = "preferences/theme"
 
 # Extensions read as plain text when attached to an assistant question — the
 # AI provider is text-only (studio/assistant_service.py), so anything else
@@ -157,6 +159,9 @@ class MainWindow(QMainWindow):
         self._build_workspace()
         self._build_panels()
         self._build_statusbar()
+        # Needs the panels built first: _set_theme() re-renders their HTML
+        # via _apply_panel_stylesheets(), which touches self.inspector etc.
+        self._set_theme(QSettings().value(THEME_SETTINGS_KEY, "auto"))
         self._load_last_or_demo_project()
 
     def _build_menu(self):
@@ -316,32 +321,30 @@ class MainWindow(QMainWindow):
 
         self._menus = menus
 
-        self._build_theme_menu(menus["Ver"])
+        # IDE-0025: the theme used to live as a "Ver → Tema" radio-button
+        # submenu, replaced by the Preferences dialog below. Read here (not
+        # yet persisted before this) so a saved choice survives a restart.
+        self._current_theme_key = "auto"
 
-    def _build_theme_menu(self, ver_menu):
-        theme_menu = ver_menu.addMenu("Tema")
-        theme_group = QActionGroup(self)
-        theme_group.setExclusive(True)
+        self._actions["preferences"] = QAction("Preferencias…", self)
+        self._actions["preferences"].setMenuRole(QAction.MenuRole.PreferencesRole)
+        self._actions["preferences"].setShortcut("Ctrl+,")
+        menus["Editar"].addAction(self._actions["preferences"])
+        self._actions["preferences"].triggered.connect(self._open_preferences)
 
-        self._theme_actions = {}
-        for key, label in (
-            ("auto", "Automático (sistema)"),
-            ("light", "Claro"),
-            ("dark", "Oscuro"),
-        ):
-            action = QAction(label, self)
-            action.setCheckable(True)
-            theme_menu.addAction(action)
-            theme_group.addAction(action)
-            action.triggered.connect(lambda checked=False, k=key: self._set_theme(k))
-            self._theme_actions[key] = action
+    def _open_preferences(self):
+        dialog = PreferencesDialog(self, theme_key=self._current_theme_key)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
 
-        self._theme_actions["auto"].setChecked(True)
+        self._set_theme(dialog.theme_key())
 
     def _set_theme(self, key: str):
+        self._current_theme_key = key
         scheme = None if key == "auto" else key
         resolved = apply_theme(QApplication.instance(), scheme)
         self._apply_panel_stylesheets(resolved)
+        QSettings().setValue(THEME_SETTINGS_KEY, key)
 
     def _apply_panel_stylesheets(self, scheme: str):
         """Re-themes the Inspector/Comparador/Asistente docks' HTML and

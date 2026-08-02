@@ -7,6 +7,7 @@
 - Exportar DXF y JSON desde Studio (`IDE-0022`): menú "Exportar" gana dos opciones nuevas junto a SVG/PDF. DXF reutiliza `boardcomposer.export.solution_to_dxf()` del Core (`IDE-0012`), sin código nuevo de exportación. JSON es un formato propio del layout actual de Studio (piezas colocadas, dimensiones totales, posición/rotación por pieza) — no el mismo formato que usa el CLI/API para varias soluciones candidatas.
 - Comparador de soluciones: miniatura por candidata, marcar una como favorita (⭐), y dos métricas nuevas — fragmentación del material y nº de cortes aproximado (`IDE-0023`). `comparator_panel.py` ya avisaba explícitamente de que estas dos métricas no se calculaban para no inventar números; ahora se calculan con geometría real (`src/boardcomposer/solver/layout_metrics.py`), con el nº de cortes etiquetado como aproximación (asume corte guillotina, mismo supuesto que el kerf).
 - Vista previa antes de confirmar un import CSV (`IDE-0024`): `CsvImportPreviewDialog` muestra la tabla de piezas parseadas (id/dimensiones/material/grosor) con OK/Cancelar, antes de comitear nada al proyecto. La validación todo-o-nada de `load_pieces_from_csv()` no cambia — solo se añade la confirmación explícita.
+- Diálogo "Preferencias" (`Editar → Preferencias…`, `Ctrl+,`, `IDE-0025`), sustituyendo al submenú "Ver → Tema": el tema (único ajuste global real hoy) ahora persiste entre reinicios vía `QSettings`, antes se perdía cada vez. Sin idioma ni unidades — ninguno tiene infraestructura real detrás todavía.
 
 ---
 

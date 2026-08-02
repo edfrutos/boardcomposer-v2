@@ -39,33 +39,76 @@ def test_ver_menu_action_reopens_a_closed_built_in_dock(window):
     assert dock.isVisible() is True
 
 
-def test_theme_menu_defaults_to_automatico_checked(window):
-    assert window._theme_actions["auto"].isChecked() is True
-    assert window._theme_actions["light"].isChecked() is False
-    assert window._theme_actions["dark"].isChecked() is False
+def test_theme_defaults_to_automatico(window):
+    # IDE-0025: theme moved from a "Ver → Tema" radio-button submenu to the
+    # Preferences dialog — see test_preferences_dialog.py for the dialog
+    # itself and its wiring through MainWindow._open_preferences().
+    assert window._current_theme_key == "auto"
 
 
 def test_selecting_oscuro_applies_the_dark_stylesheet(window):
     from studio.theme import DARK
 
-    window._theme_actions["dark"].trigger()
+    window._set_theme("dark")
 
     assert DARK.bg in QApplication.instance().styleSheet()
-    assert window._theme_actions["dark"].isChecked() is True
+    assert window._current_theme_key == "dark"
 
 
 def test_selecting_claro_applies_the_light_stylesheet(window):
     from studio.theme import LIGHT
 
-    window._theme_actions["dark"].trigger()
-    window._theme_actions["light"].trigger()
+    window._set_theme("dark")
+    window._set_theme("light")
 
     assert LIGHT.bg in QApplication.instance().styleSheet()
-    assert window._theme_actions["light"].isChecked() is True
+    assert window._current_theme_key == "light"
 
 
-def test_theme_actions_are_mutually_exclusive(window):
-    window._theme_actions["dark"].trigger()
+def test_preferences_action_has_the_macos_preferences_menu_role(window):
+    from PySide6.QtGui import QAction
 
-    assert window._theme_actions["dark"].isChecked() is True
-    assert window._theme_actions["auto"].isChecked() is False
+    assert window._actions["preferences"].menuRole() == QAction.MenuRole.PreferencesRole
+
+
+def test_open_preferences_applies_the_chosen_theme(window, monkeypatch):
+    from PySide6.QtWidgets import QDialog
+
+    monkeypatch.setattr(
+        "studio.main_window.PreferencesDialog.exec",
+        lambda self: QDialog.DialogCode.Accepted,
+    )
+    monkeypatch.setattr(
+        "studio.main_window.PreferencesDialog.theme_key", lambda self: "dark"
+    )
+
+    window._open_preferences()
+
+    assert window._current_theme_key == "dark"
+
+
+def test_open_preferences_cancelled_leaves_the_theme_unchanged(window, monkeypatch):
+    from PySide6.QtWidgets import QDialog
+
+    monkeypatch.setattr(
+        "studio.main_window.PreferencesDialog.exec",
+        lambda self: QDialog.DialogCode.Rejected,
+    )
+
+    window._open_preferences()
+
+    assert window._current_theme_key == "auto"
+
+
+def test_theme_choice_persists_across_a_new_window(window):
+    from PySide6.QtCore import QSettings
+
+    from studio.main_window import THEME_SETTINGS_KEY, MainWindow
+    from studio.services import StudioServices
+
+    window._set_theme("dark")
+    assert QSettings().value(THEME_SETTINGS_KEY) == "dark"
+
+    new_window = MainWindow(services=StudioServices())
+
+    assert new_window._current_theme_key == "dark"

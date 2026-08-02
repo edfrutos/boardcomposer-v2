@@ -14,9 +14,10 @@ Versión publicada: `0.3.3` (01/08/2026, tag `v0.3.3`) — incluye `IDE-0020`
 (billing/cuota de API) e `IDE-0021` (cobro de overage con Stripe). Primera
 release firmada y notarizada de verdad (`DT-0011`). `IDE-0022` (exportar
 DXF/JSON desde Studio), `IDE-0023` (Comparador: miniaturas, favorita,
-fragmentación, nº de cortes) e `IDE-0024` (vista previa antes de
-confirmar import CSV) quedan por delante del tag, sin publicar todavía.
-Tests: 770, en verde.
+fragmentación, nº de cortes), `IDE-0024` (vista previa antes de confirmar
+import CSV) e `IDE-0025` (Preferencias: tema) quedan por delante del tag,
+sin publicar todavía.
+Tests: 776, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -28,7 +29,7 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 | 4 — Inteligencia (IA) | 🟢 Completada |
 | 5 — Ecosistema | 🟡 En curso |
 
-Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0024`, todos 🟢 completados y
+Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0025`, todos 🟢 completados y
 en `main`. No hay ningún IDE en desarrollo ni planificado.
 
 Deuda técnica (`DOC-006-DeudaTecnica.md`): 22 registros, los 22 resueltos.
@@ -77,7 +78,20 @@ parseo de `load_pieces_from_csv()` —validación todo-o-nada sin cambios— y
 la comisión de piezas al proyecto. Dado de alta en el Backlog antes de
 construirse.
 
-770 tests en verde.
+`IDE-0025` — quinto y último punto de la lista de gaps que destapó la
+auditoría (`SCR-006-Preferencias.md`): diálogo "Preferencias"
+(`Editar → Preferencias…`, `Ctrl+,`, `QAction.MenuRole.PreferencesRole`
+para que macOS lo mueva solo al menú de la app), sustituyendo al submenú
+"Ver → Tema". Alcance acotado explícitamente con el usuario antes de
+construir: solo tema (único ajuste global real hoy), ahora persistido en
+`QSettings` — antes se perdía en cada reinicio. Sin idioma/unidades: no
+hay i18n ni conversión de unidades en el dominio, un control ahí no
+haría nada. Dado de alta en el Backlog antes de construirse. De paso,
+arreglado un fallo real mío en `DOC-004-Backlog.md`: una edición anterior
+en esta misma sesión se había comido la cabecera "## Reglas de
+mantenimiento".
+
+776 tests en verde.
 
 Publicada `v0.3.3` (01/08/2026): `IDE-0020` + `IDE-0021` — claves de API
 por cliente con cuota mensual y cobro del overage con Stripe, primer y

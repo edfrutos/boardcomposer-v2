@@ -5,6 +5,7 @@ from studio.dialogs.csv_import_preview_dialog import CsvImportPreviewDialog
 from studio.dialogs.kerf_dialog import KerfDialog
 from studio.dialogs.move_to_board_dialog import MoveToBoardDialog
 from studio.dialogs.piece_dialog import PieceDialog
+from studio.dialogs.preferences_dialog import PreferencesDialog
 
 __all__ = [
     "BoardDialog",
@@ -12,4 +13,5 @@ __all__ = [
     "KerfDialog",
     "MoveToBoardDialog",
     "PieceDialog",
+    "PreferencesDialog",
 ]

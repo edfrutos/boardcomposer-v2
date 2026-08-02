@@ -93,6 +93,7 @@ Observaciones:
 | IDE-0022 | Exportar DXF y JSON desde Studio | 🟢 | P2 |
 | IDE-0023 | Comparador: miniaturas, favorita, fragmentación y nº de cortes | 🟢 | P2 |
 | IDE-0024 | Vista previa antes de confirmar import CSV | 🟢 | P2 |
+| IDE-0025 | Pantalla de Preferencias (tema) | 🟢 | P3 |
 
 ---
 
@@ -337,6 +338,22 @@ Tercer punto de la lista de gaps de Studio (auditoría de documentación del 01/
 - `studio/dialogs/csv_import_preview_dialog.py` — tabla de solo lectura (id/largo/ancho/material/grosor), botones OK/Cancelar, mismo patrón `QDialogButtonBox` que `KerfDialog`. No construye ningún `Command`; solo decide si se sigue adelante.
 - `MainWindow._import_pieces_csv()`: tras el `try/except` de `load_pieces_from_csv()` (sin cambios), `preview.exec() != QDialog.DialogCode.Accepted` cancela antes de tocar el proyecto — mismo patrón que los diálogos de alta/edición ya usan para su propio OK/Cancelar.
 - Verificado con tests nuevos (`tests/test_csv_import_preview_dialog.py`) y los existentes de `tests/test_main_window_import_csv.py` actualizados para simular la confirmación del diálogo (antes no existía ese paso) más un caso nuevo de vista previa rechazada. 770 tests en verde.
+
+---
+
+## IDE-0025 — Pantalla de Preferencias (tema)
+
+**Estado:** 🟢 Completado. Dado de alta antes de construirse.
+
+Cuarto punto de la lista de gaps de Studio (`SCR-006-Preferencias.md`), acotado antes de construir: hoy Studio tiene un único ajuste global real (tema claro/oscuro/automático), ni siquiera persistido entre reinicios — todo lo demás que describe `SCR-006` (idioma, unidades, zoom/grid, defaults de algoritmo/exportación, rendimiento) exigiría infraestructura que no existe (i18n, conversión de unidades en todo el dominio) y no un simple control. Se mueve el ajuste real a un diálogo "Preferencias" dedicado en vez de inventar controles sin efecto — decidido explícitamente con el usuario en vez de rellenar la pantalla con placeholders.
+
+- `studio/dialogs/preferences_dialog.py::PreferencesDialog` — un `QComboBox` (Automático/Claro/Oscuro), mismo patrón `QDialogButtonBox` que el resto de diálogos.
+- `MainWindow`: sustituye el antiguo `_build_theme_menu()` (submenú "Ver → Tema" con `QActionGroup`) por una acción "Preferencias…" en el menú "Editar" con `QAction.MenuRole.PreferencesRole` — en macOS, Qt la mueve sola al menú de la aplicación, convención nativa, sin depender de que el texto esté en inglés. `_set_theme()` persiste ahora la elección en `QSettings` (`preferences/theme`) — antes se perdía en cada reinicio; `MainWindow.__init__` la restaura tras construir los paneles (`_apply_panel_stylesheets()` necesita que ya existan).
+- Verificado con tests nuevos (`tests/test_preferences_dialog.py`) y los de `tests/test_main_window_view_menu.py` reescritos para el diálogo en vez del submenú — incluido un test de persistencia real: construir una `MainWindow` nueva tras fijar el tema recupera la misma elección. Arreglado de paso un fallo real mío en esta misma sesión: una edición anterior de este documento se había comido la cabecera "## Reglas de mantenimiento". 776 tests en verde. Verificación en la app real: arranque limpio confirmado con ejecución directa (sin errores, bloqueado en su bucle de eventos como se espera) — la introspección de Accessibility de macOS volvió a fallar por el entorno, no por el código (mismo problema que en `IDE-0023`).
+
+---
+
+## Reglas de mantenimiento
 
 - Cada nueva idea comienza como **IDE**.
 - Cuando una idea se aprueba para desarrollo, se vinculará a una Épica (EP) y posteriormente a uno o varios Sprints (SPR).
