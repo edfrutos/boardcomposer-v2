@@ -13,10 +13,10 @@ Rama: `main`
 Versión publicada: `0.3.3` (01/08/2026, tag `v0.3.3`) — incluye `IDE-0020`
 (billing/cuota de API) e `IDE-0021` (cobro de overage con Stripe). Primera
 release firmada y notarizada de verdad (`DT-0011`). `IDE-0022` (exportar
-DXF/JSON desde Studio) e `IDE-0023` (Comparador: miniaturas, favorita,
-fragmentación, nº de cortes) quedan por delante del tag, sin publicar
-todavía.
-Tests: 765, en verde.
+DXF/JSON desde Studio), `IDE-0023` (Comparador: miniaturas, favorita,
+fragmentación, nº de cortes) e `IDE-0024` (vista previa antes de
+confirmar import CSV) quedan por delante del tag, sin publicar todavía.
+Tests: 770, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -28,7 +28,7 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 | 4 — Inteligencia (IA) | 🟢 Completada |
 | 5 — Ecosistema | 🟡 En curso |
 
-Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0023`, todos 🟢 completados y
+Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0024`, todos 🟢 completados y
 en `main`. No hay ningún IDE en desarrollo ni planificado.
 
 Deuda técnica (`DOC-006-DeudaTecnica.md`): 22 registros, los 22 resueltos.
@@ -70,7 +70,14 @@ geometría conocida. Verificación visual en vivo no concluyente esta vez
 se apoya en tests, incluida la generación real de `QPixmap`/`QPainter`.
 Dado de alta en el Backlog antes de construirse.
 
-765 tests en verde.
+`IDE-0024` — tercer punto de la misma lista de gaps (`FLW-002-Importar-CSV.md`):
+vista previa antes de confirmar un import CSV, `studio/dialogs/csv_import_preview_dialog.py`
+(tabla id/dimensiones/material/grosor, OK/Cancelar) interpuesto entre el
+parseo de `load_pieces_from_csv()` —validación todo-o-nada sin cambios— y
+la comisión de piezas al proyecto. Dado de alta en el Backlog antes de
+construirse.
+
+770 tests en verde.
 
 Publicada `v0.3.3` (01/08/2026): `IDE-0020` + `IDE-0021` — claves de API
 por cliente con cuota mensual y cobro del overage con Stripe, primer y

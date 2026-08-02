@@ -1,5 +1,5 @@
 import pytest
-from PySide6.QtWidgets import QApplication, QMessageBox
+from PySide6.QtWidgets import QApplication, QDialog, QMessageBox
 
 from studio.main_window import MainWindow
 from studio.services import StudioServices
@@ -24,12 +24,23 @@ def _patch_open_dialog(monkeypatch, path: str):
     )
 
 
+def _patch_preview_dialog(monkeypatch, *, accept: bool = True):
+    # IDE-0024: a real CsvImportPreviewDialog.exec() would block on a modal
+    # event loop in a headless test — same reasoning as _patch_open_dialog
+    # above for QFileDialog.
+    code = QDialog.DialogCode.Accepted if accept else QDialog.DialogCode.Rejected
+    monkeypatch.setattr(
+        "studio.main_window.CsvImportPreviewDialog.exec", lambda self: code
+    )
+
+
 def test_import_csv_adds_pieces_to_the_active_board(window, monkeypatch, tmp_path):
     path = _write_csv(
         tmp_path,
         "id,length_mm,width_mm,thickness_mm\nP-101,700,300,19\nP-102,520,360,16\n",
     )
     _patch_open_dialog(monkeypatch, path)
+    _patch_preview_dialog(monkeypatch)
     project = window.services.projects.current_project
     active_board_id = window.workspace.active_board_id
     pieces_before = len(project.pieces)
@@ -52,6 +63,7 @@ def test_import_csv_is_undoable_piece_by_piece(window, monkeypatch, tmp_path):
         "id,length_mm,width_mm,thickness_mm\nP-101,700,300,19\n",
     )
     _patch_open_dialog(monkeypatch, path)
+    _patch_preview_dialog(monkeypatch)
     project = window.services.projects.current_project
     pieces_before = len(project.pieces)
 
@@ -108,6 +120,24 @@ def test_import_csv_cancelled_dialog_does_nothing(window, monkeypatch):
     window._import_pieces_csv()
 
     assert len(project.pieces) == pieces_before
+
+
+def test_import_csv_rejected_preview_does_not_commit_anything(
+    window, monkeypatch, tmp_path
+):
+    path = _write_csv(
+        tmp_path,
+        "id,length_mm,width_mm,thickness_mm\nP-101,700,300,19\n",
+    )
+    _patch_open_dialog(monkeypatch, path)
+    _patch_preview_dialog(monkeypatch, accept=False)
+    project = window.services.projects.current_project
+    pieces_before = len(project.pieces)
+
+    window._import_pieces_csv()
+
+    assert len(project.pieces) == pieces_before
+    assert "P-101" not in {piece.piece_id for piece in project.pieces}
 
 
 def test_import_csv_without_a_board_warns_and_never_opens_the_dialog(

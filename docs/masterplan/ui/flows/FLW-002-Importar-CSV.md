@@ -9,10 +9,12 @@
 
 ---
 
-> ⚠️ **Parcialmente implementado.** `_import_pieces_csv()` va directo del
-> selector de fichero a crear las piezas (`AddPieceCommand`) — sin paso de
-> vista previa antes de confirmar. Solo CSV; Excel sigue sin acotar. Ver
-> `docs/studio.md`. Verificado 01/08/2026.
+> ⚠️ **Parcialmente implementado.** `_import_pieces_csv()` muestra ahora
+> una vista previa (`CsvImportPreviewDialog`, `IDE-0024`, 02/08/2026) antes
+> de confirmar — tabla con id/dimensiones/material/grosor y OK/Cancelar,
+> entre el parseo (que ya validaba todo-o-nada) y la comisión de piezas.
+> Solo CSV; Excel sigue sin acotar. Ver `docs/studio.md`. Verificado
+> 02/08/2026.
 
 ---
 

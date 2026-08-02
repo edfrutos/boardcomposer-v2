@@ -92,6 +92,7 @@ Observaciones:
 | IDE-0021 | Integración de Stripe para cobro de overage | 🟢 | P1 |
 | IDE-0022 | Exportar DXF y JSON desde Studio | 🟢 | P2 |
 | IDE-0023 | Comparador: miniaturas, favorita, fragmentación y nº de cortes | 🟢 | P2 |
+| IDE-0024 | Vista previa antes de confirmar import CSV | 🟢 | P2 |
 
 ---
 
@@ -327,7 +328,15 @@ Segundo punto de la lista de gaps de Studio (auditoría de documentación del 01
 
 ---
 
-## Reglas de mantenimiento
+## IDE-0024 — Vista previa antes de confirmar import CSV
+
+**Estado:** 🟢 Completado. Dado de alta antes de construirse.
+
+Tercer punto de la lista de gaps de Studio (auditoría de documentación del 01/08/2026, `FLW-002-Importar-CSV.md`). `_import_pieces_csv()` iba directa del selector de fichero a comitear las piezas (`AddPieceCommand` por pieza) — `load_pieces_from_csv()` ya validaba todo-o-nada antes de eso, pero el usuario no veía qué iba a importarse hasta que ya estaba hecho. Un diálogo modal (`CsvImportPreviewDialog`) se interpone entre parseo y comisión: la validación no cambia, solo se añade una confirmación explícita antes de comprometer el proyecto.
+
+- `studio/dialogs/csv_import_preview_dialog.py` — tabla de solo lectura (id/largo/ancho/material/grosor), botones OK/Cancelar, mismo patrón `QDialogButtonBox` que `KerfDialog`. No construye ningún `Command`; solo decide si se sigue adelante.
+- `MainWindow._import_pieces_csv()`: tras el `try/except` de `load_pieces_from_csv()` (sin cambios), `preview.exec() != QDialog.DialogCode.Accepted` cancela antes de tocar el proyecto — mismo patrón que los diálogos de alta/edición ya usan para su propio OK/Cancelar.
+- Verificado con tests nuevos (`tests/test_csv_import_preview_dialog.py`) y los existentes de `tests/test_main_window_import_csv.py` actualizados para simular la confirmación del diálogo (antes no existía ese paso) más un caso nuevo de vista previa rechazada. 770 tests en verde.
 
 - Cada nueva idea comienza como **IDE**.
 - Cuando una idea se aprueba para desarrollo, se vinculará a una Épica (EP) y posteriormente a uno o varios Sprints (SPR).

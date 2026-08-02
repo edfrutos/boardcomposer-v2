@@ -29,7 +29,13 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from studio.dialogs import BoardDialog, KerfDialog, MoveToBoardDialog, PieceDialog
+from studio.dialogs import (
+    BoardDialog,
+    CsvImportPreviewDialog,
+    KerfDialog,
+    MoveToBoardDialog,
+    PieceDialog,
+)
 from studio.icons import build_icons
 from studio.prompt_input import PromptTextEdit
 from studio.theme import (
@@ -902,6 +908,11 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(
                 self, "Importar piezas (CSV)", f"No se pudo importar el CSV:\n\n{error}"
             )
+            return
+
+        preview = CsvImportPreviewDialog(self, pieces=pieces)
+        if preview.exec() != QDialog.DialogCode.Accepted:
+            self.statusBar().showMessage("Importación cancelada", 3000)
             return
 
         # One undoable command per piece, same as _add_piece — a single
