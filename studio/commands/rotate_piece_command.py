@@ -31,6 +31,10 @@ class RotatePieceCommand(Command):
     def name(self) -> str:
         return f"Pieza rotada: {self.piece_id}"
 
+    @property
+    def category(self) -> str:
+        return "pieza"
+
     def execute(self):
         self._apply(self.new_rotation, self.new_x, self.new_y)
 

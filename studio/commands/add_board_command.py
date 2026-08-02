@@ -11,6 +11,10 @@ class AddBoardCommand(Command):
     def name(self) -> str:
         return f"Tablero añadido: {self.board.board_id}"
 
+    @property
+    def category(self) -> str:
+        return "tablero"
+
     def execute(self):
         project = self.services.projects.current_project
         if project is None:

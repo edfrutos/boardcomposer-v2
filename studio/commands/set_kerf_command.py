@@ -14,6 +14,10 @@ class SetKerfCommand:
     def name(self) -> str:
         return f"Ancho de sierra cambiado a {self.new_kerf_mm:g} mm"
 
+    @property
+    def category(self) -> str:
+        return "proyecto"
+
     def redo(self):
         self._apply(self.new_kerf_mm)
 

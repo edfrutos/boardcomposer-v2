@@ -59,7 +59,24 @@ def test_adding_a_board_logs_it_to_the_activity_tab(window, monkeypatch):
     activity_text = window.timeline_activity.toPlainText()
     assert "Tablero añadido" in activity_text
     assert "B2" in activity_text
-    assert "B2" in window.services.activity.entries[0]
+    assert "B2" in window.services.activity.entries[0].message
+    assert window.services.activity.entries[0].category == "tablero"
+
+
+def test_activity_filter_shows_only_the_selected_category(window, monkeypatch):
+    monkeypatch.setattr(
+        "studio.main_window.BoardDialog",
+        lambda *a, **k: _FakeDialog(("B2", 1500, 400, "Demo", 19.0)),
+    )
+    window._add_board()
+    window._undo()
+
+    index = window.timeline_activity_filter.findData("tablero")
+    window.timeline_activity_filter.setCurrentIndex(index)
+
+    activity_text = window.timeline_activity.toPlainText()
+    assert "Tablero añadido" in activity_text
+    assert "Deshecho" not in activity_text
 
 
 def test_undo_logs_to_the_activity_tab(window, monkeypatch):

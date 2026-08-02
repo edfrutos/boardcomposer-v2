@@ -15,9 +15,10 @@ Versión publicada: `0.3.3` (01/08/2026, tag `v0.3.3`) — incluye `IDE-0020`
 release firmada y notarizada de verdad (`DT-0011`). `IDE-0022` (exportar
 DXF/JSON desde Studio), `IDE-0023` (Comparador: miniaturas, favorita,
 fragmentación, nº de cortes), `IDE-0024` (vista previa antes de confirmar
-import CSV) e `IDE-0025` (Preferencias: tema) quedan por delante del tag,
-sin publicar todavía.
-Tests: 776, en verde.
+import CSV), `IDE-0025` (Preferencias: tema) e `IDE-0026` (eventos de
+actividad con categoría y filtro en el Timeline) quedan por delante del
+tag, sin publicar todavía.
+Tests: 778, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -29,7 +30,7 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 | 4 — Inteligencia (IA) | 🟢 Completada |
 | 5 — Ecosistema | 🟡 En curso |
 
-Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0025`, todos 🟢 completados y
+Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0026`, todos 🟢 completados y
 en `main`. No hay ningún IDE en desarrollo ni planificado.
 
 Deuda técnica (`DOC-006-DeudaTecnica.md`): 22 registros, los 22 resueltos.
@@ -91,7 +92,18 @@ arreglado un fallo real mío en `DOC-004-Backlog.md`: una edición anterior
 en esta misma sesión se había comido la cabecera "## Reglas de
 mantenimiento".
 
-776 tests en verde.
+`IDE-0026` — sexto y último punto de la lista de gaps que destapó la
+auditoría (`ADR-003-Event-Bus.md`, `ADR-005-Timeline.md`): el evento único
+`"studio.activity"` del bus gana un campo `category` (`proyecto`,
+`tablero`, `pieza`, `deshacer`, `layout`, `import`,
+`studio/activity_log.py::CATEGORIES`) en vez de los 9 eventos con nombre
+aspiracionales que boceta `ADR-003` — acotado explícitamente con el usuario
+por no encajar con la granularidad real del código. Cada clase `Command`
+declara su `.category` igual que ya declaraba `.name`; la pestaña Actividad
+del Timeline gana un `QComboBox` para filtrar por categoría. Dado de alta
+en el Backlog antes de construirse.
+
+778 tests en verde.
 
 Publicada `v0.3.3` (01/08/2026): `IDE-0020` + `IDE-0021` — claves de API
 por cliente con cuota mensual y cobro del overage con Stripe, primer y

@@ -7,6 +7,7 @@ class Command(Protocol):
     """Undoable command."""
 
     name: str
+    category: str
 
     def redo(self) -> None:
         """Apply command."""

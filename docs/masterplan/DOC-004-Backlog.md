@@ -94,6 +94,7 @@ Observaciones:
 | IDE-0023 | Comparador: miniaturas, favorita, fragmentación y nº de cortes | 🟢 | P2 |
 | IDE-0024 | Vista previa antes de confirmar import CSV | 🟢 | P2 |
 | IDE-0025 | Pantalla de Preferencias (tema) | 🟢 | P3 |
+| IDE-0026 | Timeline: eventos de actividad con categoría y filtro | 🟢 | P3 |
 
 ---
 
@@ -350,6 +351,24 @@ Cuarto punto de la lista de gaps de Studio (`SCR-006-Preferencias.md`), acotado 
 - `studio/dialogs/preferences_dialog.py::PreferencesDialog` — un `QComboBox` (Automático/Claro/Oscuro), mismo patrón `QDialogButtonBox` que el resto de diálogos.
 - `MainWindow`: sustituye el antiguo `_build_theme_menu()` (submenú "Ver → Tema" con `QActionGroup`) por una acción "Preferencias…" en el menú "Editar" con `QAction.MenuRole.PreferencesRole` — en macOS, Qt la mueve sola al menú de la aplicación, convención nativa, sin depender de que el texto esté en inglés. `_set_theme()` persiste ahora la elección en `QSettings` (`preferences/theme`) — antes se perdía en cada reinicio; `MainWindow.__init__` la restaura tras construir los paneles (`_apply_panel_stylesheets()` necesita que ya existan).
 - Verificado con tests nuevos (`tests/test_preferences_dialog.py`) y los de `tests/test_main_window_view_menu.py` reescritos para el diálogo en vez del submenú — incluido un test de persistencia real: construir una `MainWindow` nueva tras fijar el tema recupera la misma elección. Arreglado de paso un fallo real mío en esta misma sesión: una edición anterior de este documento se había comido la cabecera "## Reglas de mantenimiento". 776 tests en verde. Verificación en la app real: arranque limpio confirmado con ejecución directa (sin errores, bloqueado en su bucle de eventos como se espera) — la introspección de Accessibility de macOS volvió a fallar por el entorno, no por el código (mismo problema que en `IDE-0023`).
+
+---
+
+## IDE-0026 — Timeline: eventos de actividad con categoría y filtro
+
+**Estado:** 🟢 Completado. Dado de alta antes de construirse.
+
+Quinto y último punto de la lista de gaps de Studio, y el más costoso: `ADR-003` listaba 9 eventos con nombre (`ProjectCreated`, `SolutionGenerated`, etc.) que nunca se construyeron — solo existe un evento genérico, `"studio.activity"`, publicado desde ~17 sitios distintos con un mensaje en español sin más estructura. `ADR-005` prometía filtrar el Timeline por tipo de evento/algoritmo/intervalo temporal, tampoco construido.
+
+Alcance acotado explícitamente con el usuario antes de construir, distinto del catálogo de `ADR-003` (no encaja con la granularidad real del código): mismo evento único en el bus, con un campo `category` nuevo en el payload en vez de eventos con nombre separados; filtro solo por categoría en la pestaña Actividad, sin filtro por algoritmo (no aplica a la mayoría de entradas) ni por intervalo temporal (ya hay timestamp por línea).
+
+Categorías: `proyecto` (nuevo/abrir/guardar), `tablero` (`AddBoardCommand`/`EditBoardCommand`), `pieza` (`AddPieceCommand`/`EditPieceCommand`/`DeletePieceCommand`/`MovePieceCommand`/`RotatePieceCommand`/`MoveToBoardCommand`), `deshacer` (categoría propia para deshacer/rehacer, no heredada del comando subyacente), `layout` (resolver/aplicar/comparar/favorita), `import` (CSV). Cada clase `Command` declara su `category` igual que ya declara `.name` (`Command` Protocol, `command.py`).
+
+- `studio/commands/command.py`: `Command` Protocol gana `category: str` junto a `name`. Las 9 clases de comando (`AddBoardCommand`, `EditBoardCommand`, `AddPieceCommand`, `EditPieceCommand`, `DeletePieceCommand`, `MovePieceCommand`, `RotatePieceCommand`, `MoveToBoardCommand`, `SetKerfCommand`) declaran su `category` como propiedad, igual patrón que `.name`.
+- `studio/activity_log.py`: `ActivityLog` guarda `ActivityEntry` (`timestamp`, `category`, `message`) en vez de strings sueltos; `CATEGORIES` centraliza las 6 categorías reales, no las 9 aspiracionales de `ADR-003`.
+- `studio/panels/timeline_panel.py::render_activity()` acepta `entries: list[ActivityEntry]` y un `category: str | None` opcional para filtrar antes de renderizar.
+- `MainWindow._log_activity()` ahora exige `category` explícito en cada uno de sus ~15 sitios de llamada; `_execute()` reenvía `command.category`, `_undo()`/`_redo()` fuerzan `"deshacer"`. Pestaña "Actividad" del Timeline gana un `QComboBox` ("Todas" + las 6 categorías) por encima del `QTextEdit`, conectado a `_filter_activity()`.
+- Verificado con `tests/test_activity_log.py` (adaptado a `ActivityEntry`), `tests/test_timeline_panel.py` (filtro por categoría), `tests/test_main_window_timeline.py` (nuevo test del combo de filtro). 778 tests en verde.
 
 ---
 

@@ -1,3 +1,4 @@
+from studio.activity_log import ActivityEntry
 from studio.models import StudioBoard, StudioPiece, StudioPlacement, StudioProject
 from studio.panels.timeline_panel import render_activity, render_overview
 
@@ -67,7 +68,25 @@ def test_render_activity_with_no_entries_explains_how_it_fills_up():
 
 
 def test_render_activity_lists_entries():
-    html = render_activity(["12:00:00 — Tablero añadido: B1", "12:00:05 — Pieza X"])
+    html = render_activity(
+        [
+            ActivityEntry("12:00:00", "tablero", "Tablero añadido: B1"),
+            ActivityEntry("12:00:05", "pieza", "Pieza X"),
+        ]
+    )
 
     assert "Tablero añadido: B1" in html
     assert "Pieza X" in html
+
+
+def test_render_activity_filters_by_category():
+    html = render_activity(
+        [
+            ActivityEntry("12:00:00", "tablero", "Tablero añadido: B1"),
+            ActivityEntry("12:00:05", "pieza", "Pieza X"),
+        ],
+        category="pieza",
+    )
+
+    assert "Pieza X" in html
+    assert "Tablero añadido: B1" not in html

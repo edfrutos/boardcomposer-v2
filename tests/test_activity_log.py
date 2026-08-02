@@ -12,21 +12,22 @@ def test_activity_log_records_a_published_message():
     events = EventBus()
     log = ActivityLog(events)
 
-    events.publish(ACTIVITY_EVENT, {"message": "Tablero añadido: B1"})
+    events.publish(ACTIVITY_EVENT, {"message": "Tablero añadido: B1", "category": "tablero"})
 
     assert len(log.entries) == 1
-    assert "Tablero añadido: B1" in log.entries[0]
+    assert log.entries[0].message == "Tablero añadido: B1"
+    assert log.entries[0].category == "tablero"
 
 
 def test_activity_log_shows_newest_entry_first():
     events = EventBus()
     log = ActivityLog(events)
 
-    events.publish(ACTIVITY_EVENT, {"message": "primero"})
-    events.publish(ACTIVITY_EVENT, {"message": "segundo"})
+    events.publish(ACTIVITY_EVENT, {"message": "primero", "category": "proyecto"})
+    events.publish(ACTIVITY_EVENT, {"message": "segundo", "category": "proyecto"})
 
-    assert "segundo" in log.entries[0]
-    assert "primero" in log.entries[1]
+    assert log.entries[0].message == "segundo"
+    assert log.entries[1].message == "primero"
 
 
 def test_activity_log_ignores_unrelated_events():
@@ -43,7 +44,7 @@ def test_activity_log_caps_at_max_entries():
     log = ActivityLog(events)
 
     for i in range(MAX_ENTRIES + 10):
-        events.publish(ACTIVITY_EVENT, {"message": f"evento {i}"})
+        events.publish(ACTIVITY_EVENT, {"message": f"evento {i}", "category": "proyecto"})
 
     assert len(log.entries) == MAX_ENTRIES
-    assert f"evento {MAX_ENTRIES + 9}" in log.entries[0]
+    assert log.entries[0].message == f"evento {MAX_ENTRIES + 9}"

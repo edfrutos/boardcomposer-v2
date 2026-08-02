@@ -5,6 +5,7 @@ Pure functions, no Qt dependency, same pattern as the other panels: tested
 by asserting substrings, painted via studio.theme.panel_html_stylesheet().
 """
 
+from studio.activity_log import ActivityEntry
 from studio.models import StudioProject
 from studio.panels.board_metrics import board_utilization
 
@@ -62,7 +63,10 @@ def render_overview(project: StudioProject | None) -> str:
     )
 
 
-def render_activity(entries: list[str]) -> str:
+def render_activity(entries: list[ActivityEntry], category: str | None = None) -> str:
+    if category is not None:
+        entries = [entry for entry in entries if entry.category == category]
+
     if not entries:
         return (
             '<table id="empty-state-table"><tr><td id="empty-state">'
@@ -73,5 +77,8 @@ def render_activity(entries: list[str]) -> str:
             "</td></tr></table>"
         )
 
-    rows = "".join(f"<tr><td>{entry}</td></tr>" for entry in entries)
+    rows = "".join(
+        f"<tr><td>{entry.timestamp} — <i>{entry.category}</i> — {entry.message}</td></tr>"
+        for entry in entries
+    )
     return f"<h3>Actividad</h3><table>{rows}</table>"

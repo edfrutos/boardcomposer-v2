@@ -25,6 +25,10 @@ class MoveToBoardCommand:
     def name(self) -> str:
         return f"Pieza movida de tablero: {self.piece_id} → {self.new_board_id}"
 
+    @property
+    def category(self) -> str:
+        return "pieza"
+
     def redo(self):
         self._apply(self.new_board_id, self.new_x, self.new_y)
 

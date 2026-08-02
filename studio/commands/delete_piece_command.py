@@ -16,6 +16,10 @@ class DeletePieceCommand(Command):
     def name(self) -> str:
         return f"Pieza eliminada: {self.piece_id}"
 
+    @property
+    def category(self) -> str:
+        return "pieza"
+
     def execute(self):
         project = self.services.projects.current_project
         if project is None:

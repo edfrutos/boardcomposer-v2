@@ -8,6 +8,7 @@
 - Comparador de soluciones: miniatura por candidata, marcar una como favorita (⭐), y dos métricas nuevas — fragmentación del material y nº de cortes aproximado (`IDE-0023`). `comparator_panel.py` ya avisaba explícitamente de que estas dos métricas no se calculaban para no inventar números; ahora se calculan con geometría real (`src/boardcomposer/solver/layout_metrics.py`), con el nº de cortes etiquetado como aproximación (asume corte guillotina, mismo supuesto que el kerf).
 - Vista previa antes de confirmar un import CSV (`IDE-0024`): `CsvImportPreviewDialog` muestra la tabla de piezas parseadas (id/dimensiones/material/grosor) con OK/Cancelar, antes de comitear nada al proyecto. La validación todo-o-nada de `load_pieces_from_csv()` no cambia — solo se añade la confirmación explícita.
 - Diálogo "Preferencias" (`Editar → Preferencias…`, `Ctrl+,`, `IDE-0025`), sustituyendo al submenú "Ver → Tema": el tema (único ajuste global real hoy) ahora persiste entre reinicios vía `QSettings`, antes se perdía cada vez. Sin idioma ni unidades — ninguno tiene infraestructura real detrás todavía.
+- Eventos de actividad con categoría y filtro en el Timeline (`IDE-0026`): el evento único `"studio.activity"` del bus (`ADR-003`) gana un campo `category`, con 6 valores reales (`proyecto`, `tablero`, `pieza`, `deshacer`, `layout`, `import`) en vez de los 9 eventos con nombre aspiracionales que nunca se construyeron. La pestaña "Actividad" del Timeline gana un desplegable para filtrar por categoría.
 
 ---
 

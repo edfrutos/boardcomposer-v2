@@ -16,6 +16,10 @@ class MovePieceCommand:
     def name(self) -> str:
         return f"Pieza movida: {self.piece_id}"
 
+    @property
+    def category(self) -> str:
+        return "pieza"
+
     def redo(self):
         self._apply(self.new_x, self.new_y)
 

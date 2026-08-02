@@ -10,6 +10,7 @@ from PySide6.QtGui import QAction, QCloseEvent
 
 from PySide6.QtWidgets import (
     QApplication,
+    QComboBox,
     QDialog,
     QDockWidget,
     QFileDialog,
@@ -53,7 +54,7 @@ from studio.models import (
     StudioPlacement,
     StudioProject,
 )
-from studio.activity_log import ACTIVITY_EVENT
+from studio.activity_log import ACTIVITY_EVENT, CATEGORIES
 from studio.panels import (
     render_activity,
     render_board,
@@ -379,7 +380,9 @@ class MainWindow(QMainWindow):
         self.timeline_overview.setHtml(
             render_overview(self.services.projects.current_project)
         )
-        self.timeline_activity.setHtml(render_activity(self.services.activity.entries))
+        self.timeline_activity.setHtml(
+            render_activity(self.services.activity.entries, self._activity_filter)
+        )
 
     # Shared by the menu bar (via QAction.icon(), themed for contrast against
     # the menu's own surface) and the toolbar (always white — see
@@ -487,6 +490,8 @@ class MainWindow(QMainWindow):
         )
         self.timeline_overview.setHtml(render_overview(None))
 
+        self._activity_filter: str | None = None
+
         self.timeline_activity = QTextEdit()
         self.timeline_activity.setReadOnly(True)
         self.timeline_activity.document().setDefaultStyleSheet(
@@ -500,9 +505,25 @@ class MainWindow(QMainWindow):
         # or know it exists (see BoardWorkspace._finish_piece_drag()).
         self.services.events.subscribe(ACTIVITY_EVENT, self._on_activity_event)
 
+        self.timeline_activity_filter = QComboBox()
+        self.timeline_activity_filter.addItem("Todas", None)
+        for category in CATEGORIES:
+            self.timeline_activity_filter.addItem(category, category)
+        self.timeline_activity_filter.currentIndexChanged.connect(
+            lambda index: self._filter_activity(
+                self.timeline_activity_filter.itemData(index)
+            )
+        )
+
+        activity_tab = QWidget()
+        activity_layout = QVBoxLayout(activity_tab)
+        activity_layout.setContentsMargins(0, 0, 0, 0)
+        activity_layout.addWidget(self.timeline_activity_filter)
+        activity_layout.addWidget(self.timeline_activity)
+
         timeline_tabs = QTabWidget()
         timeline_tabs.addTab(self.timeline_overview, "Resumen")
-        timeline_tabs.addTab(self.timeline_activity, "Actividad")
+        timeline_tabs.addTab(activity_tab, "Actividad")
 
         console_dock = QDockWidget("Timeline", self)
         console_dock.setObjectName("Timeline")
@@ -767,15 +788,25 @@ class MainWindow(QMainWindow):
         self.explorer.addTopLevelItem(root)
         self.explorer.expandAll()
 
-    def _log_activity(self, message: str) -> None:
-        self.services.events.publish(ACTIVITY_EVENT, {"message": message})
+    def _log_activity(self, message: str, category: str) -> None:
+        self.services.events.publish(
+            ACTIVITY_EVENT, {"message": message, "category": category}
+        )
 
     def _on_activity_event(self, _event_name: str, _payload: dict) -> None:
         """EventBus subscriber (ADR-003), registered in _build_panels().
         ActivityLog is subscribed first (StudioServices.__post_init__), so
         by the time this runs — publish() calls subscribers in order — its
         entries already include what was just published."""
-        self.timeline_activity.setHtml(render_activity(self.services.activity.entries))
+        self.timeline_activity.setHtml(
+            render_activity(self.services.activity.entries, self._activity_filter)
+        )
+
+    def _filter_activity(self, category: str | None) -> None:
+        self._activity_filter = category
+        self.timeline_activity.setHtml(
+            render_activity(self.services.activity.entries, self._activity_filter)
+        )
 
     def _execute(self, command) -> None:
         """Runs `command` through CommandManager and logs it — the one
@@ -783,7 +814,7 @@ class MainWindow(QMainWindow):
         (docs/studio.md), so this is the only place that needs to know
         about the activity log rather than instrumenting each call site."""
         self.services.commands.execute(command)
-        self._log_activity(command.name)
+        self._log_activity(command.name, category=command.category)
 
     def _on_explorer_selection_changed(self):
         selected = self.explorer.selectedItems()
@@ -851,7 +882,7 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("Nuevo proyecto creado", 3000)
         self._update_window_title()
         self._update_undo_redo()
-        self._log_activity("Proyecto nuevo creado")
+        self._log_activity("Proyecto nuevo creado", category="proyecto")
 
     def _open_project(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -885,7 +916,7 @@ class MainWindow(QMainWindow):
         self._update_undo_redo()
         self.statusBar().showMessage(f"Proyecto abierto: {path}", 3000)
         self._report_load_warnings(load_warnings)
-        self._log_activity(f"Proyecto abierto: {project.name}")
+        self._log_activity(f"Proyecto abierto: {project.name}", category="proyecto")
 
     def _import_pieces_csv(self):
         project = self.services.projects.current_project
@@ -933,7 +964,9 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(
             f"{len(pieces)} pieza(s) importadas de {path}", 4000
         )
-        self._log_activity(f"{len(pieces)} pieza(s) importadas desde CSV")
+        self._log_activity(
+            f"{len(pieces)} pieza(s) importadas desde CSV", category="import"
+        )
 
     def _save_project(self):
         project = self.services.projects.current_project
@@ -966,7 +999,7 @@ class MainWindow(QMainWindow):
         self._remember_last_project_path(path)
         self._update_window_title()
         self.statusBar().showMessage(f"Proyecto guardado: {path}", 3000)
-        self._log_activity(f"Proyecto guardado: {project.name}")
+        self._log_activity(f"Proyecto guardado: {project.name}", category="proyecto")
 
     def closeEvent(self, event: QCloseEvent) -> None:
         if not self.services.projects.is_modified:
@@ -1034,7 +1067,7 @@ class MainWindow(QMainWindow):
         self._update_undo_redo()
 
         if command is not None:
-            self._log_activity(f"Deshecho: {command.name}")
+            self._log_activity(f"Deshecho: {command.name}", category="deshacer")
 
     def _redo(self):
         command = self.services.commands.redo()
@@ -1043,7 +1076,7 @@ class MainWindow(QMainWindow):
         self._update_undo_redo()
 
         if command is not None:
-            self._log_activity(f"Rehecho: {command.name}")
+            self._log_activity(f"Rehecho: {command.name}", category="deshacer")
 
     def _rotate_selected_piece(self):
         selected = self.workspace.scene().selectedItems()
@@ -1562,7 +1595,8 @@ class MainWindow(QMainWindow):
         )
         self._log_activity(
             f"Layout calculado para {self.workspace.active_board_id}: "
-            f"{len(solution.placements)} pieza(s)"
+            f"{len(solution.placements)} pieza(s)",
+            category="layout",
         )
 
     def _show_layout_solution(self, solution):
@@ -1610,11 +1644,12 @@ class MainWindow(QMainWindow):
                 6000,
             )
             self._log_activity(
-                f"Layout aplicado — {len(unplaced)} pieza(s) sin colocar"
+                f"Layout aplicado — {len(unplaced)} pieza(s) sin colocar",
+                category="layout",
             )
         else:
             self.statusBar().showMessage("Layout aplicado al proyecto", 3000)
-            self._log_activity("Layout aplicado al proyecto")
+            self._log_activity("Layout aplicado al proyecto", category="layout")
 
     def _compare_solutions(self):
         solutions = self.services.layout.compare_solutions(
@@ -1641,7 +1676,9 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(
             f"{len(solutions)} solución(es) generada(s) para comparar", 3000
         )
-        self._log_activity(f"{len(solutions)} solución(es) generadas para comparar")
+        self._log_activity(
+            f"{len(solutions)} solución(es) generadas para comparar", category="layout"
+        )
 
     def _apply_comparison_solution(self, index: int):
         if not self.services.layout.apply_comparison_solution(
@@ -1667,11 +1704,12 @@ class MainWindow(QMainWindow):
                 6000,
             )
             self._log_activity(
-                f"Solución {index + 1} aplicada — {len(unplaced)} pieza(s) sin colocar"
+                f"Solución {index + 1} aplicada — {len(unplaced)} pieza(s) sin colocar",
+                category="layout",
             )
         else:
             self.statusBar().showMessage(f"Solución {index + 1} aplicada", 3000)
-            self._log_activity(f"Solución {index + 1} aplicada")
+            self._log_activity(f"Solución {index + 1} aplicada", category="layout")
 
     def _mark_favorite_solution(self, index: int):
         solutions = self.services.layout.last_solutions
@@ -1692,7 +1730,9 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(
             f"Solución {index + 1} marcada como favorita", 3000
         )
-        self._log_activity(f"Solución {index + 1} marcada como favorita")
+        self._log_activity(
+            f"Solución {index + 1} marcada como favorita", category="layout"
+        )
 
     def _ask_assistant(self):
         question = self.assistant_input.toPlainText().strip()
