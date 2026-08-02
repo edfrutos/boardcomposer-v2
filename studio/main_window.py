@@ -55,6 +55,7 @@ from studio.models import (
     StudioProject,
 )
 from studio.activity_log import ACTIVITY_EVENT, CATEGORIES
+from studio.solution_labels import solution_label
 from studio.panels import (
     render_activity,
     render_board,
@@ -1681,6 +1682,9 @@ class MainWindow(QMainWindow):
         )
 
     def _apply_comparison_solution(self, index: int):
+        solutions = self.services.layout.last_solutions
+        label = solution_label(index) if 0 <= index < len(solutions) else str(index + 1)
+
         if not self.services.layout.apply_comparison_solution(
             index, self.workspace.active_board_id
         ):
@@ -1688,6 +1692,8 @@ class MainWindow(QMainWindow):
                 "No hay una solución generada en esa posición", 3000
             )
             return
+
+        solution_id = solutions[index].solution_id
 
         self.workspace.reload_project()
         self.workspace.selection.clear()
@@ -1699,17 +1705,20 @@ class MainWindow(QMainWindow):
         unplaced = self._unplaced_piece_ids()
         if unplaced:
             self.statusBar().showMessage(
-                f"Solución {index + 1} aplicada — {len(unplaced)} pieza(s) sin "
+                f"Solución {label} aplicada — {len(unplaced)} pieza(s) sin "
                 f"colocar: {', '.join(unplaced)}",
                 6000,
             )
             self._log_activity(
-                f"Solución {index + 1} aplicada — {len(unplaced)} pieza(s) sin colocar",
+                f"Solución {label} (#{solution_id}) aplicada — "
+                f"{len(unplaced)} pieza(s) sin colocar",
                 category="layout",
             )
         else:
-            self.statusBar().showMessage(f"Solución {index + 1} aplicada", 3000)
-            self._log_activity(f"Solución {index + 1} aplicada", category="layout")
+            self.statusBar().showMessage(f"Solución {label} aplicada", 3000)
+            self._log_activity(
+                f"Solución {label} (#{solution_id}) aplicada", category="layout"
+            )
 
     def _mark_favorite_solution(self, index: int):
         solutions = self.services.layout.last_solutions
@@ -1719,6 +1728,9 @@ class MainWindow(QMainWindow):
             )
             return
 
+        label = solution_label(index)
+        solution_id = solutions[index].solution_id
+
         self._comparison_favorite_index = index
         self.comparator.setHtml(
             render_comparison(
@@ -1727,11 +1739,10 @@ class MainWindow(QMainWindow):
                 favorite_index=index,
             )
         )
-        self.statusBar().showMessage(
-            f"Solución {index + 1} marcada como favorita", 3000
-        )
+        self.statusBar().showMessage(f"Solución {label} marcada como favorita", 3000)
         self._log_activity(
-            f"Solución {index + 1} marcada como favorita", category="layout"
+            f"Solución {label} (#{solution_id}) marcada como favorita",
+            category="layout",
         )
 
     def _ask_assistant(self):

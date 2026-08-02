@@ -48,8 +48,10 @@ def test_render_comparison_shows_one_column_per_solution():
 
     html = render_comparison(solutions)
 
-    assert "Solución 1" in html
-    assert "Solución 2" in html
+    assert "Solución A" in html
+    assert "Solución B" in html
+    assert f"#{solutions[0].solution_id}" in html
+    assert f"#{solutions[1].solution_id}" in html
     assert "skyline / original" in html
     assert "maxrects / best_area_fit / largest_area" in html
     assert "Piezas colocadas" in html
@@ -89,8 +91,8 @@ def test_render_comparison_marks_the_favorite_with_a_star():
 
     html = render_comparison(solutions, favorite_index=1)
 
-    assert "⭐ Solución 2" in html
-    assert "⭐ Solución 1" not in html
+    assert "⭐ Solución B" in html
+    assert "⭐ Solución A" not in html
 
 
 def test_render_comparison_without_a_favorite_has_no_star():

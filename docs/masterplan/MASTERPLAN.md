@@ -15,10 +15,10 @@ Versión publicada: `0.3.3` (01/08/2026, tag `v0.3.3`) — incluye `IDE-0020`
 release firmada y notarizada de verdad (`DT-0011`). `IDE-0022` (exportar
 DXF/JSON desde Studio), `IDE-0023` (Comparador: miniaturas, favorita,
 fragmentación, nº de cortes), `IDE-0024` (vista previa antes de confirmar
-import CSV), `IDE-0025` (Preferencias: tema) e `IDE-0026` (eventos de
-actividad con categoría y filtro en el Timeline) quedan por delante del
-tag, sin publicar todavía.
-Tests: 778, en verde.
+import CSV), `IDE-0025` (Preferencias: tema), `IDE-0026` (eventos de
+actividad con categoría y filtro en el Timeline) e `IDE-0027` (IDs
+legibles de solución) quedan por delante del tag, sin publicar todavía.
+Tests: 784, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -30,7 +30,7 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 | 4 — Inteligencia (IA) | 🟢 Completada |
 | 5 — Ecosistema | 🟡 En curso |
 
-Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0026`, todos 🟢 completados y
+Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0027`, todos 🟢 completados y
 en `main`. No hay ningún IDE en desarrollo ni planificado.
 
 Deuda técnica (`DOC-006-DeudaTecnica.md`): 22 registros, los 22 resueltos.
@@ -103,7 +103,21 @@ declara su `.category` igual que ya declaraba `.name`; la pestaña Actividad
 del Timeline gana un `QComboBox` para filtrar por categoría. Dado de alta
 en el Backlog antes de construirse.
 
-778 tests en verde.
+`IDE-0027` — sexto punto de la lista de gaps, el aplazado en la
+priorización original: `AssemblySolution.solution_id`
+(`src/boardcomposer/domain/solution.py`) es una propiedad calculada, hash
+corto y determinista de las colocaciones — no un campo del constructor,
+para no tocar los ~12 sitios de `solver` que construyen `AssemblySolution`
+directamente. Acotado con el usuario entre tres alcances posibles
+("etiqueta de sesión", "id persistente" o "ambas"): eligió ambas.
+`studio/solution_labels.py::solution_label(index)` da la etiqueta A/B/C/D
+para la UI; el Comparador y los mensajes de aplicar/marcar favorita
+sustituyen el antiguo `Solución {índice + 1}` (que cambiaba de
+significado en cada comparación nueva) por la etiqueta más el id corto
+persistente entre paréntesis. Dado de alta en el Backlog antes de
+construirse.
+
+784 tests en verde.
 
 Publicada `v0.3.3` (01/08/2026): `IDE-0020` + `IDE-0021` — claves de API
 por cliente con cuota mensual y cobro del overage con Stripe, primer y

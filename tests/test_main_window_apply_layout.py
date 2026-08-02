@@ -52,6 +52,17 @@ def test_apply_comparison_solution_warns_about_pieces_left_unplaced(window):
     assert "sin colocar" in window.statusBar().currentMessage()
 
 
+def test_apply_comparison_solution_logs_the_readable_label_and_id(window):
+    solutions = window.services.layout.compare_solutions("A")
+    solution_id = solutions[0].solution_id
+
+    window._apply_comparison_solution(0)
+
+    entry = window.services.activity.entries[0]
+    assert entry.message.startswith(f"Solución A (#{solution_id})")
+    assert entry.category == "layout"
+
+
 def _project_two_boards_leftover_fits_the_other():
     return StudioProject(
         project_id="proj-2",

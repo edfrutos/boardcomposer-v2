@@ -95,6 +95,7 @@ Observaciones:
 | IDE-0024 | Vista previa antes de confirmar import CSV | 🟢 | P2 |
 | IDE-0025 | Pantalla de Preferencias (tema) | 🟢 | P3 |
 | IDE-0026 | Timeline: eventos de actividad con categoría y filtro | 🟢 | P3 |
+| IDE-0027 | IDs legibles de solución (etiqueta A/B/C + hash corto) | 🟢 | P3 |
 
 ---
 
@@ -369,6 +370,22 @@ Categorías: `proyecto` (nuevo/abrir/guardar), `tablero` (`AddBoardCommand`/`Edi
 - `studio/panels/timeline_panel.py::render_activity()` acepta `entries: list[ActivityEntry]` y un `category: str | None` opcional para filtrar antes de renderizar.
 - `MainWindow._log_activity()` ahora exige `category` explícito en cada uno de sus ~15 sitios de llamada; `_execute()` reenvía `command.category`, `_undo()`/`_redo()` fuerzan `"deshacer"`. Pestaña "Actividad" del Timeline gana un `QComboBox` ("Todas" + las 6 categorías) por encima del `QTextEdit`, conectado a `_filter_activity()`.
 - Verificado con `tests/test_activity_log.py` (adaptado a `ActivityEntry`), `tests/test_timeline_panel.py` (filtro por categoría), `tests/test_main_window_timeline.py` (nuevo test del combo de filtro). 778 tests en verde.
+
+---
+
+## IDE-0027 — IDs legibles de solución
+
+**Estado:** 🟢 Completado. Dado de alta antes de construirse.
+
+Sexto punto aplazado de la lista de gaps de Studio: hoy `AssemblySolution` no tiene ningún identificador — Comparador, mensajes de aplicar/favorita y log de actividad se refieren a cada candidata solo por su posición en la lista (`Solución 1`, `Solución 2`...), que cambia cada vez que se regenera la comparación y no sirve para referenciar una solución concreta más allá de la sesión.
+
+Alcance acotado con el usuario (opción "ambas cosas" de las tres planteadas): una etiqueta de sesión legible (A/B/C/D) sustituye al índice numérico en toda la UI de Studio, más un id corto persistente basado en el contenido (hash de las colocaciones) para poder referenciar la misma solución de forma estable en logs/exports aunque se recalcule en otra sesión.
+
+- `src/boardcomposer/domain/solution.py::AssemblySolution.solution_id` — propiedad calculada (no campo del constructor, para no tocar los ~12 sitios del solver que construyen `AssemblySolution`), hash corto (8 hex) de las colocaciones ordenadas de forma determinista — dos soluciones con las mismas piezas en las mismas posiciones comparten id aunque el solver las genere en órdenes distintos.
+- `studio/solution_labels.py::solution_label(index)` — nuevo módulo sin Qt, letras A-Z por índice (con `MAX_COMPARISON_SOLUTIONS = 4` nunca pasa de D).
+- `studio/panels/comparator_panel.py`: cabeceras y explicaciones usan la etiqueta en vez de `índice + 1`, con el id corto visible junto a ella.
+- `studio/main_window.py`: mensajes de aplicar solución/marcar favorita y sus entradas de `_log_activity` (categoría `layout`) usan la etiqueta para el usuario y el id corto para la traza persistente.
+- Verificado con `tests/test_solution.py` (id estable ante reordenación, distinto ante contenido distinto), `tests/test_solution_labels.py` (nuevo), `tests/test_comparator_panel.py` (cabeceras con etiqueta+id) y `tests/test_main_window_apply_layout.py` (mensaje de actividad con etiqueta+id). 784 tests en verde.
 
 ---
 

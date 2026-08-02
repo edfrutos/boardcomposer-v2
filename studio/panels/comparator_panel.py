@@ -19,6 +19,7 @@ them — the piece arrangement, read top-to-bottom then left-to-right.
 
 from boardcomposer.domain import AssemblySolution
 from boardcomposer.solver.layout_metrics import cut_count, fragmentation_ratio
+from studio.solution_labels import solution_label
 
 
 def render_comparison(
@@ -37,7 +38,8 @@ def render_comparison(
 
     thumbnails = thumbnails or []
     headers = "".join(
-        f"<th>{'⭐ ' if i == favorite_index else ''}Solución {i + 1}</th>"
+        f"<th>{'⭐ ' if i == favorite_index else ''}Solución {solution_label(i)}"
+        f"<br><small>#{solutions[i].solution_id}</small></th>"
         for i in range(len(solutions))
     )
     thumbnail_cells = "".join(
@@ -62,7 +64,7 @@ def render_comparison(
 
     explanations = []
     for index, solution in enumerate(solutions):
-        explanations.append(f"<h4>Explicación — Solución {index + 1}</h4>")
+        explanations.append(f"<h4>Explicación — Solución {solution_label(index)}</h4>")
         if solution.explanation.strengths:
             explanations.append(
                 "<p><b>Fortalezas:</b> "

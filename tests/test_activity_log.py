@@ -12,7 +12,9 @@ def test_activity_log_records_a_published_message():
     events = EventBus()
     log = ActivityLog(events)
 
-    events.publish(ACTIVITY_EVENT, {"message": "Tablero añadido: B1", "category": "tablero"})
+    events.publish(
+        ACTIVITY_EVENT, {"message": "Tablero añadido: B1", "category": "tablero"}
+    )
 
     assert len(log.entries) == 1
     assert log.entries[0].message == "Tablero añadido: B1"
@@ -44,7 +46,9 @@ def test_activity_log_caps_at_max_entries():
     log = ActivityLog(events)
 
     for i in range(MAX_ENTRIES + 10):
-        events.publish(ACTIVITY_EVENT, {"message": f"evento {i}", "category": "proyecto"})
+        events.publish(
+            ACTIVITY_EVENT, {"message": f"evento {i}", "category": "proyecto"}
+        )
 
     assert len(log.entries) == MAX_ENTRIES
     assert log.entries[0].message == f"evento {MAX_ENTRIES + 9}"
