@@ -93,10 +93,21 @@ jobs:
           echo "Firma del bundle publicado:"
           codesign -dv "$APP_PATH" 2>&1 | sed 's/^/  /'
 
-      - name: Zip the app bundle
+      - name: Create dmg for distribution
         run: |
           cd studio/dist
-          ditto -c -k --sequesterRsrc --keepParent BoardComposerStudio.app BoardComposerStudio-macos.zip
+          # Carpeta de montaje con el .app y un symlink a /Applications: el
+          # patrón estándar de instalación en macOS (arrastrar a Aplicaciones),
+          # en vez de un .zip que solo descomprime.
+          staging="dmg-staging"
+          rm -rf "$staging"
+          mkdir "$staging"
+          cp -R BoardComposerStudio.app "$staging/"
+          ln -s /Applications "$staging/Applications"
+          hdiutil create -volname "BoardComposer Studio" \
+            -srcfolder "$staging" -ov -format UDZO \
+            BoardComposerStudio-macos.dmg
+          rm -rf "$staging"
 
       - name: Publish release asset
         if: github.event_name == 'push'
@@ -104,7 +115,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SIGNED: ${{ steps.signing.outputs.available }}
         run: |
-          assets=(studio/dist/BoardComposerStudio-macos.zip)
+          assets=(studio/dist/BoardComposerStudio-macos.dmg)
           # An unsigned build is useless to whoever downloads it without the
           # one command that gets past Gatekeeper, so the instructions ride
           # along with it.

@@ -3,7 +3,7 @@
 > Esta guía solo aplica a releases sin firmar. Desde `v0.3.3` (`DT-0011`
 > resuelta el 01/08/2026), `package-studio.yml` firma y notariza cada
 > release cuando los secrets de Apple están cargados — si la tuya lo está,
-> este fichero ni siquiera se publica junto al `.zip` (compruébalo en los
+> este fichero ni siquiera se publica junto al `.dmg` (compruébalo en los
 > *assets* de la release). Sigue existiendo para builds antiguas o para el
 > caso en que los secrets falten en el futuro.
 
@@ -15,8 +15,8 @@ registrado en Apple.
 
 ## Instalación
 
-1. Descarga `BoardComposerStudio-macos.zip` desde la release y descomprímelo.
-2. Arrastra `BoardComposerStudio.app` a tu carpeta `Aplicaciones`.
+1. Descarga `BoardComposerStudio-macos.dmg` desde la release y ábrelo (monta un volumen con la app y un acceso directo a `Aplicaciones`).
+2. Arrastra `BoardComposerStudio.app` sobre el icono de `Aplicaciones` dentro del propio volumen montado, luego expúlsalo.
 3. Abre el Terminal y ejecuta:
 
        xattr -dr com.apple.quarantine /Applications/BoardComposerStudio.app

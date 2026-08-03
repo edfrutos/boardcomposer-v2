@@ -75,7 +75,7 @@ anotada en `docs/studio.md`, no en la propia SCR.
 | [`../plugins.md`](../plugins.md) | Guía para desarrolladores de plugins. |
 | [`../retales-como-tablero.md`](../retales-como-tablero.md) | Cómo modelar un retal existente como tablero (`DEC-0019`). |
 | [`../deploy.md`](../deploy.md), [`../deploy-studio-remote.md`](../deploy-studio-remote.md) | Despliegue de la API y de Studio remoto. |
-| [`../INSTALL-macos.md`](../INSTALL-macos.md) | Instalar el `.app` descargado de una release (se publica junto al `.zip`). |
+| [`../INSTALL-macos.md`](../INSTALL-macos.md) | Instalar el `.app` descargado de una release (se publica junto al `.dmg`). |
 | [`../../CHANGELOG.md`](../../CHANGELOG.md) | Historial de versiones. |
 
 Ficheros de la raíz marcados **Superado** (`ROADMAP.md`, `TODO.md`,
