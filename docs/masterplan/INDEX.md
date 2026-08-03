@@ -1,6 +1,6 @@
 # BoardComposer — Índice del Masterplan
 
-**Última revisión:** 26/07/2026
+**Última revisión:** 03/08/2026
 
 Punto de entrada a la documentación de proyecto. El resumen de estado y las
 normas de trabajo están en [`MASTERPLAN.md`](MASTERPLAN.md); si algo de ahí
@@ -73,6 +73,7 @@ anotada en `docs/studio.md`, no en la propia SCR.
 | [`../algorithms.md`](../algorithms.md), [`../scoring.md`](../scoring.md), [`../solver_architecture.md`](../solver_architecture.md) | Generadores, puntuación y solvers. |
 | [`../data_model.md`](../data_model.md) | Modelo de datos del Core. |
 | [`../plugins.md`](../plugins.md) | Guía para desarrolladores de plugins. |
+| [`../retales-como-tablero.md`](../retales-como-tablero.md) | Cómo modelar un retal existente como tablero (`DEC-0019`). |
 | [`../deploy.md`](../deploy.md), [`../deploy-studio-remote.md`](../deploy-studio-remote.md) | Despliegue de la API y de Studio remoto. |
 | [`../INSTALL-macos.md`](../INSTALL-macos.md) | Instalar el `.app` descargado de una release (se publica junto al `.zip`). |
 | [`../../CHANGELOG.md`](../../CHANGELOG.md) | Historial de versiones. |
