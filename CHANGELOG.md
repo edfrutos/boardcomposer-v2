@@ -2,9 +2,13 @@
 
 ## Sin publicar
 
+## 0.3.5 - 2026-08-03
+
 ### Añadido
 
 - Generador de piezas de contenedor desde un retal (`IDE-0028`): "Herramientas → Generar piezas de contenedor…" abre un diálogo con las medidas exteriores (largo/ancho/alto), grosor y material, y añade a la placa activa las piezas de una caja simple (base + 4 paredes, unión a tope, sin divisores) — mismo patrón de vista previa y comandos deshacibles que la importación CSV (`IDE-0024`/`IDE-0018`). `studio/containers/simple_box.py` expone `CONTAINER_TEMPLATES`, un registro pensado para más tipos de contenedor (cajón, cajonera, estantería) y otras uniones/divisores más adelante, sin tocar el diálogo ni `MainWindow` al añadirlos.
+
+---
 
 ## 0.3.4 - 2026-08-02
 
