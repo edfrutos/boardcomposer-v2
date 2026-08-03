@@ -59,7 +59,7 @@ Idea planteada por el usuario el 03/08/2026, todavía sin acotar: aprovechar res
 2. Reglas de ensamblaje mínimas por tipo (una unión a tope vs. rebajada cambia las medidas de las piezas que se tocan) — conocimiento de carpintería nuevo en el proyecto, no solo geometría de corte.
 3. Encaja de forma natural con el sistema de plugins ya existente (`IDE-0008`) como grupo de entry point nuevo (p. ej. `boardcomposer.container_templates`) en vez de vivir en el Core — mantiene el Core sin conocimiento de "qué es un cajón", igual que ya hace con generadores/estrategias.
 
-**Consecución.** Alcance bastante mayor que la Candidata 1 — antes de programar nada, acotar con el usuario un único tipo de contenedor cerrado (p. ej. "caja simple, unión a tope, sin divisores") para validar el patrón completo (plugin → piezas generadas → solver existente → export) antes de generalizar a más tipos. No promovible a `IDE-XXXX` todavía sin ese acotamiento.
+**Consecución.** Acotada con el usuario el 03/08/2026: caja simple, unión a tope, sin divisores, como diálogo en Studio (no plugin, sin casos de uso externos todavía) — dejando el registro de tipos abierto para ampliar después sin rediseñar el patrón. **Promovida a `IDE-0028`** (`docs/masterplan/DOC-004-Backlog.md`).
 
 ---
 

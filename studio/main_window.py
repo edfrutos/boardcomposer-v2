@@ -32,12 +32,14 @@ from PySide6.QtWidgets import (
 
 from studio.dialogs import (
     BoardDialog,
+    ContainerGeneratorDialog,
     CsvImportPreviewDialog,
     KerfDialog,
     MoveToBoardDialog,
     PieceDialog,
     PreferencesDialog,
 )
+from studio.containers import CONTAINER_TEMPLATES, ContainerTemplateError
 from studio.icons import build_icons
 from studio.prompt_input import PromptTextEdit
 from studio.theme import (
@@ -245,6 +247,15 @@ class MainWindow(QMainWindow):
         self._actions["configure_kerf"] = QAction("Ancho de sierra…", self)
         menus["Proyecto"].addAction(self._actions["configure_kerf"])
         self._actions["configure_kerf"].triggered.connect(self._configure_kerf)
+
+        self._actions["generate_container"] = QAction(
+            "Generar piezas de contenedor…", self
+        )
+        menus["Herramientas"].addAction(self._actions["generate_container"])
+        self._actions["generate_container"].triggered.connect(
+            self._generate_container_pieces
+        )
+        menus["Herramientas"].addSeparator()
 
         self._actions["solve_layout"] = QAction("Calcular layout", self)
         self._actions["solve_layout"].setShortcut("Ctrl+Alt+L")
@@ -967,6 +978,56 @@ class MainWindow(QMainWindow):
         )
         self._log_activity(
             f"{len(pieces)} pieza(s) importadas desde CSV", category="import"
+        )
+
+    def _generate_container_pieces(self):
+        project = self.services.projects.current_project
+        active_board_id = self.workspace.active_board_id
+        if project is None or active_board_id is None:
+            QMessageBox.warning(
+                self, "Generar piezas de contenedor", "Añade primero un tablero."
+            )
+            return
+
+        dialog = ContainerGeneratorDialog(self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        existing_ids = frozenset(piece.piece_id for piece in project.pieces)
+        template = CONTAINER_TEMPLATES[dialog.template_key()]
+        try:
+            pieces = template(existing_ids=existing_ids, **dialog.values())
+        except ContainerTemplateError as error:
+            QMessageBox.warning(
+                self,
+                "Generar piezas de contenedor",
+                f"No se pudo generar el contenedor:\n\n{error}",
+            )
+            return
+
+        preview = CsvImportPreviewDialog(self, pieces=pieces)
+        if preview.exec() != QDialog.DialogCode.Accepted:
+            self.statusBar().showMessage("Generación cancelada", 3000)
+            return
+
+        # Un comando deshacible por pieza, mismo patrón que _import_pieces_csv.
+        for piece in pieces:
+            placement = StudioPlacement(piece.piece_id, 0, 0, board_id=active_board_id)
+            command = AddPieceCommand(self.services, piece, placement)
+            self._execute(command)
+        self.services.projects.mark_modified()
+
+        self.workspace.reload_project()
+        self._reload_explorer()
+        self._update_window_title()
+        self._update_undo_redo()
+        self.statusBar().showMessage(
+            f"{len(pieces)} pieza(s) de contenedor generadas", 4000
+        )
+        self._log_activity(
+            f"{len(pieces)} pieza(s) generadas para contenedor "
+            f"'{dialog.template_key()}'",
+            category="pieza",
         )
 
     def _save_project(self):

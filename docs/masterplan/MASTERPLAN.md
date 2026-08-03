@@ -1,6 +1,6 @@
 # BoardComposer — MASTERPLAN
 
-**Última revisión:** 02/08/2026
+**Última revisión:** 03/08/2026
 
 > Este documento resume el estado del proyecto y las normas de trabajo.
 > El detalle vivo de cada funcionalidad está en `DOC-004-Backlog.md`, la
@@ -17,7 +17,10 @@ confirmar import CSV), `IDE-0025` (Preferencias: tema), `IDE-0026`
 (eventos de actividad con categoría y filtro en el Timeline) e `IDE-0027`
 (IDs legibles de solución). Segunda release firmada y notarizada con la
 cuenta de Apple Developer activa (`DT-0011`, la primera fue `v0.3.3`).
-Tests: 784, en verde.
+
+Sin publicar todavía: `IDE-0028` (generador de piezas de contenedor desde
+un retal, "Herramientas → Generar piezas de contenedor…"), en `main`
+desde el 03/08/2026. Tests: 813, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -29,7 +32,7 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 | 4 — Inteligencia (IA) | 🟢 Completada |
 | 5 — Ecosistema | 🟡 En curso |
 
-Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0027`, todos 🟢 completados y
+Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0028`, todos 🟢 completados y
 en `main`. No hay ningún IDE en desarrollo ni planificado.
 
 Deuda técnica (`DOC-006-DeudaTecnica.md`): 22 registros, los 22 resueltos.
@@ -47,7 +50,22 @@ reconstruidos y verificados el 31/07/2026 tras el commit `043caf1`
 
 ## Trabajo en curso
 
-Ninguno acotado.
+`IDE-0028` — generador de piezas de contenedor desde un retal (03/08/2026).
+Candidata 2 de aprovechamiento de retales (`DOC-999-Ideas.md`), acotada con
+el usuario: caja simple (base + 4 paredes, unión a tope, sin divisores),
+como diálogo en Studio, no plugin. `studio/containers/simple_box.py`
+(`CONTAINER_TEMPLATES`, registro nombre → función) +
+`studio/dialogs/container_generator_dialog.py` + acción nueva
+"Herramientas → Generar piezas de contenedor…" en `MainWindow`, reutilizando
+`CsvImportPreviewDialog` (`IDE-0024`) para la confirmación y
+`AddPieceCommand` para el alta deshacible pieza a pieza, mismo patrón que
+`IDE-0018`. `joint`/`dividers` ya son parámetros de
+`build_simple_box_pieces()` (solo `"a_tope"`/`0` soportados) para que un
+cajón, una unión rebajada o divisores sean una entrada nueva en el registro,
+no un sitio de llamada nuevo. Verificado con tests nuevos
+(`tests/test_simple_box.py`, `tests/test_main_window_container_generator.py`)
+y con la app real (acción confirmada en el menú). 813 tests en verde. Dado
+de alta en el Backlog antes de construirse.
 
 Publicada `v0.3.4` (02/08/2026): los seis puntos de la lista de gaps de
 Studio que destapó la auditoría de documentación del 01/08/2026, en el

@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 31/07/2026
+**Última revisión:** 03/08/2026
 
 ---
 
@@ -96,6 +96,7 @@ Observaciones:
 | IDE-0025 | Pantalla de Preferencias (tema) | 🟢 | P3 |
 | IDE-0026 | Timeline: eventos de actividad con categoría y filtro | 🟢 | P3 |
 | IDE-0027 | IDs legibles de solución (etiqueta A/B/C + hash corto) | 🟢 | P3 |
+| IDE-0028 | Generador de piezas de contenedor (caja simple) desde un retal | 🟢 | P3 |
 
 ---
 
@@ -386,6 +387,26 @@ Alcance acotado con el usuario (opción "ambas cosas" de las tres planteadas): u
 - `studio/panels/comparator_panel.py`: cabeceras y explicaciones usan la etiqueta en vez de `índice + 1`, con el id corto visible junto a ella.
 - `studio/main_window.py`: mensajes de aplicar solución/marcar favorita y sus entradas de `_log_activity` (categoría `layout`) usan la etiqueta para el usuario y el id corto para la traza persistente.
 - Verificado con `tests/test_solution.py` (id estable ante reordenación, distinto ante contenido distinto), `tests/test_solution_labels.py` (nuevo), `tests/test_comparator_panel.py` (cabeceras con etiqueta+id) y `tests/test_main_window_apply_layout.py` (mensaje de actividad con etiqueta+id). 784 tests en verde.
+
+---
+
+## IDE-0028 — Generador de piezas de contenedor (caja simple) desde un retal
+
+**Estado:** 🟢 Completado. Dado de alta antes de construirse.
+
+Candidata 2 de aprovechamiento de retales (`DOC-999-Ideas.md`, 03/08/2026) — distinta de la Candidata 1 (`DEC-0019`, ya cubierta sin código): en vez de encajar piezas ya definidas contra un retal, genera automáticamente el despiece de un contenedor de almacenaje a partir de sus medidas exteriores. Alcance acotado con el usuario, dejando la puerta abierta a ampliarlo después sin rediseñar el patrón:
+
+- **Tipo v1**: caja simple (base + 4 paredes, sin tapa ni divisores) — el patrón más simple para validar generador → piezas → solver → export antes de generalizar a cajón/cajonera/estantería.
+- **Unión v1**: a tope (sin rebaje) — las paredes laterales se recortan `2 × thickness_mm` para encajar entre frontal y trasera; la única regla paramétrica de esta versión.
+- **Divisores v1**: ninguno.
+- **Ubicación**: diálogo en Studio, mismo patrón que la importación CSV (`IDE-0018`/`IDE-0024`), no un plugin nuevo — sin casos de uso externos todavía que justifiquen esa infraestructura.
+
+Diseño explícitamente extensible sin rediseño: `CONTAINER_TEMPLATES` (`studio/containers/simple_box.py`) es un registro nombre → función, con un único tipo hoy (`caja_simple`); `build_simple_box_pieces()` ya acepta `joint`/`dividers` como parámetros (solo `"a_tope"`/`0` soportados, `ContainerTemplateError` en cualquier otro valor) para que un cajón, una unión rebajada o divisores internos sean una rama nueva en la función y una entrada nueva en el registro, no un sitio de llamada nuevo en Studio — `ContainerGeneratorDialog` ya puebla su desplegable "Tipo de contenedor" desde `CONTAINER_TEMPLATES.keys()`.
+
+- `studio/containers/simple_box.py` — función pura sin Qt (mismo patrón que `csv_import.py`): a partir de largo/ancho/alto exteriores y grosor, calcula 5 `StudioPiece` (`<prefijo>-base`, `-pared-frontal`, `-pared-trasera`, `-lateral-izquierdo`, `-lateral-derecho`). Valida dimensiones finitas positivas, que el ancho exterior admita el grosor de pared (`ancho - 2×grosor > 0`) y que el prefijo de id no choque con piezas ya existentes en el proyecto.
+- `studio/dialogs/container_generator_dialog.py::ContainerGeneratorDialog` — largo/ancho/alto exterior, grosor, material y prefijo de id, mismo patrón `QFormLayout`/`QDialogButtonBox` que `PieceDialog`.
+- `MainWindow._generate_container_pieces()`: nueva acción "Generar piezas de contenedor…" en el menú "Herramientas" (antes de "Calcular layout"). Exige un tablero activo, reutiliza `CsvImportPreviewDialog` para la confirmación previa (misma tabla genérica de piezas que ya usa `IDE-0024`, sin duplicar código) y añade cada pieza con un `AddPieceCommand` deshacible, igual que `_import_pieces_csv`.
+- Verificado con tests nuevos (`tests/test_simple_box.py`, `tests/test_main_window_container_generator.py`) y con la app real: acción confirmada en el menú "Herramientas" (`MainWindow._actions["generate_container"]`, texto y posición correctos). 813 tests en verde.
 
 ---
 

@@ -53,6 +53,14 @@ Los modelos `StudioBoard`/`StudioPiece` validan sus dimensiones (positivas y fin
 
 `MainWindow._import_pieces_csv()` conecta esto al `QAction` "Importar piezas (CSV)…" del menú Archivo (testeado en `tests/test_main_window_import_csv.py`): pide el tablero activo (igual que `_add_piece()`, sin tablero no hay dónde colocar), abre el CSV con `QFileDialog`, y por cada `StudioPiece` válida ejecuta un `AddPieceCommand` (deshacible, uno por pieza) colocándola en `(0, 0)` del tablero activo. Un fallo de `load_pieces_from_csv()` se muestra en la barra de estado y no ejecuta ningún comando — el proyecto queda exactamente como estaba.
 
+### Generador de piezas de contenedor — `studio/containers/simple_box.py` (`IDE-0028`)
+
+`CONTAINER_TEMPLATES` (`studio/containers/`) es un registro `nombre → función`, hoy con una única entrada, `"caja_simple"` → `build_simple_box_pieces()`: función pura sin Qt (mismo patrón que `csv_import.py`) que, a partir de largo/ancho/alto exteriores y grosor, calcula 5 `StudioPiece` — base, pared frontal/trasera (largo exterior completo) y laterales izq./der. (encajan *entre* frontal y trasera, recortados `2 × thickness_mm`, unión a tope). Valida dimensiones finitas positivas, que el ancho exterior admita el grosor de pared, y que el prefijo de id no choque con piezas ya existentes, lanzando `ContainerTemplateError` en cualquier caso.
+
+`joint`/`dividers` ya son parámetros de la función (solo `"a_tope"`/`0` soportados hoy) — un cajón, una unión rebajada o divisores internos son una rama nueva ahí y una entrada nueva en `CONTAINER_TEMPLATES`, no un cambio en `ContainerGeneratorDialog` ni en `MainWindow` (su desplegable "Tipo de contenedor" ya se puebla desde `CONTAINER_TEMPLATES.keys()`).
+
+`MainWindow._generate_container_pieces()` conecta esto al `QAction` "Generar piezas de contenedor…" del menú Herramientas (testeado en `tests/test_main_window_container_generator.py`): exige tablero activo, abre `ContainerGeneratorDialog`, reutiliza `CsvImportPreviewDialog` (`IDE-0024`) para la confirmación previa —misma tabla genérica de piezas, sin duplicar código— y añade cada pieza con un `AddPieceCommand` deshacible, mismo patrón que `_import_pieces_csv()`.
+
 ## Undo/Redo — `CommandManager` + `Command`
 
 `studio/commands/`. `Command` (`command.py`) es un `Protocol` con `name: str`, `redo()` y `undo()` — cualquier objeto que implemente esos tres miembros sirve como comando, sin herencia obligatoria.
