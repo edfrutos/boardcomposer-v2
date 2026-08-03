@@ -2,9 +2,13 @@
 
 ## Sin publicar
 
+## 0.3.6 - 2026-08-03
+
 ### Cambiado
 
 - El asset de macOS pasa de `.zip` a `.dmg` (`package-studio.yml`): la release ya no solo comprime el `.app`, sino que genera un volumen de instalación con un acceso directo a `Aplicaciones` (patrón estándar de arrastrar-para-instalar en macOS). `docs/INSTALL-macos.md`/`README.md` actualizados.
+
+---
 
 ## 0.3.5 - 2026-08-03
 

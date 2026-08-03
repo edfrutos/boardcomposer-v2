@@ -10,10 +10,12 @@
 ## Estado actual
 
 Rama: `main`
-Versión publicada: `0.3.5` (03/08/2026, tag `v0.3.5`) — incluye `IDE-0028`
+Versión publicada: `0.3.6` (03/08/2026, tag `v0.3.6`) — incluye `IDE-0028`
 (generador de piezas de contenedor desde un retal, "Herramientas → Generar
-piezas de contenedor…"). Tercera release firmada y notarizada con la
-cuenta de Apple Developer activa (`DT-0011`).
+piezas de contenedor…", en `v0.3.5`) y el cambio de asset de macOS de
+`.zip` a `.dmg` (`package-studio.yml`, volumen con acceso directo a
+`Aplicaciones`). Cuarta release firmada y notarizada con la cuenta de
+Apple Developer activa (`DT-0011`).
 Tests: 813, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
