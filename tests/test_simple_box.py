@@ -1,6 +1,10 @@
 import pytest
 
-from studio.containers import CONTAINER_TEMPLATES, ContainerTemplateError, build_simple_box_pieces
+from studio.containers import (
+    CONTAINER_TEMPLATES,
+    ContainerTemplateError,
+    build_simple_box_pieces,
+)
 
 
 def test_registry_has_simple_box():
