@@ -97,6 +97,7 @@ Observaciones:
 | IDE-0026 | Timeline: eventos de actividad con categoría y filtro | 🟢 | P3 |
 | IDE-0027 | IDs legibles de solución (etiqueta A/B/C + hash corto) | 🟢 | P3 |
 | IDE-0028 | Generador de piezas de contenedor (caja simple) desde un retal | 🟢 | P3 |
+| IDE-0029 | Importar tableros (CSV) en Studio | 🟢 | P3 |
 
 ---
 
@@ -407,6 +408,19 @@ Diseño explícitamente extensible sin rediseño: `CONTAINER_TEMPLATES` (`studio
 - `studio/dialogs/container_generator_dialog.py::ContainerGeneratorDialog` — largo/ancho/alto exterior, grosor, material y prefijo de id, mismo patrón `QFormLayout`/`QDialogButtonBox` que `PieceDialog`.
 - `MainWindow._generate_container_pieces()`: nueva acción "Generar piezas de contenedor…" en el menú "Herramientas" (antes de "Calcular layout"). Exige un tablero activo, reutiliza `CsvImportPreviewDialog` para la confirmación previa (misma tabla genérica de piezas que ya usa `IDE-0024`, sin duplicar código) y añade cada pieza con un `AddPieceCommand` deshacible, igual que `_import_pieces_csv`.
 - Verificado con tests nuevos (`tests/test_simple_box.py`, `tests/test_main_window_container_generator.py`) y con la app real: acción confirmada en el menú "Herramientas" (`MainWindow._actions["generate_container"]`, texto y posición correctos). 813 tests en verde.
+
+---
+
+## IDE-0029 — Importar tableros (CSV) en Studio
+
+**Estado:** 🟢 Completado. Dado de alta antes de construirse.
+
+El usuario pidió CSV de tableros/tablas además del de piezas ya existente (`IDE-0018`) — dar de alta un lote de tableros (por ejemplo, retales medidos de una vez, ver `DEC-0019`) exigía repetir el diálogo "Nuevo tablero" uno a uno. Mismo patrón exacto que `IDE-0018`, con `StudioBoard` en vez de `StudioPiece`:
+
+- `studio/project/board_csv_import.py::load_boards_from_csv()` — función pura sin Qt, mismas columnas obligatorias (`id`/`length_mm`/`width_mm`/`thickness_mm`, `material` opcional) y misma validación todo-o-nada que `load_pieces_from_csv()` (`BoardCsvImportError`).
+- `studio/dialogs/board_csv_import_preview_dialog.py::BoardCsvImportPreviewDialog` — misma tabla genérica id/dimensiones/material/grosor que `CsvImportPreviewDialog` (`IDE-0024`), adaptada a `board_id`.
+- `MainWindow._import_boards_csv()`: nueva acción "Importar tableros (CSV)…" en el menú Archivo, junto a "Importar piezas (CSV)…". A diferencia de la importación de piezas, no exige tablero activo — solo proyecto abierto. Un `AddBoardCommand` deshacible por tablero, mismo patrón que `_import_pieces_csv`. El primer tablero importado queda activo al terminar (mismo comportamiento que `_add_board()`).
+- Verificado con tests nuevos (`tests/test_board_csv_import.py`, `tests/test_main_window_import_boards_csv.py`) y con la app real: acción confirmada en el menú Archivo. 832 tests en verde.
 
 ---
 

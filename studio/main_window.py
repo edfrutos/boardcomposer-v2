@@ -31,6 +31,7 @@ from PySide6.QtWidgets import (
 )
 
 from studio.dialogs import (
+    BoardCsvImportPreviewDialog,
     BoardDialog,
     ContainerGeneratorDialog,
     CsvImportPreviewDialog,
@@ -77,7 +78,9 @@ from studio.export import (
 )
 from studio.panel_plugins import discover_panel_plugins
 from studio.project import (
+    BoardCsvImportError,
     CsvImportError,
+    load_boards_from_csv,
     load_pieces_from_csv,
     load_project_from_file,
     save_project_to_file,
@@ -201,6 +204,7 @@ class MainWindow(QMainWindow):
         self._actions["open"] = QAction("Abrir…", self)
         self._actions["save"] = QAction("Guardar", self)
         self._actions["import_csv"] = QAction("Importar piezas (CSV)…", self)
+        self._actions["import_boards_csv"] = QAction("Importar tableros (CSV)…", self)
         self._actions["exit"] = QAction("Salir", self)
         self._actions["undo"] = QAction("Deshacer", self)
         self._actions["redo"] = QAction("Rehacer", self)
@@ -323,6 +327,7 @@ class MainWindow(QMainWindow):
         menus["Archivo"].addAction(self._actions["save"])
         menus["Archivo"].addSeparator()
         menus["Archivo"].addAction(self._actions["import_csv"])
+        menus["Archivo"].addAction(self._actions["import_boards_csv"])
         menus["Archivo"].addSeparator()
         menus["Archivo"].addAction(self._actions["exit"])
 
@@ -331,6 +336,7 @@ class MainWindow(QMainWindow):
         self._actions["open"].triggered.connect(self._open_project)
         self._actions["save"].triggered.connect(self._save_project)
         self._actions["import_csv"].triggered.connect(self._import_pieces_csv)
+        self._actions["import_boards_csv"].triggered.connect(self._import_boards_csv)
 
         self._menus = menus
 
@@ -978,6 +984,54 @@ class MainWindow(QMainWindow):
         )
         self._log_activity(
             f"{len(pieces)} pieza(s) importadas desde CSV", category="import"
+        )
+
+    def _import_boards_csv(self):
+        project = self.services.projects.current_project
+        if project is None:
+            QMessageBox.warning(
+                self, "Importar tableros (CSV)", "Crea primero un proyecto."
+            )
+            return
+
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Importar tableros desde CSV", "", "CSV (*.csv)"
+        )
+        if not path:
+            return
+
+        existing_ids = frozenset(board.board_id for board in project.boards)
+        try:
+            boards = load_boards_from_csv(path, existing_ids=existing_ids)
+        except (OSError, BoardCsvImportError) as error:
+            QMessageBox.warning(
+                self,
+                "Importar tableros (CSV)",
+                f"No se pudo importar el CSV:\n\n{error}",
+            )
+            return
+
+        preview = BoardCsvImportPreviewDialog(self, boards=boards)
+        if preview.exec() != QDialog.DialogCode.Accepted:
+            self.statusBar().showMessage("Importación cancelada", 3000)
+            return
+
+        # Un comando deshacible por tablero, mismo patrón que _add_board.
+        for board in boards:
+            command = AddBoardCommand(self.services, board)
+            self._execute(command)
+        self.services.projects.mark_modified()
+
+        self.workspace.set_active_board(boards[0].board_id)
+        self.workspace.reload_project()
+        self._reload_explorer()
+        self._update_window_title()
+        self._update_undo_redo()
+        self.statusBar().showMessage(
+            f"{len(boards)} tablero(s) importados de {path}", 4000
+        )
+        self._log_activity(
+            f"{len(boards)} tablero(s) importados desde CSV", category="import"
         )
 
     def _generate_container_pieces(self):

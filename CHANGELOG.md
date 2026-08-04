@@ -2,6 +2,10 @@
 
 ## Sin publicar
 
+### Añadido
+
+- Importar tableros (CSV) en Studio (`IDE-0029`): "Archivo → Importar tableros (CSV)…", mismo patrón que la importación de piezas ya existente (`IDE-0018`). Da de alta un lote de tableros de una vez (por ejemplo, varios retales medidos) sin repetir el diálogo "Nuevo tablero" uno a uno. No exige tablero activo — solo proyecto abierto.
+
 ## 0.3.6 - 2026-08-03
 
 ### Cambiado
