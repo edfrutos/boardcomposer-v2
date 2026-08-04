@@ -342,6 +342,111 @@ def test_a_kerf_costs_a_piece_on_a_board_that_was_full_to_the_millimetre():
     assert len(services.projects.current_project.placements) == 1
 
 
+def test_best_fit_distribution_returns_empty_result_without_a_project():
+    services = StudioServices()
+
+    result = services.layout.apply_best_fit_distribution()
+
+    assert result.boards_used == []
+    assert result.pieces_placed == 0
+    assert result.pieces_unplaced == []
+
+
+def test_best_fit_distribution_prefers_the_smallest_sufficient_board():
+    services = StudioServices()
+    services.projects.new_project(
+        StudioProject(
+            project_id="proj-best-fit-1",
+            name="Demo",
+            # Large board listed FIRST — proves the choice is by area, not
+            # by list order (that's the old _fill_other_empty_boards_with_
+            # leftovers() behavior this replaces).
+            boards=[
+                StudioBoard("grande", 2000, 2000),
+                StudioBoard("retal", 600, 300),
+            ],
+            pieces=[StudioPiece("p1", 500, 300)],
+        )
+    )
+
+    result = services.layout.apply_best_fit_distribution()
+
+    assert result.boards_used == ["retal"]
+    project = services.projects.current_project
+    assert project.placement_by_piece_id("p1").board_id == "retal"
+
+
+def test_best_fit_distribution_uses_a_partially_occupied_board():
+    services = StudioServices()
+    services.projects.new_project(
+        StudioProject(
+            project_id="proj-best-fit-2",
+            name="Demo",
+            boards=[StudioBoard("A", 1000, 300)],
+            pieces=[
+                StudioPiece("existing", 400, 300),
+                StudioPiece("nueva", 400, 300),
+            ],
+        )
+    )
+    project = services.projects.current_project
+    # "A" already has a piece on it — the old leftover-fill skipped any
+    # board that wasn't completely empty. Best-fit must still consider it.
+    project.placements.append(StudioPlacement("existing", 0, 0, board_id="A"))
+
+    result = services.layout.apply_best_fit_distribution()
+
+    assert "A" in result.boards_used
+    assert project.placement_by_piece_id("nueva") is not None
+    assert project.placement_by_piece_id("nueva").board_id == "A"
+    # The pre-existing placement survives (possibly repacked, not lost).
+    assert project.placement_by_piece_id("existing") is not None
+
+
+def test_best_fit_distribution_falls_through_to_a_larger_board_when_needed():
+    services = StudioServices()
+    services.projects.new_project(
+        StudioProject(
+            project_id="proj-best-fit-3",
+            name="Demo",
+            boards=[
+                StudioBoard("retal", 600, 300),
+                StudioBoard("grande", 2000, 300),
+            ],
+            pieces=[
+                StudioPiece("p1", 500, 300),  # fits only on the small board
+                StudioPiece("p2", 700, 300),  # too long for the small board
+            ],
+        )
+    )
+
+    result = services.layout.apply_best_fit_distribution()
+
+    project = services.projects.current_project
+    assert project.placement_by_piece_id("p1").board_id == "retal"
+    assert project.placement_by_piece_id("p2").board_id == "grande"
+    assert set(result.boards_used) == {"retal", "grande"}
+    assert result.pieces_placed == 2
+    assert result.pieces_unplaced == []
+
+
+def test_best_fit_distribution_leaves_pieces_unplaced_without_a_matching_board():
+    services = StudioServices()
+    services.projects.new_project(
+        StudioProject(
+            project_id="proj-best-fit-4",
+            name="Demo",
+            boards=[StudioBoard("A", 2000, 300, thickness_mm=19.0)],
+            pieces=[StudioPiece("p1", 500, 300, thickness_mm=25.0)],
+        )
+    )
+
+    result = services.layout.apply_best_fit_distribution()
+
+    assert result.boards_used == []
+    assert result.pieces_unplaced == ["p1"]
+
+
 def test_applied_placements_leave_the_cut_between_pieces():
     services = StudioServices()
     project = _project_with_pieces()

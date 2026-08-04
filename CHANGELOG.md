@@ -5,6 +5,7 @@
 ### Añadido
 
 - Importar tableros (CSV) en Studio (`IDE-0029`): "Archivo → Importar tableros (CSV)…", mismo patrón que la importación de piezas ya existente (`IDE-0018`). Da de alta un lote de tableros de una vez (por ejemplo, varios retales medidos) sin repetir el diálogo "Nuevo tablero" uno a uno. No exige tablero activo — solo proyecto abierto.
+- Reparto por mejor ajuste entre tableros (`IDE-0030`): "Herramientas → Repartir piezas entre tableros (mejor ajuste)" (`Ctrl+Alt+M`). A diferencia del reparto de sobrantes existente (que solo probaba tableros completamente vacíos, en el orden de la lista), considera todos los tableros del proyecto — incluidos los parcialmente usados — y prueba primero el más pequeño que sea suficiente para cada pieza, para aprovechar de verdad los retales antes que un tablero grande.
 
 ## 0.3.6 - 2026-08-03
 

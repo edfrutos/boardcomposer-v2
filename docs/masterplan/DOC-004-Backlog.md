@@ -98,6 +98,7 @@ Observaciones:
 | IDE-0027 | IDs legibles de solución (etiqueta A/B/C + hash corto) | 🟢 | P3 |
 | IDE-0028 | Generador de piezas de contenedor (caja simple) desde un retal | 🟢 | P3 |
 | IDE-0029 | Importar tableros (CSV) en Studio | 🟢 | P3 |
+| IDE-0030 | Reparto por mejor ajuste entre tableros | 🟢 | P3 |
 
 ---
 
@@ -421,6 +422,20 @@ El usuario pidió CSV de tableros/tablas además del de piezas ya existente (`ID
 - `studio/dialogs/board_csv_import_preview_dialog.py::BoardCsvImportPreviewDialog` — misma tabla genérica id/dimensiones/material/grosor que `CsvImportPreviewDialog` (`IDE-0024`), adaptada a `board_id`.
 - `MainWindow._import_boards_csv()`: nueva acción "Importar tableros (CSV)…" en el menú Archivo, junto a "Importar piezas (CSV)…". A diferencia de la importación de piezas, no exige tablero activo — solo proyecto abierto. Un `AddBoardCommand` deshacible por tablero, mismo patrón que `_import_pieces_csv`. El primer tablero importado queda activo al terminar (mismo comportamiento que `_add_board()`).
 - Verificado con tests nuevos (`tests/test_board_csv_import.py`, `tests/test_main_window_import_boards_csv.py`) y con la app real: acción confirmada en el menú Archivo. 832 tests en verde.
+
+---
+
+## IDE-0030 — Reparto por mejor ajuste entre tableros
+
+**Estado:** 🟢 Completado. Dado de alta antes de construirse.
+
+El usuario reportó que "la funcionalidad de aprovechamiento de tablas residuales... no veo que funcione". El mecanismo existente (`LayoutService._fill_other_empty_boards_with_leftovers()`, de `IDE-0019`/anterior) ya repartía piezas sobrantes a otros tableros, pero con dos límites que explican la queja: solo prueba tableros **completamente vacíos** (uno ya parcialmente usado se descarta como candidato) y en el **orden de la lista del proyecto**, sin preferir el retal más ajustado. Acotado con el usuario (opción "mejor ajuste real" de tres alternativas planteadas): considerar todos los tableros a la vez, incluidos los parcialmente usados, priorizando el más pequeño que sea suficiente.
+
+- `LayoutService.apply_best_fit_distribution()` (`studio/layout_service.py`) — ordena todos los tableros del proyecto por área ascendente y, para cada uno con al menos una pieza sin colocar de su mismo grosor, llama a `solve_current_project(board_id)` (el mismo método de un solo tablero que ya usa "Calcular layout"). Heurística voraz (greedy best-fit), no un óptimo global — probar el tablero más pequeño suficiente primero maximiza el aprovechamiento de retales sin explorar combinaciones alternativas. Un tablero sin piezas nuevas que ofrecerle se salta sin invocar al solver, así que nunca se toca de más.
+- `BestFitResult` (dataclass nueva) — `boards_used`/`pieces_placed`/`pieces_unplaced`, para que `MainWindow` informe qué pasó sin tener que inspeccionar el proyecto por su cuenta.
+- `MainWindow._apply_best_fit_distribution()`: nueva acción "Herramientas → Repartir piezas entre tableros (mejor ajuste)" (`Ctrl+Alt+M`). Exige proyecto abierto, no tablero activo (a diferencia de "Calcular layout"/"Aplicar layout").
+- No sustituye al flujo existente (`Calcular layout`/`Aplicar layout`, tablero por tablero) — se añade como alternativa, sin tocar comportamiento ya verificado.
+- Verificado con tests nuevos (`tests/test_layout_service.py`, 5 casos nuevos incluido uno que prueba explícitamente que el tablero más pequeño gana aunque esté después en la lista; `tests/test_main_window_best_fit.py`) y con la app real: acción confirmada en el menú Herramientas. 841 tests en verde.
 
 ---
 

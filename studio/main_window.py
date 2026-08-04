@@ -271,6 +271,15 @@ class MainWindow(QMainWindow):
         menus["Herramientas"].addAction(self._actions["apply_layout"])
         self._actions["apply_layout"].triggered.connect(self._apply_layout)
 
+        self._actions["best_fit_distribution"] = QAction(
+            "Repartir piezas entre tableros (mejor ajuste)", self
+        )
+        self._actions["best_fit_distribution"].setShortcut("Ctrl+Alt+M")
+        menus["Herramientas"].addAction(self._actions["best_fit_distribution"])
+        self._actions["best_fit_distribution"].triggered.connect(
+            self._apply_best_fit_distribution
+        )
+
         self._actions["compare_solutions"] = QAction("Generar comparación", self)
         self._actions["compare_solutions"].setShortcut("Ctrl+Alt+C")
         menus["Comparar"].addAction(self._actions["compare_solutions"])
@@ -1766,6 +1775,51 @@ class MainWindow(QMainWindow):
         else:
             self.statusBar().showMessage("Layout aplicado al proyecto", 3000)
             self._log_activity("Layout aplicado al proyecto", category="layout")
+
+    def _apply_best_fit_distribution(self):
+        project = self.services.projects.current_project
+        if project is None:
+            self.statusBar().showMessage("Crea primero un proyecto.", 5000)
+            return
+
+        result = self.services.layout.apply_best_fit_distribution()
+        if not result.boards_used:
+            self.statusBar().showMessage(
+                "Nada que repartir: no hay piezas sin colocar que quepan "
+                "en ningún tablero.",
+                5000,
+            )
+            return
+
+        self.workspace.reload_project()
+        self.services.selection.clear()
+        self._reload_explorer()
+        self._update_undo_redo()
+        self._update_window_title()
+
+        boards_text = ", ".join(result.boards_used)
+        if result.pieces_unplaced:
+            message = (
+                f"Repartidas en {len(result.boards_used)} tablero(s) "
+                f"({boards_text}) — {len(result.pieces_unplaced)} pieza(s) "
+                f"sin colocar: {', '.join(result.pieces_unplaced)}"
+            )
+        else:
+            message = (
+                f"Todas las piezas repartidas en {len(result.boards_used)} "
+                f"tablero(s) ({boards_text})"
+            )
+        self.statusBar().showMessage(message, 6000)
+        self._log_activity(
+            f"Reparto por mejor ajuste: {result.pieces_placed} pieza(s) en "
+            f"{len(result.boards_used)} tablero(s)"
+            + (
+                f", {len(result.pieces_unplaced)} sin colocar"
+                if result.pieces_unplaced
+                else ""
+            ),
+            category="layout",
+        )
 
     def _compare_solutions(self):
         solutions = self.services.layout.compare_solutions(

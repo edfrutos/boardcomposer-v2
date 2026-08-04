@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
+
 from boardcomposer import Board, Project, ProjectConstraints
 from boardcomposer.domain import AssemblySolution
 from boardcomposer.solver.geometry_solver import GeometrySolver
@@ -8,6 +10,15 @@ from boardcomposer.solver.strategies import material_first_strategy
 from studio.models import StudioPlacement
 
 MAX_COMPARISON_SOLUTIONS = 4
+
+
+@dataclass
+class BestFitResult:
+    """Outcome of `LayoutService.apply_best_fit_distribution()`."""
+
+    boards_used: list[str] = field(default_factory=list)
+    pieces_placed: int = 0
+    pieces_unplaced: list[str] = field(default_factory=list)
 
 
 class LayoutService:
@@ -161,6 +172,60 @@ class LayoutService:
 
         self._fill_other_empty_boards_with_leftovers(active_board_id)
         return True
+
+    def apply_best_fit_distribution(self) -> BestFitResult:
+        """Places every unplaced piece by trying the project's boards
+        smallest-area first (IDE-0030) — a scrap that's just big enough for
+        a piece gets tried before a large fresh board, instead of the user
+        having to solve board by board and hope the leftovers land well.
+
+        Unlike `_fill_other_empty_boards_with_leftovers()`, a board doesn't
+        need to be empty to be a candidate: `solve_current_project()` (via
+        `to_core_project()`) already re-packs a board's own existing
+        placements together with whatever unplaced pieces fit — this just
+        calls that for every board, in best-fit order, instead of only the
+        one the user picked. A board with nothing new to offer is skipped
+        without solving, so it's never touched.
+        """
+        studio_project = self.services.projects.current_project
+        if studio_project is None:
+            return BestFitResult()
+
+        def unplaced_pieces():
+            return [
+                piece
+                for piece in studio_project.pieces
+                if studio_project.placement_by_piece_id(piece.piece_id) is None
+            ]
+
+        boards_by_area = sorted(
+            studio_project.boards, key=lambda board: board.length_mm * board.width_mm
+        )
+        boards_used: list[str] = []
+        original_last_solution = self.last_solution
+
+        try:
+            for board in boards_by_area:
+                if not any(
+                    piece.thickness_mm == board.thickness_mm
+                    for piece in unplaced_pieces()
+                ):
+                    continue
+
+                solution = self.solve_current_project(board.board_id)
+                if solution is not None and solution.placements:
+                    self._apply_solution(solution, board.board_id)
+                    boards_used.append(board.board_id)
+        finally:
+            self.last_solution = original_last_solution
+
+        remaining = unplaced_pieces()
+        pieces_placed = len(studio_project.pieces) - len(remaining)
+        return BestFitResult(
+            boards_used=boards_used,
+            pieces_placed=pieces_placed,
+            pieces_unplaced=[piece.piece_id for piece in remaining],
+        )
 
     def _fill_other_empty_boards_with_leftovers(
         self, solved_board_id: str | None

@@ -16,7 +16,7 @@ piezas de contenedor…", en `v0.3.5`) y el cambio de asset de macOS de
 `.zip` a `.dmg` (`package-studio.yml`, volumen con acceso directo a
 `Aplicaciones`). Cuarta release firmada y notarizada con la cuenta de
 Apple Developer activa (`DT-0011`).
-Tests: 832, en verde.
+Tests: 841, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -28,10 +28,9 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 | 4 — Inteligencia (IA) | 🟢 Completada |
 | 5 — Ecosistema | 🟡 En curso |
 
-Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0029`, todos 🟢 completados y
-en `main`. En desarrollo: `IDE-0030` (mejor ajuste multi-tablero) e
-`IDE-0031` (cajón sin rieles), ambos pedidos por el usuario el 04/08/2026
-junto a `IDE-0029`.
+Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0030`, todos 🟢 completados y
+en `main`. En desarrollo: `IDE-0031` (cajón sin rieles), pedido por el
+usuario el 04/08/2026 junto a `IDE-0029`/`IDE-0030`.
 
 Deuda técnica (`DOC-006-DeudaTecnica.md`): 22 registros, los 22 resueltos.
 `DT-0011` (el `.app` de macOS sin firmar/notarizar) cerrada del todo el
@@ -48,15 +47,29 @@ reconstruidos y verificados el 31/07/2026 tras el commit `043caf1`
 
 ## Trabajo en curso
 
-`IDE-0029` — importar tableros (CSV) en Studio (04/08/2026). El usuario
-pidió CSV de tableros/tablas además del de piezas ya existente, más un
-reparto automático de mejor ajuste entre tableros (`IDE-0030`, en curso) y
-mobiliario nuevo empezando por el cajón sin rieles (`IDE-0031`, en curso) —
-las tres piezas se acotaron juntas en la misma conversación. `IDE-0029` es
-la primera en aterrizar: `studio/project/board_csv_import.py::load_boards_from_csv()`
-(mismo patrón que `IDE-0018`, con `StudioBoard`) + `BoardCsvImportPreviewDialog`
-+ acción "Archivo → Importar tableros (CSV)…". 832 tests en verde. Dado de
-alta en el Backlog antes de construirse.
+`IDE-0031` — cajón sin rieles en el generador de contenedores (04/08/2026,
+en curso). Tercera y última pieza de lo pedido junto a `IDE-0029`/`IDE-0030`
+en la misma conversación.
+
+Ya en `main`:
+
+- `IDE-0029` — importar tableros (CSV) en Studio: mismo patrón que la
+  importación de piezas (`IDE-0018`),
+  `studio/project/board_csv_import.py::load_boards_from_csv()` +
+  `BoardCsvImportPreviewDialog` + acción "Archivo → Importar tableros
+  (CSV)…".
+- `IDE-0030` — reparto por mejor ajuste entre tableros: el usuario reportó
+  que el aprovechamiento de retales "no veo que funcione" —
+  `_fill_other_empty_boards_with_leftovers()` (`IDE-0019`) solo probaba
+  tableros completamente vacíos, en el orden de la lista, sin priorizar
+  el más ajustado. `LayoutService.apply_best_fit_distribution()` ordena
+  todos los tableros por área ascendente (incluidos los parcialmente
+  usados) y prueba el más pequeño suficiente primero — heurística voraz,
+  no óptimo global. Acción nueva "Herramientas → Repartir piezas entre
+  tableros (mejor ajuste)" (`Ctrl+Alt+M`), no sustituye al flujo
+  tablero-por-tablero existente.
+
+841 tests en verde. Ambas dadas de alta en el Backlog antes de construirse.
 
 Publicada `v0.3.5` (03/08/2026): `IDE-0028` — generador de piezas de
 contenedor desde un retal. Candidata 2 de aprovechamiento de retales
