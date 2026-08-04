@@ -10,11 +10,10 @@
 ## Estado actual
 
 Rama: `main`
-Versión publicada: `0.3.6` (03/08/2026, tag `v0.3.6`) — incluye `IDE-0028`
-(generador de piezas de contenedor desde un retal, "Herramientas → Generar
-piezas de contenedor…", en `v0.3.5`) y el cambio de asset de macOS de
-`.zip` a `.dmg` (`package-studio.yml`, volumen con acceso directo a
-`Aplicaciones`). Cuarta release firmada y notarizada con la cuenta de
+Versión publicada: `0.3.7` (04/08/2026, tag `v0.3.7`) — incluye
+`IDE-0029` (importar tableros CSV), `IDE-0030` (reparto por mejor ajuste
+entre tableros) e `IDE-0031` (cajón sin rieles en el generador de
+contenedores). Quinta release firmada y notarizada con la cuenta de
 Apple Developer activa (`DT-0011`).
 Tests: 873, en verde.
 
