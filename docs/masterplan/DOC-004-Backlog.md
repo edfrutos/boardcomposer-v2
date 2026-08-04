@@ -99,6 +99,7 @@ Observaciones:
 | IDE-0028 | Generador de piezas de contenedor (caja simple) desde un retal | 🟢 | P3 |
 | IDE-0029 | Importar tableros (CSV) en Studio | 🟢 | P3 |
 | IDE-0030 | Reparto por mejor ajuste entre tableros | 🟢 | P3 |
+| IDE-0031 | Cajón sin rieles en el generador de contenedores | 🟢 | P3 |
 
 ---
 
@@ -436,6 +437,47 @@ El usuario reportó que "la funcionalidad de aprovechamiento de tablas residuale
 - `MainWindow._apply_best_fit_distribution()`: nueva acción "Herramientas → Repartir piezas entre tableros (mejor ajuste)" (`Ctrl+Alt+M`). Exige proyecto abierto, no tablero activo (a diferencia de "Calcular layout"/"Aplicar layout").
 - No sustituye al flujo existente (`Calcular layout`/`Aplicar layout`, tablero por tablero) — se añade como alternativa, sin tocar comportamiento ya verificado.
 - Verificado con tests nuevos (`tests/test_layout_service.py`, 5 casos nuevos incluido uno que prueba explícitamente que el tablero más pequeño gana aunque esté después en la lista; `tests/test_main_window_best_fit.py`) y con la app real: acción confirmada en el menú Herramientas. 841 tests en verde.
+
+---
+
+## IDE-0031 — Cajón sin rieles en el generador de contenedores
+
+**Estado:** 🟢 Completado. Dado de alta antes de construirse.
+
+Tercera y última pieza pedida junto a `IDE-0029`/`IDE-0030` en la misma
+conversación (04/08/2026). Acotado con el usuario (opción "holgura por
+hueco de mueble" de tres alternativas planteadas): un cajón que desliza
+madera-madera sin rieles metálicos necesita holgura respecto al hueco del
+mueble donde va montado, así que sus dimensiones exteriores no se dan
+directas — se derivan del hueco (ancho/alto) menos la holgura por lado.
+
+- `studio/containers/drawer.py::build_drawer_no_rails_pieces()` — recibe
+  `opening_length_mm`/`opening_height_mm` (hueco del mueble),
+  `clearance_mm` (holgura por lado, se resta dos veces de cada dimensión)
+  y `depth_mm` (profundidad, independiente del hueco — el hueco solo
+  define ancho y alto). Calcula `outer_length_mm`/`outer_height_mm` y
+  delega en `build_simple_box_pieces()` (`IDE-0028`) para la lista de
+  piezas — mismo cuerpo físico (base + 4 paredes a tope), solo cambia
+  cómo se especifican las dimensiones exteriores. Valida holgura
+  no-negativa y que no deje el cajón con dimensiones nulas o negativas.
+- `CONTAINER_TEMPLATES` pasa a vivir en `studio/containers/__init__.py`
+  (antes solo en `simple_box.py`) para que sea el registro combinado de
+  ambos módulos, con `"cajon_sin_rieles"` como segunda entrada — ninguna
+  otra parte del código cambia para reconocer el tipo nuevo.
+- `ContainerGeneratorDialog` — el combo "Tipo de contenedor" ya tenía dos
+  huecos (`caja_simple`/`cajon_sin_rieles` en `CONTAINER_TEMPLATES`); las
+  filas del formulario cambian con `QFormLayout.setRowVisible()` según el
+  tipo elegido (dimensiones exteriores directas vs. hueco+holgura+
+  profundidad) y `values()` devuelve la forma de kwargs que espera cada
+  función del registro. El prefijo de id por defecto (`caja`/`cajon`)
+  cambia con el tipo salvo que el usuario ya lo haya personalizado.
+  `MainWindow._generate_container_pieces()` no cambia — ya era genérico
+  sobre `CONTAINER_TEMPLATES`.
+- Verificado con tests nuevos (`tests/test_drawer.py`,
+  `tests/test_container_generator_dialog.py`, caso nuevo en
+  `tests/test_main_window_container_generator.py`) y con la app real
+  (offscreen): el combo ofrece ambos tipos y `values()` cambia de forma
+  correcta al alternar. 873 tests en verde.
 
 ---
 

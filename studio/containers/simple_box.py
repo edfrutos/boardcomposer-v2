@@ -7,11 +7,12 @@ the open project with `AddPieceCommand`, one per piece, same as CSV import.
 The solver doesn't need to know these pieces came from a template instead
 of a CSV row or a hand-typed dialog — a piece is a piece.
 
-`CONTAINER_TEMPLATES` is the extension point for future container types
-(drawer, N-drawer unit, shelving) and `joint`/`dividers` are already part
-of the signature so adding a rebated joint or internal dividers later is a
-new branch in this function, not a new call site in Studio (DEC-0019 scope
-discussion, `docs/masterplan/DOC-999-Ideas.md`).
+`CONTAINER_TEMPLATES` (`studio/containers/__init__.py`) is the extension
+point for future container types (drawer, N-drawer unit, shelving) and
+`joint`/`dividers` are already part of the signature so adding a rebated
+joint or internal dividers later is a new branch in this function, not a
+new call site in Studio (DEC-0019 scope discussion,
+`docs/masterplan/DOC-999-Ideas.md`).
 """
 
 import math
@@ -91,8 +92,3 @@ def build_simple_box_pieces(
         StudioPiece(piece_id, length_mm, width_mm, material, thickness_mm)
         for piece_id, (_, length_mm, width_mm) in zip(ids, pieces_spec, strict=True)
     ]
-
-
-CONTAINER_TEMPLATES = {
-    "caja_simple": build_simple_box_pieces,
-}

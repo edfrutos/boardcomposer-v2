@@ -115,6 +115,37 @@ def test_cancelled_dialog_does_nothing(window, monkeypatch):
     assert len(project.pieces) == pieces_before
 
 
+def test_generates_five_pieces_for_drawer_no_rails_template(window, monkeypatch):
+    code = QDialog.DialogCode.Accepted
+    monkeypatch.setattr(
+        "studio.main_window.ContainerGeneratorDialog.exec", lambda self: code
+    )
+    monkeypatch.setattr(
+        "studio.main_window.ContainerGeneratorDialog.values",
+        lambda self: {
+            "opening_length_mm": 300.0,
+            "opening_height_mm": 100.0,
+            "depth_mm": 200.0,
+            "clearance_mm": 1.5,
+            "thickness_mm": 18.0,
+            "material": "Demo",
+            "id_prefix": "cajon",
+        },
+    )
+    monkeypatch.setattr(
+        "studio.main_window.ContainerGeneratorDialog.template_key",
+        lambda self: "cajon_sin_rieles",
+    )
+    _patch_preview_dialog(monkeypatch)
+    project = window.services.projects.current_project
+    pieces_before = len(project.pieces)
+
+    window._generate_container_pieces()
+
+    assert len(project.pieces) == pieces_before + 5
+    assert "cajon-base" in {piece.piece_id for piece in project.pieces}
+
+
 def test_without_a_board_warns_and_never_opens_the_dialog(window, monkeypatch):
     window._new_project()
     warnings = []

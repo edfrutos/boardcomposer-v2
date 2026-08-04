@@ -16,7 +16,7 @@ piezas de contenedor…", en `v0.3.5`) y el cambio de asset de macOS de
 `.zip` a `.dmg` (`package-studio.yml`, volumen con acceso directo a
 `Aplicaciones`). Cuarta release firmada y notarizada con la cuenta de
 Apple Developer activa (`DT-0011`).
-Tests: 841, en verde.
+Tests: 873, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -28,9 +28,8 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 | 4 — Inteligencia (IA) | 🟢 Completada |
 | 5 — Ecosistema | 🟡 En curso |
 
-Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0030`, todos 🟢 completados y
-en `main`. En desarrollo: `IDE-0031` (cajón sin rieles), pedido por el
-usuario el 04/08/2026 junto a `IDE-0029`/`IDE-0030`.
+Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0031`, todos 🟢 completados y
+en `main`.
 
 Deuda técnica (`DOC-006-DeudaTecnica.md`): 22 registros, los 22 resueltos.
 `DT-0011` (el `.app` de macOS sin firmar/notarizar) cerrada del todo el
@@ -47,11 +46,8 @@ reconstruidos y verificados el 31/07/2026 tras el commit `043caf1`
 
 ## Trabajo en curso
 
-`IDE-0031` — cajón sin rieles en el generador de contenedores (04/08/2026,
-en curso). Tercera y última pieza de lo pedido junto a `IDE-0029`/`IDE-0030`
-en la misma conversación.
-
-Ya en `main`:
+Ninguno abierto. Últimas tres piezas pedidas juntas el 04/08/2026
+(`IDE-0029`/`IDE-0030`/`IDE-0031`), las tres 🟢 completadas y en `main`.
 
 - `IDE-0029` — importar tableros (CSV) en Studio: mismo patrón que la
   importación de piezas (`IDE-0018`),
@@ -68,8 +64,19 @@ Ya en `main`:
   no óptimo global. Acción nueva "Herramientas → Repartir piezas entre
   tableros (mejor ajuste)" (`Ctrl+Alt+M`), no sustituye al flujo
   tablero-por-tablero existente.
+- `IDE-0031` — cajón sin rieles en el generador de contenedores: acotado
+  con el usuario ("holgura por hueco de mueble"). Dimensiones exteriores
+  no se dan directas, se derivan del hueco del mueble (ancho/alto) menos
+  la holgura por lado necesaria para deslizar madera-madera sin rieles
+  metálicos — `studio/containers/drawer.py::build_drawer_no_rails_pieces()`
+  delega en `build_simple_box_pieces()` (`IDE-0028`) para la lista de
+  piezas. `CONTAINER_TEMPLATES` pasa a vivir en
+  `studio/containers/__init__.py` como registro combinado de ambos
+  templates; `ContainerGeneratorDialog` alterna las filas del formulario
+  según el tipo elegido.
 
-841 tests en verde. Ambas dadas de alta en el Backlog antes de construirse.
+873 tests en verde. Las tres dadas de alta en el Backlog antes de
+construirse.
 
 Publicada `v0.3.5` (03/08/2026): `IDE-0028` — generador de piezas de
 contenedor desde un retal. Candidata 2 de aprovechamiento de retales
