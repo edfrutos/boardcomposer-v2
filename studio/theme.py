@@ -210,6 +210,38 @@ def build_stylesheet(scheme: str) -> str:
     }}
     {warm_dock_rules}
 
+    /* Tabified docks (Timeline/Comparador, Inspector/Asistente) switch
+    panels through a native QTabBar with no rule of its own here — only
+    styling ::tab left the bar's own background painted by the native
+    style (confirmed by grabbing a real render: a light gray Fusion/Aqua
+    panel, independent of this palette), so text_muted below has no
+    guaranteed contrast against whatever background the platform happens
+    to draw. Same fix pattern as panel_html_stylesheet() below (explicit
+    color beats relying on native/OS painting for anything this app
+    themes itself) — the bar itself needs a rule, not just its tabs. */
+    QTabBar {{
+        background: {p.surface_alt};
+    }}
+    QTabWidget::pane {{
+        border: none;
+    }}
+    QTabBar::tab {{
+        background: transparent;
+        color: {p.text_muted};
+        padding: 6px 14px;
+        margin: 2px;
+        border-radius: 8px;
+    }}
+    QTabBar::tab:selected {{
+        background: {gradient};
+        color: {p.accent_text};
+        font-weight: 600;
+    }}
+    QTabBar::tab:hover:!selected {{
+        background: {p.border};
+        color: {p.text};
+    }}
+
     QTreeWidget, QTextEdit, QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox {{
         background: {p.surface};
         color: {p.text};

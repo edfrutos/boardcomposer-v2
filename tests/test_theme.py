@@ -72,6 +72,17 @@ def test_build_stylesheet_gives_warm_docks_an_accent2_title_stripe():
         assert f"QDockWidget#{name}::title" in light
 
 
+def test_build_stylesheet_themes_the_tab_bar_for_tabified_docks():
+    # Regression: unstyled QTabBar fell back to native macOS rendering,
+    # which doesn't pick up this palette — unselected tab text went
+    # near-invisible against the dark surfaces (Timeline/Inspector tabs).
+    dark = build_stylesheet("dark")
+
+    assert "QTabBar::tab" in dark
+    assert "QTabBar::tab:selected" in dark
+    assert DARK.text_muted in dark
+
+
 def test_apply_elevation_attaches_a_drop_shadow(app):
     widget = QLabel()
 
