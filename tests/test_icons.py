@@ -1,4 +1,5 @@
 import pytest
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
 from studio.icons import _PATHS, build_icons
@@ -34,3 +35,20 @@ def test_build_icons_actually_paints_visible_pixels(app):
             if image.pixelColor(x, y).alpha() > 10
         )
         assert visible_pixels > 5, f"icon '{name}' painted almost nothing"
+
+
+def test_disabled_icons_stay_visible_instead_of_vanishing(app):
+    # Regression: Qt's default disabled-icon effect (desaturate + ~30%
+    # opacity) all but erases a thin-stroke line icon — build_icons() must
+    # register its own Disabled-mode pixmap instead of relying on it.
+    icons = build_icons("#334155")
+
+    for name, icon in icons.items():
+        image = icon.pixmap(32, 32, QIcon.Mode.Disabled).toImage()
+        visible_pixels = sum(
+            1
+            for y in range(32)
+            for x in range(32)
+            if image.pixelColor(x, y).alpha() > 10
+        )
+        assert visible_pixels > 5, f"disabled icon '{name}' painted almost nothing"

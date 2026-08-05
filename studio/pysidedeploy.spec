@@ -84,9 +84,14 @@ mode = onefile
 # other app built the same careless way, and rejected by notarisation. it
 # has to stay in reverse-dns form and must never change once a release is
 # out — macos keys per-app settings and permissions off this string.
+# --macos-app-name sets CFBundleName, the display name macOS shows in the
+# menu bar (top-left, bold) and Dock — a *different* plist key from the
+# bundle identifier above. Without it nuitka falls back to a generic "app"
+# there too (spotted in v0.3.7, menu bar read "app" instead of the actual
+# app name even though the window title was correct).
 # --macos-app-version must match the version in pyproject.toml.
 # scripts/check_project.py fails the build if the two drift apart.
-extra_args = --quiet --noinclude-qt-translations --macos-signed-app-name=com.efjdefrutos.boardcomposer.studio --macos-app-version=0.3.7
+extra_args = --quiet --noinclude-qt-translations --macos-signed-app-name=com.efjdefrutos.boardcomposer.studio --macos-app-name="BoardComposer Studio" --macos-app-version=0.3.7
 
 [buildozer]
 

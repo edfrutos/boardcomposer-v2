@@ -11,6 +11,13 @@ from PySide6.QtSvg import QSvgRenderer
 
 _RENDER_SIZE = 32
 
+# Disabled toolbar actions (most of them, in a fresh project — undo/redo,
+# piece/solver actions) would otherwise fall back to Qt's default disabled
+# effect, which desaturates and drops opacity to ~30% — for a thin-stroke
+# line icon that all but disappears against the toolbar's colored gradient.
+# A flat opacity on the same color reads as "dimmed" without vanishing.
+_DISABLED_OPACITY = 0.45
+
 _PATHS = {
     "new_project": '<path d="M4 4h9l4 4v12H4z"/><path d="M13 4v4h4"/>',
     "open": '<path d="M4 7h5l2 2h9v9a1 1 0 0 1-1 1H4z"/>'
@@ -55,7 +62,7 @@ _PATHS = {
 }
 
 
-def _build_icon(name: str, color: str) -> QIcon:
+def _render_pixmap(name: str, color: str, *, opacity: float = 1.0) -> QPixmap:
     body = _PATHS[name]
     svg = (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" '
@@ -68,10 +75,20 @@ def _build_icon(name: str, color: str) -> QIcon:
     pixmap.fill(Qt.GlobalColor.transparent)
 
     painter = QPainter(pixmap)
+    painter.setOpacity(opacity)
     renderer.render(painter)
     painter.end()
 
-    return QIcon(pixmap)
+    return pixmap
+
+
+def _build_icon(name: str, color: str) -> QIcon:
+    icon = QIcon()
+    icon.addPixmap(_render_pixmap(name, color), QIcon.Mode.Normal)
+    icon.addPixmap(
+        _render_pixmap(name, color, opacity=_DISABLED_OPACITY), QIcon.Mode.Disabled
+    )
+    return icon
 
 
 def build_icons(color: str) -> dict[str, QIcon]:
