@@ -1,6 +1,6 @@
 # BoardComposer — MASTERPLAN
 
-**Última revisión:** 04/08/2026
+**Última revisión:** 05/08/2026
 
 > Este documento resume el estado del proyecto y las normas de trabajo.
 > El detalle vivo de cada funcionalidad está en `DOC-004-Backlog.md`, la
@@ -10,12 +10,15 @@
 ## Estado actual
 
 Rama: `main`
-Versión publicada: `0.3.7` (04/08/2026, tag `v0.3.7`) — incluye
-`IDE-0029` (importar tableros CSV), `IDE-0030` (reparto por mejor ajuste
-entre tableros) e `IDE-0031` (cajón sin rieles en el generador de
-contenedores). Quinta release firmada y notarizada con la cuenta de
-Apple Developer activa (`DT-0011`).
-Tests: 873, en verde.
+Versión publicada: `0.3.8` (05/08/2026, tag `v0.3.8`) — dos arreglos
+detectados en UAT de `v0.3.7`: nombre de app en el menú de macOS
+("app" → "BoardComposer Studio", faltaba `--macos-app-name` en
+`pysidedeploy.spec`) y contraste de iconos deshabilitados en el toolbar
+(`build_icons()` registra su propio pixmap en modo `Disabled` en vez de
+depender del efecto por defecto de Qt, que los volvía casi invisibles
+sobre el gradiente de color). Sexta release firmada y notarizada con la
+cuenta de Apple Developer activa (`DT-0011`).
+Tests: 874, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 

@@ -1,5 +1,14 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.8 - 2026-08-05
+
+### Arreglado
+
+- El menú de macOS (barra superior) mostraba "app" en vez de "BoardComposer Studio": `--macos-signed-app-name` fija el bundle identifier, no el nombre visible (`CFBundleName`) — falta `--macos-app-name` en `studio/pysidedeploy.spec`.
+- Iconos de acciones deshabilitadas casi invisibles sobre el gradiente de color del toolbar (la mayoría en un proyecto nuevo: undo/redo, piezas, solver...). Qt genera el modo `Disabled` por defecto desaturando y bajando la opacidad al ~30%, borrando casi del todo un icono de trazo fino — `build_icons()` (`studio/icons.py`) ahora registra su propio pixmap en modo `Disabled` con opacidad fija al 45%.
+
+---
+
 ## 0.3.7 - 2026-08-04
 
 ### Añadido
