@@ -10,14 +10,13 @@
 ## Estado actual
 
 Rama: `main`
-Versión publicada: `0.3.8` (05/08/2026, tag `v0.3.8`) — dos arreglos
-detectados en UAT de `v0.3.7`: nombre de app en el menú de macOS
-("app" → "BoardComposer Studio", faltaba `--macos-app-name` en
-`pysidedeploy.spec`) y contraste de iconos deshabilitados en el toolbar
-(`build_icons()` registra su propio pixmap en modo `Disabled` en vez de
-depender del efecto por defecto de Qt, que los volvía casi invisibles
-sobre el gradiente de color). Sexta release firmada y notarizada con la
-cuenta de Apple Developer activa (`DT-0011`).
+Versión publicada: `0.3.9` (05/08/2026, tag `v0.3.9`) — tercer arreglo
+de la ronda de UAT de `v0.3.7`: contraste de la pestaña sin seleccionar
+en docks tabificados (Timeline/Comparador, Inspector/Asistente), que no
+tenía regla QSS propia y caía al color nativo de la plataforma —
+`build_stylesheet()` ahora fija fondo y color de `QTabBar`, mismo patrón
+que `panel_html_stylesheet()`. Séptima release firmada y
+notarizada con la cuenta de Apple Developer activa (`DT-0011`).
 Tests: 874, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):

@@ -1,5 +1,13 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.9 - 2026-08-05
+
+### Arreglado
+
+- Pestaña sin seleccionar de un dock tabificado ("Timeline", "Inspector") casi ilegible: no tenía ninguna regla QSS propia, así que su fondo caía al color nativo del estilo de la plataforma en vez de la paleta de la app — `build_stylesheet()` (`studio/theme.py`) ahora fija fondo y color propios en `QTabBar`/`QTabBar::tab`, mismo patrón que ya usa `panel_html_stylesheet()` para el mismo tipo de problema (color explícito en vez de depender del pintado nativo).
+
+---
+
 ## 0.3.8 - 2026-08-05
 
 ### Arreglado
