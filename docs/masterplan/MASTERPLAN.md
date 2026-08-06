@@ -1,6 +1,6 @@
 # BoardComposer — MASTERPLAN
 
-**Última revisión:** 05/08/2026
+**Última revisión:** 06/08/2026
 
 > Este documento resume el estado del proyecto y las normas de trabajo.
 > El detalle vivo de cada funcionalidad está en `DOC-004-Backlog.md`, la
@@ -10,14 +10,19 @@
 ## Estado actual
 
 Rama: `main`
-Versión publicada: `0.3.9` (05/08/2026, tag `v0.3.9`) — tercer arreglo
-de la ronda de UAT de `v0.3.7`: contraste de la pestaña sin seleccionar
-en docks tabificados (Timeline/Comparador, Inspector/Asistente), que no
-tenía regla QSS propia y caía al color nativo de la plataforma —
-`build_stylesheet()` ahora fija fondo y color de `QTabBar`, mismo patrón
-que `panel_html_stylesheet()`. Séptima release firmada y
-notarizada con la cuenta de Apple Developer activa (`DT-0011`).
-Tests: 874, en verde.
+Versión publicada: `0.3.10` (06/08/2026, tag `v0.3.10`) — arreglo
+detectado en la checklist de verificación visual de `v0.3.9`
+(`docs/RELEASE-SMOKE-v0.3.9.md`): los botones de flotar/cerrar de
+cualquier dock (Explorer, Inspector, Timeline, Comparador, Asistente,
+docks de plugin) usaban el icono nativo de Qt, que ignora la paleta de
+la app por completo, y quedaban casi invisibles en tema oscuro —
+`MainWindow._style_dock_titlebar()` sustituye la cabecera nativa por
+una propia, mismo patrón que el fix de las pestañas de dock tabificado
+en `0.3.9`. Misma pasada de UAT: registrada `IDE-0032` (Buscar
+actualizaciones, menú Ayuda vacío) como pendiente sin construir.
+Octava release firmada y notarizada con la cuenta de Apple Developer
+activa (`DT-0011`).
+Tests: 887, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -29,8 +34,8 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 | 4 — Inteligencia (IA) | 🟢 Completada |
 | 5 — Ecosistema | 🟡 En curso |
 
-Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0031`, todos 🟢 completados y
-en `main`.
+Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0031` 🟢 completados y en
+`main`; `IDE-0032` (Buscar actualizaciones) 🔵 planificada, sin construir.
 
 Deuda técnica (`DOC-006-DeudaTecnica.md`): 22 registros, los 22 resueltos.
 `DT-0011` (el `.app` de macOS sin firmar/notarizar) cerrada del todo el

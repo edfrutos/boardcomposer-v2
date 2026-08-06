@@ -1,5 +1,13 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.10 - 2026-08-06
+
+### Arreglado
+
+- Botones de flotar/cerrar en la cabecera de cualquier dock (Explorer, Inspector, Timeline, Comparador, Asistente, docks de plugin) casi invisibles en tema oscuro: usaban el icono nativo de Qt, que ignora la paleta de la app por completo (confirmado incluso forzando `QPalette.WindowText`/`ButtonText`, sin efecto). `MainWindow._style_dock_titlebar()` sustituye la cabecera nativa por una propia, con los botones dibujados vía `icons.py` — mismo patrón que el fix de las pestañas de dock tabificado (`0.3.9`).
+
+---
+
 ## 0.3.9 - 2026-08-05
 
 ### Arreglado
