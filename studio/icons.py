@@ -59,6 +59,11 @@ _PATHS = {
     "board_row": '<rect x="3" y="8" width="18" height="8" rx="1.5"/>',
     "piece_row": '<rect x="4" y="5" width="8" height="8" rx="1"/>'
     '<rect x="13" y="10" width="7" height="7" rx="1"/>',
+    # Dock title bar buttons (float/close) — MainWindow replaces Qt's native
+    # ones with these (theme.py's build_stylesheet() docstring on QTabBar
+    # explains why: the native buttons ignore this app's palette entirely).
+    "dock_float": '<rect x="6" y="6" width="12" height="12" rx="1.5"/>',
+    "dock_close": '<path d="M6 6l12 12"/><path d="M18 6 6 18"/>',
 }
 
 

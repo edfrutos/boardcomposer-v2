@@ -5,7 +5,7 @@ import pathlib
 import sys
 import uuid
 
-from PySide6.QtCore import QCoreApplication, QSettings, Qt
+from PySide6.QtCore import QCoreApplication, QSettings, QSize, Qt
 from PySide6.QtGui import QAction, QCloseEvent
 
 from PySide6.QtWidgets import (
@@ -45,6 +45,7 @@ from studio.icons import build_icons
 from studio.prompt_input import PromptTextEdit
 from studio.theme import (
     ICON_COLOR,
+    WARM_DOCK_NAMES,
     apply_elevation,
     apply_theme,
     detect_color_scheme,
@@ -160,6 +161,8 @@ class MainWindow(QMainWindow):
         self.services = services
         self.setWindowTitle("BoardComposer Studio")
         self.resize(1400, 900)
+
+        self._docks: list[QDockWidget] = []
 
         self._build_menu()
         self._build_toolbar()
@@ -372,7 +375,80 @@ class MainWindow(QMainWindow):
         scheme = None if key == "auto" else key
         resolved = apply_theme(QApplication.instance(), scheme)
         self._apply_panel_stylesheets(resolved)
+        for dock in self._docks:
+            self._style_dock_titlebar(dock, resolved)
         QSettings().setValue(THEME_SETTINGS_KEY, key)
+
+    def _register_dock(self, dock: QDockWidget, scheme: str | None = None) -> None:
+        """Tracks `dock` so _set_theme() can re-paint its title bar on a
+        theme change, and gives it its themed title bar right away."""
+        self._docks.append(dock)
+        self._style_dock_titlebar(dock, scheme or detect_color_scheme())
+
+    def _style_dock_titlebar(self, dock: QDockWidget, scheme: str) -> None:
+        """Replaces Qt's native dock title bar (with its float/close
+        buttons) with one this app paints itself.
+
+        Verified against a real (offscreen) render in both themes: Qt's
+        built-in title bar buttons ignore this app's palette entirely —
+        even forcing QPalette.WindowText/ButtonText to a bright test color
+        left them unchanged — so in dark mode they come out as a barely
+        visible dark-gray-on-dark-navy. Same fix philosophy as the
+        tabified-dock QTabBar rule in theme.py: paint it ourselves rather
+        than trust native/OS chrome for anything this app themes.
+        """
+        p = palette_for(scheme)
+        name = dock.windowTitle()
+        accent = p.accent2 if name in WARM_DOCK_NAMES else p.accent
+        icons = build_icons(p.text)
+
+        bar = QWidget()
+        bar.setStyleSheet(
+            f"background: {p.surface_alt}; border-bottom: 1px solid {p.border};"
+        )
+        layout = QHBoxLayout(bar)
+        layout.setContentsMargins(0, 6, 6, 6)
+        layout.setSpacing(6)
+
+        # The accent stripe is a real child widget, not a `border-left` QSS
+        # rule on `bar` — a QSS border on a plain QWidget that also parents
+        # interactive children (the buttons below) painted a stray blue
+        # fragment next to each one (confirmed with an isolated repro: the
+        # artifact disappeared the moment the border became its own 3px
+        # widget instead of a border property on their shared parent).
+        stripe = QWidget()
+        stripe.setFixedWidth(3)
+        stripe.setStyleSheet(f"background: {accent}; border: none;")
+        layout.addWidget(stripe)
+
+        label = QLabel(name)
+        label.setStyleSheet(
+            f"color: {p.text}; font-weight: 600; border: none; background: transparent;"
+        )
+        layout.addWidget(label)
+        layout.addStretch()
+
+        # NoFocus: these are chrome, not tab-stops — Qt's own title bar
+        # buttons aren't part of the tab order either.
+        float_button = QToolButton()
+        float_button.setAutoRaise(True)
+        float_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        float_button.setIcon(icons["dock_float"])
+        float_button.setIconSize(QSize(12, 12))
+        float_button.setToolTip("Flotar / anclar panel")
+        float_button.clicked.connect(lambda: dock.setFloating(not dock.isFloating()))
+        layout.addWidget(float_button)
+
+        close_button = QToolButton()
+        close_button.setAutoRaise(True)
+        close_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        close_button.setIcon(icons["dock_close"])
+        close_button.setIconSize(QSize(12, 12))
+        close_button.setToolTip("Cerrar panel")
+        close_button.clicked.connect(dock.close)
+        layout.addWidget(close_button)
+
+        dock.setTitleBarWidget(bar)
 
     def _apply_panel_stylesheets(self, scheme: str):
         """Re-themes the Inspector/Comparador/Asistente docks' HTML and
@@ -491,6 +567,7 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, explorer_dock)
         self._menus["Ver"].addAction(explorer_dock.toggleViewAction())
         apply_elevation(explorer_dock)
+        self._register_dock(explorer_dock)
 
         self.inspector = QTextEdit()
         self.inspector.setReadOnly(True)
@@ -508,6 +585,7 @@ class MainWindow(QMainWindow):
         )
         self._menus["Ver"].addAction(inspector_dock.toggleViewAction())
         apply_elevation(inspector_dock)
+        self._register_dock(inspector_dock)
         self._inspector_dock = inspector_dock
 
         self.timeline_overview = QTextEdit()
@@ -561,6 +639,7 @@ class MainWindow(QMainWindow):
         )
         self._menus["Ver"].addAction(console_dock.toggleViewAction())
         apply_elevation(console_dock)
+        self._register_dock(console_dock)
 
         self.comparator = QTextEdit()
         self.comparator.setReadOnly(True)
@@ -579,6 +658,7 @@ class MainWindow(QMainWindow):
         self.tabifyDockWidget(console_dock, comparator_dock)
         self._menus["Ver"].addAction(comparator_dock.toggleViewAction())
         apply_elevation(comparator_dock)
+        self._register_dock(comparator_dock)
 
         self._build_assistant_panel()
         self._build_plugin_panels()
@@ -660,6 +740,7 @@ class MainWindow(QMainWindow):
         self.tabifyDockWidget(self._inspector_dock, assistant_dock)
         self._menus["Ver"].addAction(assistant_dock.toggleViewAction())
         apply_elevation(assistant_dock)
+        self._register_dock(assistant_dock)
 
     def _build_plugin_panels(self):
         """Añade un QDockWidget por cada panel registrado por un plugin
@@ -696,6 +777,7 @@ class MainWindow(QMainWindow):
             dock.setWidget(widget)
             self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
             self._menus["Ver"].addAction(dock.toggleViewAction())
+            self._register_dock(dock)
 
     def _build_statusbar(self):
         status = QStatusBar(self)

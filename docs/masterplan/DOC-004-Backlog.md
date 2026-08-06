@@ -100,6 +100,40 @@ Observaciones:
 | IDE-0029 | Importar tableros (CSV) en Studio | 🟢 | P3 |
 | IDE-0030 | Reparto por mejor ajuste entre tableros | 🟢 | P3 |
 | IDE-0031 | Cajón sin rieles en el generador de contenedores | 🟢 | P3 |
+| IDE-0032 | Buscar actualizaciones (menú Ayuda) | 🔵 | P3 |
+
+---
+
+## IDE-0032 — Buscar actualizaciones (menú Ayuda)
+
+**Estado:** 🔵 Planificada. Detectada como hueco el 06/08/2026 durante la
+checklist de verificación visual de `v0.3.9`
+(`docs/RELEASE-SMOKE-v0.3.9.md`): el menú **Ayuda** existe en
+`main_window.py` (`_build_menus()`, `menus["Ayuda"]`) pero no tiene
+ninguna acción registrada — no hay "Acerca de", ni "Buscar
+actualizaciones", ni nada. No es una regresión de ningún fix anterior;
+nunca se construyó.
+
+**Descripción:** una acción en el menú Ayuda que consulte
+`GET /repos/edfrutos/boardcomposer-v2/releases/latest` de la API de
+GitHub, compare el tag contra `pyproject.toml::version`, y si hay una
+versión más reciente ofrezca el enlace a la página de la release
+(`https://github.com/edfrutos/boardcomposer-v2/releases/tag/vX.Y.Z`)
+en vez de descargar/instalar nada automáticamente — evita meterse en
+firma/notarización de un instalador que se autoactualiza.
+
+**Criterios de aceptación (borrador, a afinar antes de construir):**
+
+- No bloquea el arranque de Studio si no hay red o GitHub no responde
+  — falla en silencio o con un aviso discreto, nunca un diálogo modal
+  al abrir la app.
+- Solo se comprueba bajo demanda (clic en el menú), no en cada
+  arranque, salvo que se decida explícitamente lo contrario.
+- Mensaje claro tanto si hay actualización disponible como si ya se
+  tiene la última versión.
+
+**Observaciones:** prioridad P3 — no bloquea nada del roadmap actual;
+queda pendiente de acotar del todo antes de empezar a construirla.
 
 ---
 
