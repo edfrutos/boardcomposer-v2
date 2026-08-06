@@ -1,5 +1,13 @@
-from PySide6.QtGui import QColor, QFont, QPen
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor, QFont, QFontMetricsF, QPen
 from PySide6.QtWidgets import QGraphicsItem, QGraphicsRectItem, QGraphicsSimpleTextItem
+
+# Where the label starts (left inset) and how much room it leaves on the
+# piece's right edge — both in the same mm-based local coordinates as the
+# rect itself, since nothing here applies its own transform beyond what the
+# view already does.
+_LABEL_X = 24
+_LABEL_RIGHT_MARGIN = 12
 
 
 class BoardPieceItem(QGraphicsRectItem):
@@ -28,10 +36,25 @@ class BoardPieceItem(QGraphicsRectItem):
             | QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges
         )
 
-        label = QGraphicsSimpleTextItem(piece_id, self)
-        label.setFont(QFont("Arial", 40))
-        label.setBrush(QColor("#1e3a8a"))
-        label.setPos(24, 20)
+        self._label = QGraphicsSimpleTextItem(piece_id, self)
+        self._label.setFont(QFont("Arial", 40))
+        self._label.setBrush(QColor("#1e3a8a"))
+        self._label.setPos(_LABEL_X, 20)
+        self._update_label_elision()
+
+    def _update_label_elision(self) -> None:
+        """Keeps the label from overflowing past the piece's own rect — a
+        long auto-generated id (e.g. the container generator's
+        "caja_simple-lateral-izquierdo") on a narrow piece used to run
+        straight through neighboring pieces, unclipped, with no way to tell
+        where one piece's label ended and the next began."""
+        available_width = self.rect().width() - _LABEL_X - _LABEL_RIGHT_MARGIN
+        metrics = QFontMetricsF(self._label.font())
+        elided = metrics.elidedText(
+            self.piece_id, Qt.TextElideMode.ElideRight, max(available_width, 0)
+        )
+        self._label.setText(elided)
+        self._label.setToolTip(self.piece_id if elided != self.piece_id else "")
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.GraphicsItemChange.ItemPositionChange:
@@ -86,3 +109,4 @@ class BoardPieceItem(QGraphicsRectItem):
 
         self.setTransformOriginPoint(self.rect().center())
         self.setRotation(0)
+        self._update_label_elision()
