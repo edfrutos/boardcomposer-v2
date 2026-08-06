@@ -1,5 +1,13 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.11 - 2026-08-06
+
+### Arreglado
+
+- Etiqueta de pieza desbordaba el rectángulo en piezas estrechas: los nombres largos que genera el generador de contenedores (`caja_simple-lateral-izquierdo`, etc.) se dibujaban con el `piece_id` completo, sin ajustar al ancho real de la pieza — visible sobre todo en las piezas del borde, sin ninguna otra pieza que las tapara. `BoardPieceItem._update_label_elision()` (`studio/workspace/board_piece_item.py`) trunca la etiqueta con elipsis para caber siempre en el rectángulo, recalculando al rotar; el id completo queda disponible como tooltip si queda truncado.
+
+---
+
 ## 0.3.10 - 2026-08-06
 
 ### Arreglado

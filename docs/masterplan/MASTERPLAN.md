@@ -10,19 +10,19 @@
 ## Estado actual
 
 Rama: `main`
-Versión publicada: `0.3.10` (06/08/2026, tag `v0.3.10`) — arreglo
-detectado en la checklist de verificación visual de `v0.3.9`
-(`docs/RELEASE-SMOKE-v0.3.9.md`): los botones de flotar/cerrar de
-cualquier dock (Explorer, Inspector, Timeline, Comparador, Asistente,
-docks de plugin) usaban el icono nativo de Qt, que ignora la paleta de
-la app por completo, y quedaban casi invisibles en tema oscuro —
-`MainWindow._style_dock_titlebar()` sustituye la cabecera nativa por
-una propia, mismo patrón que el fix de las pestañas de dock tabificado
-en `0.3.9`. Misma pasada de UAT: registrada `IDE-0032` (Buscar
-actualizaciones, menú Ayuda vacío) como pendiente sin construir.
-Octava release firmada y notarizada con la cuenta de Apple Developer
-activa (`DT-0011`).
-Tests: 887, en verde.
+Versión publicada: `0.3.11` (06/08/2026, tag `v0.3.11`) — arreglo
+reportado por el usuario con una captura real de Studio: la etiqueta de
+una pieza se dibujaba con el `piece_id` completo sin ajustar al ancho
+real del rectángulo, así que un nombre largo del generador de
+contenedores (`caja_simple-lateral-izquierdo`, etc.) sobre una pieza
+estrecha se salía del rectángulo — visible sobre todo en piezas de
+borde, sin otra pieza que las tapara por encima.
+`BoardPieceItem._update_label_elision()` (`studio/workspace/`) trunca
+con elipsis para caber siempre en la pieza, recalculando al rotar; el
+id completo queda como tooltip si queda truncado. Novena release
+firmada y notarizada con la cuenta de Apple Developer activa
+(`DT-0011`).
+Tests: 891, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
