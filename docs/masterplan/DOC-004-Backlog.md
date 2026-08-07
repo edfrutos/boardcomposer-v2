@@ -175,9 +175,20 @@ configurado con host/puerto + nombre de modelo en vez de clave.
   la que cada test cree usar.
 - Verificado contra los SDKs reales de OpenAI y Google Gemini (llamada a
   su constructor sin clave, confirmando el fallo inmediato que motiva
-  `_resolve_provider()`) — no verificado con claves reales ni contra un
-  servidor Ollama real en esta sesión, a diferencia del criterio de
-  verificación que sí se siguió con Anthropic en `IDE-0007` Fase A.
+  `_resolve_provider()`).
+- **OpenAI verificado con una clave real** (07/08/2026, sesión
+  posterior): llamada real al SDK (`gpt-4o-mini`), `default_provider()`
+  con `BOARDCOMPOSER_AI_PROVIDER=openai` resolviendo a `OpenAIProvider`
+  real, y el flujo completo de Preferencias
+  (`MainWindow._set_ai_preferences(provider="openai", ...)`) pasando de
+  `MockAIProvider` a `OpenAIProvider` real — verificado además con
+  contexto de proyecto real: "¿Cuántas piezas tiene mi proyecto actual?"
+  sobre un proyecto de 1 pieza respondido correctamente por OpenAI real,
+  confirmando que el contexto llega al prompt y la respuesta vuelve por
+  el camino real. Captura del diálogo de Preferencias con OpenAI
+  seleccionado: solo la fila "Clave API de OpenAI" visible, el resto
+  ocultas, como se diseñó. Gemini y Ollama siguen sin verificar con
+  credenciales/servidor reales.
 
 **Fuera de alcance:** modelo configurable por el usuario para
 OpenAI/Gemini/Anthropic (fijo por constante `DEFAULT_MODEL`, igual que
