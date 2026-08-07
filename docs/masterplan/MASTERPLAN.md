@@ -1,6 +1,6 @@
 # BoardComposer — MASTERPLAN
 
-**Última revisión:** 06/08/2026
+**Última revisión:** 07/08/2026
 
 > Este documento resume el estado del proyecto y las normas de trabajo.
 > El detalle vivo de cada funcionalidad está en `DOC-004-Backlog.md`, la
@@ -10,19 +10,25 @@
 ## Estado actual
 
 Rama: `main`
-Versión publicada: `0.3.11` (06/08/2026, tag `v0.3.11`) — arreglo
-reportado por el usuario con una captura real de Studio: la etiqueta de
-una pieza se dibujaba con el `piece_id` completo sin ajustar al ancho
-real del rectángulo, así que un nombre largo del generador de
-contenedores (`caja_simple-lateral-izquierdo`, etc.) sobre una pieza
-estrecha se salía del rectángulo — visible sobre todo en piezas de
-borde, sin otra pieza que las tapara por encima.
-`BoardPieceItem._update_label_elision()` (`studio/workspace/`) trunca
-con elipsis para caber siempre en la pieza, recalculando al rotar; el
-id completo queda como tooltip si queda truncado. Novena release
-firmada y notarizada con la cuenta de Apple Developer activa
-(`DT-0011`).
-Tests: 891, en verde.
+Versión publicada: `0.3.12` (07/08/2026, tag `v0.3.12`) — dos cambios
+reportados por el usuario en la misma pasada de UAT: `IDE-0032`
+("Buscar actualizaciones", menú Ayuda vacío desde siempre) construida
+con el alcance ya acotado en el backlog —
+`studio/update_check.py::check_for_update()` consulta la última
+release de GitHub y ofrece el enlace si hay una más reciente, solo
+bajo demanda, nunca en el arranque, sin descargar ni instalar nada;
+`studio/_version.py` pasa a ser la única fuente fiable de la versión
+en ejecución (funciona igual en frío que dentro de un `.app` Nuitka),
+con guard nuevo en `scripts/check_project.py` contra
+`pyproject.toml`. Además, nombres largos recortados en el selector
+"Mover a tablero" y en la vista previa de import CSV (piezas y
+tableros) — mismo patrón que el desborde de etiquetas de `0.3.11`,
+pero en combos/tablas en vez del lienzo: el combo ahora se ajusta a
+su elemento más ancho y las columnas Id/Material de las tablas se
+ajustan a su contenido en vez de repartirse el ancho a partes iguales
+con las numéricas. Décima release firmada y notarizada con la cuenta
+de Apple Developer activa (`DT-0011`).
+Tests: 909, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -34,8 +40,8 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 | 4 — Inteligencia (IA) | 🟢 Completada |
 | 5 — Ecosistema | 🟡 En curso |
 
-Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0031` 🟢 completados y en
-`main`; `IDE-0032` (Buscar actualizaciones) 🔵 planificada, sin construir.
+Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0032`, todos 🟢 completados
+y en `main`.
 
 Deuda técnica (`DOC-006-DeudaTecnica.md`): 22 registros, los 22 resueltos.
 `DT-0011` (el `.app` de macOS sin firmar/notarizar) cerrada del todo el

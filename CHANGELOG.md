@@ -1,5 +1,17 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.12 - 2026-08-07
+
+### Añadido
+
+- Buscar actualizaciones desde el menú Ayuda (`IDE-0032`), que existía pero estaba completamente vacío desde siempre. Consulta la última release publicada en GitHub y ofrece el enlace si hay una versión más reciente — nunca descarga ni instala nada. Solo bajo demanda (clic en el menú), nunca en el arranque; un fallo de red se muestra como aviso, no como bloqueo.
+
+### Arreglado
+
+- Nombres largos recortados en el selector "Mover a tablero" y en la vista previa de importación CSV (piezas y tableros): con ids que comparten un prefijo largo (`TAB-A01`, `TAB-A02`, ...) todos se veían indistinguibles. El combo del selector ahora se ajusta a su elemento más ancho; en las tablas de vista previa, las columnas Id y Material se ajustan a su contenido en vez de repartirse el ancho a partes iguales con las numéricas.
+
+---
+
 ## 0.3.11 - 2026-08-06
 
 ### Arreglado
