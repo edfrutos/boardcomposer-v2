@@ -101,6 +101,9 @@ Observaciones:
 | IDE-0030 | Reparto por mejor ajuste entre tableros | 🟢 | P3 |
 | IDE-0031 | Cajón sin rieles en el generador de contenedores | 🟢 | P3 |
 | IDE-0032 | Buscar actualizaciones (menú Ayuda) | 🟢 | P3 |
+| IDE-0033 | Acerca de BoardComposer Studio (menú Ayuda) | 🟢 | P3 |
+| IDE-0034 | Clave de API de Anthropic configurable en Preferencias | 🟢 | P2 |
+| IDE-0035 | Separar "quitar del tablero" de "eliminar del proyecto" | 🟢 | P1 |
 
 ---
 
@@ -143,6 +146,75 @@ Verificado con una llamada real a la API de GitHub (sin mocks) además
 de los tests con red simulada, y con una captura real disparando la
 acción desde `MainWindow`. 11 tests nuevos (`test_update_check.py` +
 wiring en `test_main_window_check_for_updates.py`).
+
+---
+
+## IDE-0033 — Acerca de BoardComposer Studio (menú Ayuda)
+
+**Estado:** 🟢 Completado. Pedida por el usuario el 07/08/2026 junto con
+`IDE-0034`/`IDE-0035` en la misma pasada de UAT sobre `v0.3.12`.
+
+Acción "Acerca de BoardComposer Studio…" en el menú Ayuda, con
+`QAction.MenuRole.AboutRole` (mismo patrón que `preferences` con
+`PreferencesRole` desde `IDE-0025`) para que macOS la reubique en el
+menú de la app. `MainWindow._show_about()` muestra nombre de la app,
+`studio._version.__version__` (`IDE-0032`) y "Desarrollado por EDF
+Developer", vía `QMessageBox.about()`. 3 tests nuevos.
+
+---
+
+## IDE-0034 — Clave de API de Anthropic configurable en Preferencias
+
+**Estado:** 🟢 Completado. `boardcomposer.ai.default_provider()` ya leía
+`ANTHROPIC_API_KEY` del entorno, pero un `.app` abierto con doble clic
+no hereda las variables exportadas en una Terminal — sin forma de
+configurarla desde Studio, el Asistente caía en `MockAIProvider` en
+silencio, sin ninguna pista de por qué.
+
+`PreferencesDialog` gana un campo de texto enmascarado (`QLineEdit`,
+`EchoMode.Password`) para la clave. `MainWindow._set_anthropic_api_key()`
+la persiste en `QSettings` y la vuelca a `os.environ["ANTHROPIC_API_KEY"]`
+— el Core (`boardcomposer.ai`) no se toca, sigue leyendo solo el
+entorno (`ADR-001`, Core inmutable/environment-driven); Studio es quien
+tiende el puente. `AssistantService.reload_provider()` (nuevo) vuelve a
+resolver el proveedor sin reiniciar Studio. `studio/app.py` aplica la
+clave guardada al arrancar, antes de construir `StudioServices()`, sin
+pisar una variable ya exportada externamente. 12 tests nuevos
+(diálogo, wiring en `MainWindow`, `reload_provider()`).
+
+**Observaciones:** guardada en texto plano vía `QSettings` (plist en
+macOS), no en el llavero del sistema — suficiente para el alcance
+pedido, pero un almacén más seguro (Keychain) queda como posible mejora
+futura si hace falta.
+
+---
+
+## IDE-0035 — Separar "quitar del tablero" de "eliminar del proyecto"
+
+**Estado:** 🟢 Completado. Reportado por el usuario el 07/08/2026:
+"Eliminar pieza" (Backspace, sobre una pieza seleccionada en el
+lienzo) era la única forma de borrar una pieza en toda la app, y
+borraba las dos cosas a la vez — la quitaba del tablero **y** la
+hacía desaparecer del catálogo "Piezas" del Explorer, sin forma de
+recuperarla salvo deshacer.
+
+`DeletePieceCommand` (borra pieza + colocación juntas) se conserva sin
+tocar, pero deja de ser lo que dispara Backspace. Comando nuevo,
+`UnplacePieceCommand` (`studio/commands/unplace_piece_command.py`):
+quita solo la colocación, la pieza se queda en el proyecto como "sin
+colocar" — mismo estado en el que ya deja piezas el solver cuando no
+caben (`_unplaced_piece_ids()`, ya usado por "Calcular layout" y el
+reparto por mejor ajuste). `_delete_selected_piece` (Backspace/menú
+Editar, sin cambios en el texto ni el atajo) pasa a usarlo.
+
+Para poder seguir borrando una pieza del proyecto del todo,
+`Explorer` gana su primer menú contextual (clic derecho sobre una
+pieza en Piezas → "Eliminar del proyecto…"), que sí usa
+`DeletePieceCommand`. Ambos caminos deshacen con `Ctrl+Z` igual que el
+resto de comandos. 8 tests nuevos (`UnplacePieceCommand` + los dos
+caminos desde `MainWindow`); el test existente que daba por buena la
+fusión de ambos comportamientos se corrigió para reflejar el nuevo
+(y correcto) comportamiento.
 
 ---
 
