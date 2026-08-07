@@ -25,12 +25,11 @@ class CsvImportPreviewDialog(QDialog):
     def __init__(self, parent=None, *, pieces: list[StudioPiece]):
         super().__init__(parent)
         self.setWindowTitle(f"Importar {len(pieces)} pieza(s) desde CSV")
-        self.resize(480, 320)
+        self.resize(640, 360)
 
         table = QTableWidget(len(pieces), len(_HEADERS))
         table.setHorizontalHeaderLabels(_HEADERS)
         table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         table.verticalHeader().setVisible(False)
 
         for row, piece in enumerate(pieces):
@@ -43,6 +42,18 @@ class CsvImportPreviewDialog(QDialog):
             ]
             for column, value in enumerate(values):
                 table.setItem(row, column, QTableWidgetItem(value))
+
+        # An equal Stretch on every column squeezed Id/Material — the two
+        # with unpredictable, often-long content (e.g. the container
+        # generator's "caja_simple-lateral-izquierdo") — down to whatever an
+        # even split of the dialog's width happened to leave them, same
+        # class of bug as the board picker's combo box. Id/Material size to
+        # their actual content instead; the three numeric columns keep
+        # sharing the rest.
+        header = table.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel

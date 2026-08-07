@@ -20,12 +20,11 @@ class BoardCsvImportPreviewDialog(QDialog):
     def __init__(self, parent=None, *, boards: list[StudioBoard]):
         super().__init__(parent)
         self.setWindowTitle(f"Importar {len(boards)} tablero(s) desde CSV")
-        self.resize(480, 320)
+        self.resize(640, 360)
 
         table = QTableWidget(len(boards), len(_HEADERS))
         table.setHorizontalHeaderLabels(_HEADERS)
         table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         table.verticalHeader().setVisible(False)
 
         for row, board in enumerate(boards):
@@ -38,6 +37,16 @@ class BoardCsvImportPreviewDialog(QDialog):
             ]
             for column, value in enumerate(values):
                 table.setItem(row, column, QTableWidgetItem(value))
+
+        # Same fix as CsvImportPreviewDialog: an equal Stretch on every
+        # column squeezed Id/Material — the two with unpredictable, often
+        # long content — down to an even split of the dialog's width. Those
+        # two size to their actual content; the numeric columns keep
+        # sharing the rest.
+        header = table.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
