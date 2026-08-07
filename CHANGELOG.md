@@ -1,5 +1,22 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.13 - 2026-08-07
+
+### Añadido
+
+- Acerca de BoardComposer Studio… en el menú Ayuda (`IDE-0033`), con la versión actual y "Desarrollado por EDF Developer".
+- Clave de API de Anthropic configurable en Preferencias (`IDE-0034`) — un `.app` abierto con doble clic no hereda variables de entorno de una Terminal, así que sin esto el Asistente caía en respuestas de ejemplo sin ninguna pista de por qué.
+
+### Cambiado
+
+- "Eliminar pieza" (Backspace, sobre una pieza en el lienzo) ahora solo la quita del tablero activo — se queda en Piezas como "sin colocar", reubicable después (`IDE-0035`). Para borrarla del proyecto del todo, Explorer tiene un menú contextual nuevo (clic derecho sobre una pieza en Piezas → "Eliminar del proyecto…").
+
+### Arreglado
+
+- `ruff format --check .` fallaba en CI sobre el commit anterior — dos archivos nunca se habían pasado por `ruff format` (solo por `ruff check`, que no valida estilo).
+
+---
+
 ## 0.3.12 - 2026-08-07
 
 ### Añadido

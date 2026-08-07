@@ -10,25 +10,23 @@
 ## Estado actual
 
 Rama: `main`
-Versión publicada: `0.3.12` (07/08/2026, tag `v0.3.12`) — dos cambios
-reportados por el usuario en la misma pasada de UAT: `IDE-0032`
-("Buscar actualizaciones", menú Ayuda vacío desde siempre) construida
-con el alcance ya acotado en el backlog —
-`studio/update_check.py::check_for_update()` consulta la última
-release de GitHub y ofrece el enlace si hay una más reciente, solo
-bajo demanda, nunca en el arranque, sin descargar ni instalar nada;
-`studio/_version.py` pasa a ser la única fuente fiable de la versión
-en ejecución (funciona igual en frío que dentro de un `.app` Nuitka),
-con guard nuevo en `scripts/check_project.py` contra
-`pyproject.toml`. Además, nombres largos recortados en el selector
-"Mover a tablero" y en la vista previa de import CSV (piezas y
-tableros) — mismo patrón que el desborde de etiquetas de `0.3.11`,
-pero en combos/tablas en vez del lienzo: el combo ahora se ajusta a
-su elemento más ancho y las columnas Id/Material de las tablas se
-ajustan a su contenido en vez de repartirse el ancho a partes iguales
-con las numéricas. Décima release firmada y notarizada con la cuenta
-de Apple Developer activa (`DT-0011`).
-Tests: 909, en verde.
+Versión publicada: `0.3.13` (07/08/2026, tag `v0.3.13`) — cuatro
+pedidos del usuario en la misma pasada de UAT sobre `v0.3.12`:
+`IDE-0033` (Acerca de BoardComposer Studio…, versión + "Desarrollado
+por EDF Developer"); `IDE-0034` (clave de API de Anthropic
+configurable en Preferencias — un `.app` con doble clic no hereda
+`ANTHROPIC_API_KEY` de una Terminal, así que sin esto el Asistente
+caía en respuestas de ejemplo sin ninguna pista; Studio tiende el
+puente hacia el entorno, el Core sigue sin tocarse, `ADR-001`);
+`IDE-0035` ("Eliminar pieza" quitaba la pieza del tablero **y** del
+catálogo Piezas a la vez — ahora solo la desasigna, queda "sin
+colocar"; borrarla del proyecto entero pasa a un menú contextual
+nuevo en Explorer, "Eliminar del proyecto…"); y el arreglo de
+`ruff format --check .`, que llevaba fallando en CI desde `v0.3.12`
+(dos archivos nunca se habían pasado por `ruff format`, solo por
+`ruff check`). Undécima release firmada y notarizada con la cuenta de
+Apple Developer activa (`DT-0011`).
+Tests: 926, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -40,7 +38,7 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 | 4 — Inteligencia (IA) | 🟢 Completada |
 | 5 — Ecosistema | 🟡 En curso |
 
-Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0032`, todos 🟢 completados
+Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0035`, todos 🟢 completados
 y en `main`.
 
 Deuda técnica (`DOC-006-DeudaTecnica.md`): 22 registros, los 22 resueltos.
