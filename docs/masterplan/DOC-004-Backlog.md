@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 03/08/2026
+**Última revisión:** 07/08/2026
 
 ---
 
