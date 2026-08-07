@@ -10,23 +10,23 @@
 ## Estado actual
 
 Rama: `main`
-Versión publicada: `0.3.13` (07/08/2026, tag `v0.3.13`) — cuatro
-pedidos del usuario en la misma pasada de UAT sobre `v0.3.12`:
-`IDE-0033` (Acerca de BoardComposer Studio…, versión + "Desarrollado
-por EDF Developer"); `IDE-0034` (clave de API de Anthropic
-configurable en Preferencias — un `.app` con doble clic no hereda
-`ANTHROPIC_API_KEY` de una Terminal, así que sin esto el Asistente
-caía en respuestas de ejemplo sin ninguna pista; Studio tiende el
-puente hacia el entorno, el Core sigue sin tocarse, `ADR-001`);
-`IDE-0035` ("Eliminar pieza" quitaba la pieza del tablero **y** del
-catálogo Piezas a la vez — ahora solo la desasigna, queda "sin
-colocar"; borrarla del proyecto entero pasa a un menú contextual
-nuevo en Explorer, "Eliminar del proyecto…"); y el arreglo de
-`ruff format --check .`, que llevaba fallando en CI desde `v0.3.12`
-(dos archivos nunca se habían pasado por `ruff format`, solo por
-`ruff check`). Undécima release firmada y notarizada con la cuenta de
-Apple Developer activa (`DT-0011`).
-Tests: 926, en verde.
+Versión publicada: `0.3.14` (07/08/2026, tag `v0.3.14`) —
+`IDE-0036`: soporte multi-proveedor en el Asistente IA. Propuesto por
+el usuario al abrir la conversación de alcance de la Fase 5
+(Ecosistema): además de Anthropic (Claude), ahora se puede elegir
+OpenAI (GPT), Google Gemini u Ollama (local, sin clave — host/puerto +
+nombre de modelo) desde un desplegable nuevo en Preferencias
+(`BOARDCOMPOSER_AI_PROVIDER`, mismo bridge QSettings→entorno que
+`IDE-0034`, `ADR-001`). Hallazgo real: `OpenAI()`/`genai.Client()`
+lanzan de inmediato sin su clave, a diferencia de `Anthropic()` —
+`AssistantService._resolve_provider()` (nuevo) evita que elegir un
+proveedor sin configurar tumbe el arranque de Studio. Verificado con
+una clave real de OpenAI: llamada real al SDK, flujo completo de
+Preferencias, y una pregunta con contexto de proyecto real respondida
+correctamente; Gemini y Ollama sin verificar aún con
+credenciales/servidor reales. Duodécima release firmada y notarizada
+con la cuenta de Apple Developer activa (`DT-0011`).
+Tests: 960, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -38,7 +38,7 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 | 4 — Inteligencia (IA) | 🟢 Completada |
 | 5 — Ecosistema | 🟡 En curso |
 
-Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0035`, todos 🟢 completados
+Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0036`, todos 🟢 completados
 y en `main`.
 
 Deuda técnica (`DOC-006-DeudaTecnica.md`): 22 registros, los 22 resueltos.

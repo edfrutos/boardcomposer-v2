@@ -1,5 +1,17 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.14 - 2026-08-07
+
+### Añadido
+
+- Soporte multi-proveedor en el Asistente IA (`IDE-0036`): además de Anthropic (Claude), ahora se puede elegir OpenAI (GPT), Google Gemini u Ollama (local, sin clave — host/puerto + nombre de modelo) como proveedor activo, desde un desplegable nuevo en Preferencias. Verificado con una clave real de OpenAI: llamada real al SDK, resolución del proveedor a través del flujo completo de Preferencias, y una pregunta con contexto de proyecto real respondida correctamente por OpenAI.
+
+### Corregido
+
+- Elegir un proveedor de IA sin su clave configurada (p. ej. OpenAI o Gemini recién seleccionados en Preferencias, sin clave todavía) podía tumbar el arranque de Studio — los clientes de OpenAI/Gemini lanzan una excepción de inmediato si falta la clave, a diferencia de Anthropic. `AssistantService` ahora cae a respuestas de ejemplo con el motivo visible, en vez de crashear.
+
+---
+
 ## 0.3.13 - 2026-08-07
 
 ### Añadido
