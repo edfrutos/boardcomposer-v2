@@ -40,6 +40,7 @@ from studio.dialogs import (
     PieceDialog,
     PreferencesDialog,
 )
+from studio._version import __version__ as STUDIO_VERSION
 from studio.containers import CONTAINER_TEMPLATES, ContainerTemplateError
 from studio.icons import build_icons
 from studio.prompt_input import PromptTextEdit
@@ -98,6 +99,7 @@ from studio.commands import (
     RotatePieceCommand,
     SetKerfCommand,
 )
+from studio.update_check import check_for_update
 
 RESERVED_PANEL_NAMES = {"Explorer", "Inspector", "Timeline", "Comparador", "Asistente"}
 
@@ -362,6 +364,37 @@ class MainWindow(QMainWindow):
         self._actions["preferences"].setShortcut("Ctrl+,")
         menus["Editar"].addAction(self._actions["preferences"])
         self._actions["preferences"].triggered.connect(self._open_preferences)
+
+        self._actions["check_for_updates"] = QAction("Buscar actualizaciones…", self)
+        menus["Ayuda"].addAction(self._actions["check_for_updates"])
+        self._actions["check_for_updates"].triggered.connect(self._check_for_updates)
+
+    def _check_for_updates(self):
+        result = check_for_update(STUDIO_VERSION)
+
+        if not result.checked_ok:
+            QMessageBox.warning(
+                self,
+                "Buscar actualizaciones",
+                "No se pudo comprobar si hay una versión nueva.\n\n"
+                f"{result.error}",
+            )
+            return
+
+        if result.update_available:
+            QMessageBox.information(
+                self,
+                "Buscar actualizaciones",
+                f"Hay una versión nueva disponible: {result.latest_version} "
+                f"(tienes {result.current_version}).\n\n{result.release_url}",
+            )
+            return
+
+        QMessageBox.information(
+            self,
+            "Buscar actualizaciones",
+            f"Ya tienes la última versión ({result.current_version}).",
+        )
 
     def _open_preferences(self):
         dialog = PreferencesDialog(self, theme_key=self._current_theme_key)

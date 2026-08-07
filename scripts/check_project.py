@@ -16,6 +16,7 @@ REQUIRED_PATHS = [
 ]
 
 DEPLOY_SPEC = Path("studio/pysidedeploy.spec")
+STUDIO_VERSION_MODULE = Path("studio/_version.py")
 
 
 def _packaged_version() -> str | None:
@@ -56,6 +57,41 @@ def _check_packaged_version_matches_pyproject() -> str | None:
     return None
 
 
+def _studio_module_version() -> str | None:
+    if not STUDIO_VERSION_MODULE.exists():
+        return None
+
+    match = re.search(
+        r'__version__\s*=\s*"([^"]+)"',
+        STUDIO_VERSION_MODULE.read_text(encoding="utf-8"),
+    )
+    return match.group(1) if match else None
+
+
+def _check_studio_version_matches_pyproject() -> str | None:
+    """studio/_version.py (IDE-0032, "Buscar actualizaciones") is the only
+    version string a running Studio can read reliably from inside a frozen
+    .app — importlib.metadata needs installed dist-info a onefile build
+    doesn't carry. Same drift risk as the packaged version above, so it
+    gets the same guard.
+    """
+    with Path("pyproject.toml").open("rb") as file:
+        project_version = tomllib.load(file)["project"]["version"]
+
+    studio_version = _studio_module_version()
+    if studio_version is None:
+        return f"{STUDIO_VERSION_MODULE}: no se encontró __version__"
+
+    if studio_version != project_version:
+        return (
+            f"La versión de {STUDIO_VERSION_MODULE} no coincide con la del "
+            f"proyecto: dice {studio_version}, pyproject.toml dice "
+            f"{project_version}"
+        )
+
+    return None
+
+
 def main() -> None:
     missing = [path for path in REQUIRED_PATHS if not Path(path).exists()]
 
@@ -66,6 +102,10 @@ def main() -> None:
         raise SystemExit(1)
 
     error = _check_packaged_version_matches_pyproject()
+    if error:
+        raise SystemExit(error)
+
+    error = _check_studio_version_matches_pyproject()
     if error:
         raise SystemExit(error)
 

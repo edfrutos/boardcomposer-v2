@@ -100,40 +100,49 @@ Observaciones:
 | IDE-0029 | Importar tableros (CSV) en Studio | 🟢 | P3 |
 | IDE-0030 | Reparto por mejor ajuste entre tableros | 🟢 | P3 |
 | IDE-0031 | Cajón sin rieles en el generador de contenedores | 🟢 | P3 |
-| IDE-0032 | Buscar actualizaciones (menú Ayuda) | 🔵 | P3 |
+| IDE-0032 | Buscar actualizaciones (menú Ayuda) | 🟢 | P3 |
 
 ---
 
 ## IDE-0032 — Buscar actualizaciones (menú Ayuda)
 
-**Estado:** 🔵 Planificada. Detectada como hueco el 06/08/2026 durante la
+**Estado:** 🟢 Completado. Detectada como hueco el 06/08/2026 durante la
 checklist de verificación visual de `v0.3.9`
-(`docs/RELEASE-SMOKE-v0.3.9.md`): el menú **Ayuda** existe en
-`main_window.py` (`_build_menus()`, `menus["Ayuda"]`) pero no tiene
-ninguna acción registrada — no hay "Acerca de", ni "Buscar
-actualizaciones", ni nada. No es una regresión de ningún fix anterior;
-nunca se construyó.
+(`docs/RELEASE-SMOKE-v0.3.9.md`): el menú **Ayuda** existía en
+`main_window.py` (`_build_menu()`, `menus["Ayuda"]`) pero sin ninguna
+acción registrada — no había "Acerca de", ni "Buscar actualizaciones",
+ni nada. No era una regresión de ningún fix anterior; nunca se había
+construido.
 
-**Descripción:** una acción en el menú Ayuda que consulte
+Construida con el alcance acotado en el borrador original, sin
+cambios: `studio/update_check.py::check_for_update()` — Qt-free, mismo
+patrón que `studio/panels/` — consulta
 `GET /repos/edfrutos/boardcomposer-v2/releases/latest` de la API de
-GitHub, compare el tag contra `pyproject.toml::version`, y si hay una
-versión más reciente ofrezca el enlace a la página de la release
-(`https://github.com/edfrutos/boardcomposer-v2/releases/tag/vX.Y.Z`)
-en vez de descargar/instalar nada automáticamente — evita meterse en
-firma/notarización de un instalador que se autoactualiza.
+GitHub, compara el `tag_name` contra la versión actual, y devuelve un
+`UpdateCheckResult` (nunca lanza excepción: red caída, timeout de 5s o
+JSON inesperado vuelven como `checked_ok=False` con `error`, no como
+un traceback). `MainWindow._check_for_updates()` (acción "Buscar
+actualizaciones…" en Ayuda) traduce ese resultado a un `QMessageBox`:
+actualización disponible con enlace a la release, ya al día, o aviso
+de que no se pudo comprobar — nunca descarga ni instala nada,
+solo apunta a la página de GitHub.
 
-**Criterios de aceptación (borrador, a afinar antes de construir):**
+Solo bajo demanda (clic en el menú), nunca en el arranque — cumple el
+criterio de aceptación original de no bloquear el inicio de Studio.
 
-- No bloquea el arranque de Studio si no hay red o GitHub no responde
-  — falla en silencio o con un aviso discreto, nunca un diálogo modal
-  al abrir la app.
-- Solo se comprueba bajo demanda (clic en el menú), no en cada
-  arranque, salvo que se decida explícitamente lo contrario.
-- Mensaje claro tanto si hay actualización disponible como si ya se
-  tiene la última versión.
+**Versión actual:** `studio/_version.py::__version__` es la única
+fuente fiable de la versión en ejecución — `importlib.metadata`
+necesita el dist-info de una instalación normal, que un `.app`
+empaquetado con Nuitka (onefile) no lleva. `scripts/check_project.py`
+gana un segundo guard (`_check_studio_version_matches_pyproject()`),
+mismo patrón que ya vigilaba `pysidedeploy.spec` contra
+`pyproject.toml`, para que este tercer sitio con la versión tampoco
+pueda desincronizarse sin que el build falle.
 
-**Observaciones:** prioridad P3 — no bloquea nada del roadmap actual;
-queda pendiente de acotar del todo antes de empezar a construirla.
+Verificado con una llamada real a la API de GitHub (sin mocks) además
+de los tests con red simulada, y con una captura real disparando la
+acción desde `MainWindow`. 11 tests nuevos (`test_update_check.py` +
+wiring en `test_main_window_check_for_updates.py`).
 
 ---
 
