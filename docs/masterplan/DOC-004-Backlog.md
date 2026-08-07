@@ -104,6 +104,86 @@ Observaciones:
 | IDE-0033 | Acerca de BoardComposer Studio (menú Ayuda) | 🟢 | P3 |
 | IDE-0034 | Clave de API de Anthropic configurable en Preferencias | 🟢 | P2 |
 | IDE-0035 | Separar "quitar del tablero" de "eliminar del proyecto" | 🟢 | P1 |
+| IDE-0036 | Asistente IA: soporte multi-proveedor (OpenAI, Google Gemini, Ollama local) | 🟢 | P2 |
+
+---
+
+## IDE-0036 — Asistente IA: soporte multi-proveedor (OpenAI, Google Gemini, Ollama local)
+
+**Estado:** 🟢 Completado. Propuesta por el usuario el 07/08/2026 al abrir
+la conversación de alcance de la Fase 5 (Ecosistema): el Asistente IA
+(`IDE-0007`) solo podía usar `AnthropicProvider` como proveedor real —
+`MockAIProvider` aparte, sin alternativa si el usuario prefiere, ya tiene
+crédito en, o quiere comparar contra otro proveedor.
+
+**Alcance acotado con el usuario** antes de construir: OpenAI y Google
+Gemini como proveedores cloud con clave de API, más Ollama como
+proveedor local sin clave; selección del proveedor activo por
+desplegable explícito en Preferencias (no prioridad automática); Ollama
+configurado con host/puerto + nombre de modelo en vez de clave.
+
+- `src/boardcomposer/ai/openai_provider.py`/`gemini_provider.py` —
+  mismo patrón exacto que `AnthropicProvider`: SDK oficial (`openai`,
+  `google-genai`, añadidos a las dependencias del proyecto), clave leída
+  del entorno por el propio cliente (`OPENAI_API_KEY`/`GEMINI_API_KEY`),
+  sin gestión propia de credenciales. `ollama_provider.py` no trae SDK
+  propio — reutiliza el cliente de `openai` apuntado a la API de Ollama
+  compatible con el formato de OpenAI (`OLLAMA_HOST` + `/v1`), con
+  `OLLAMA_MODEL` obligatorio (sin uno no hay nada coherente que llamar,
+  a diferencia de los otros tres que sí tienen un modelo por defecto
+  razonable).
+- `registry.py`: `BOARDCOMPOSER_AI_PROVIDER` elige explícitamente el
+  proveedor activo cuando está definida, por encima del fallback previo
+  a este bloque (`anthropic` si hay `ANTHROPIC_API_KEY`, si no `mock`) —
+  Preferencias la bridgea igual que ya hacía con la clave de Anthropic
+  (`IDE-0034`), el Core sigue leyendo solo el entorno (`ADR-001`).
+- **Hallazgo real verificando contra los SDKs reales** (no solo
+  documentación): `OpenAI()`/`genai.Client()` lanzan una excepción de
+  inmediato si falta su clave — a diferencia de `Anthropic()`, que
+  construye sin queja y solo falla en la llamada real. Elegir un
+  proveedor sin su clave configurada habría tumbado el arranque de
+  Studio (`AssistantService.__init__` resuelve el proveedor de forma
+  entusiasta). `AssistantService._resolve_provider()` (nuevo) envuelve
+  `default_provider()` en un `try/except`, cayendo a `MockAIProvider`
+  con el motivo visible — mismo espíritu que `ask()` ya tenía para un
+  fallo del proveedor a media conversación, extendido ahora al momento
+  de construcción.
+- `PreferencesDialog` gana un desplegable "Proveedor de IA activo" y una
+  fila de campos por proveedor (clave enmascarada para
+  Anthropic/OpenAI/Gemini, host+modelo para Ollama), visible solo la del
+  proveedor seleccionado — `QFormLayout.setRowVisible()`, mismo patrón
+  que `ContainerGeneratorDialog` (`IDE-0028`/`IDE-0031`).
+  `MainWindow._set_ai_preferences()` generaliza el antiguo
+  `_set_anthropic_api_key()` (`IDE-0034`) a los 6 ajustes nuevos, mismo
+  bridge QSettings → `os.environ`; `studio/app.py` aplica los 6 al
+  arrancar, antes de construir `StudioServices()`.
+- Sin tocar `json_response.py`: `strip_json_fence()` ya se aplica de
+  forma incondicional en `project_from_text()`/`suggest_strategy()`,
+  independientemente del proveedor activo — si OpenAI/Gemini/Ollama
+  necesitan algún tratamiento propio de su respuesta solo se sabrá
+  probando contra la API real con una clave real, no en esta sesión.
+- 34 tests nuevos (`test_openai_provider.py`, `test_gemini_provider.py`,
+  `test_ollama_provider.py`, más los ampliados en `test_ai_provider.py`,
+  `test_preferences_dialog.py`, `test_assistant_service.py` y
+  `test_main_window_ai_preferences.py`, que sustituye a
+  `test_main_window_anthropic_api_key.py`). 960 tests en verde,
+  `ruff check`/`ruff format --check` limpios. Detectado y corregido en
+  el proceso: `_set_ai_preferences()` escribe directo en `os.environ`
+  (no vía `monkeypatch`), así que un test que elegía un proveedor dejaba
+  su clave filtrada al resto de la sesión de tests — los fixtures
+  afectados limpian ahora las 6 variables de entorno relevantes, no solo
+  la que cada test cree usar.
+- Verificado contra los SDKs reales de OpenAI y Google Gemini (llamada a
+  su constructor sin clave, confirmando el fallo inmediato que motiva
+  `_resolve_provider()`) — no verificado con claves reales ni contra un
+  servidor Ollama real en esta sesión, a diferencia del criterio de
+  verificación que sí se siguió con Anthropic en `IDE-0007` Fase A.
+
+**Fuera de alcance:** modelo configurable por el usuario para
+OpenAI/Gemini/Anthropic (fijo por constante `DEFAULT_MODEL`, igual que
+ya era el caso solo con Anthropic); comparar respuestas de varios
+proveedores a la vez; cualquier parche de `json_response.py` específico
+de un proveedor nuevo, pendiente de necesidad real.
 
 ---
 

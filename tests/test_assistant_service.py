@@ -95,6 +95,7 @@ def test_reload_provider_picks_up_a_newly_set_api_key(monkeypatch):
     # reload_provider(), setting an API key in Preferences mid-session
     # would need a restart to take effect.
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("BOARDCOMPOSER_AI_PROVIDER", raising=False)
     services = StudioServices()
     assistant = AssistantService(services)
     assert isinstance(assistant.provider, MockAIProvider)
@@ -103,3 +104,20 @@ def test_reload_provider_picks_up_a_newly_set_api_key(monkeypatch):
     assistant.reload_provider()
 
     assert isinstance(assistant.provider, AnthropicProvider)
+
+
+def test_a_provider_that_fails_to_construct_falls_back_to_mock(monkeypatch):
+    # IDE-0036: BOARDCOMPOSER_AI_PROVIDER can now select a provider whose
+    # SDK client raises immediately when its key is missing (OpenAI/Gemini
+    # behave like this, confirmed against the real SDKs) — that must not
+    # crash Studio's startup, it should degrade to Mock like any other
+    # provider failure.
+    monkeypatch.setenv("BOARDCOMPOSER_AI_PROVIDER", "openai")
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    services = StudioServices()
+
+    assistant = AssistantService(services)
+
+    assert isinstance(assistant.provider, MockAIProvider)
+    answer = assistant.ask("¿funciona el asistente?")
+    assert "proveedor de IA configurado" in answer

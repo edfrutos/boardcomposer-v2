@@ -11,6 +11,8 @@ dependencies = [
     "ezdxf",
     "flask",
     "flask-limiter",
+    "google-genai",
+    "openai",
     "openpyxl",
     "pyside6",
 ]

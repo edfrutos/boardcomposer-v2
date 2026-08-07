@@ -111,6 +111,11 @@ PROJECT_FILE_FILTER = "BoardComposer Studio (*.bcstudio.json)"
 LAST_PROJECT_PATH_SETTINGS_KEY = "last_project/path"
 THEME_SETTINGS_KEY = "preferences/theme"
 ANTHROPIC_API_KEY_SETTINGS_KEY = "preferences/anthropic_api_key"
+AI_PROVIDER_SETTINGS_KEY = "preferences/ai_provider"
+OPENAI_API_KEY_SETTINGS_KEY = "preferences/openai_api_key"
+GEMINI_API_KEY_SETTINGS_KEY = "preferences/gemini_api_key"
+OLLAMA_HOST_SETTINGS_KEY = "preferences/ollama_host"
+OLLAMA_MODEL_SETTINGS_KEY = "preferences/ollama_model"
 
 # Extensions read as plain text when attached to an assistant question — the
 # AI provider is text-only (studio/assistant_service.py), so anything else
@@ -417,28 +422,69 @@ class MainWindow(QMainWindow):
         )
 
     def _open_preferences(self):
+        settings = QSettings()
         dialog = PreferencesDialog(
             self,
             theme_key=self._current_theme_key,
-            anthropic_api_key=QSettings().value(ANTHROPIC_API_KEY_SETTINGS_KEY, ""),
+            ai_provider=settings.value(AI_PROVIDER_SETTINGS_KEY, "anthropic"),
+            anthropic_api_key=settings.value(ANTHROPIC_API_KEY_SETTINGS_KEY, ""),
+            openai_api_key=settings.value(OPENAI_API_KEY_SETTINGS_KEY, ""),
+            gemini_api_key=settings.value(GEMINI_API_KEY_SETTINGS_KEY, ""),
+            ollama_host=settings.value(OLLAMA_HOST_SETTINGS_KEY, ""),
+            ollama_model=settings.value(OLLAMA_MODEL_SETTINGS_KEY, ""),
         )
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
         self._set_theme(dialog.theme_key())
-        self._set_anthropic_api_key(dialog.anthropic_api_key())
+        self._set_ai_preferences(
+            provider=dialog.ai_provider(),
+            anthropic_api_key=dialog.anthropic_api_key(),
+            openai_api_key=dialog.openai_api_key(),
+            gemini_api_key=dialog.gemini_api_key(),
+            ollama_host=dialog.ollama_host(),
+            ollama_model=dialog.ollama_model(),
+        )
 
-    def _set_anthropic_api_key(self, key: str) -> None:
-        """Bridges Preferences' stored key into ANTHROPIC_API_KEY — the
-        Core (boardcomposer.ai.default_provider()) only ever reads that
-        env var, by design (ADR-001: Core stays environment-driven, no
-        Studio-specific config). A double-clicked .app never inherits a
-        Terminal's exported env var, so without this the Asistente has no
-        way to pick up a key short of relaunching Studio from a shell.
+    def _set_ai_preferences(
+        self,
+        *,
+        provider: str,
+        anthropic_api_key: str,
+        openai_api_key: str,
+        gemini_api_key: str,
+        ollama_host: str,
+        ollama_model: str,
+    ) -> None:
+        """Bridges Preferences' stored AI settings into the env vars
+        boardcomposer.ai actually reads (BOARDCOMPOSER_AI_PROVIDER plus one
+        credential var per provider) — the Core (default_provider()) only
+        ever reads the environment, by design (ADR-001: Core stays
+        environment-driven, no Studio-specific config). A double-clicked
+        .app never inherits a Terminal's exported env vars, so without this
+        bridge the Asistente has no way to pick up a provider/key short of
+        relaunching Studio from a shell.
         """
-        QSettings().setValue(ANTHROPIC_API_KEY_SETTINGS_KEY, key)
-        if key:
-            os.environ["ANTHROPIC_API_KEY"] = key
+        settings = QSettings()
+        settings.setValue(AI_PROVIDER_SETTINGS_KEY, provider)
+        settings.setValue(ANTHROPIC_API_KEY_SETTINGS_KEY, anthropic_api_key)
+        settings.setValue(OPENAI_API_KEY_SETTINGS_KEY, openai_api_key)
+        settings.setValue(GEMINI_API_KEY_SETTINGS_KEY, gemini_api_key)
+        settings.setValue(OLLAMA_HOST_SETTINGS_KEY, ollama_host)
+        settings.setValue(OLLAMA_MODEL_SETTINGS_KEY, ollama_model)
+
+        os.environ["BOARDCOMPOSER_AI_PROVIDER"] = provider
+        if anthropic_api_key:
+            os.environ["ANTHROPIC_API_KEY"] = anthropic_api_key
+        if openai_api_key:
+            os.environ["OPENAI_API_KEY"] = openai_api_key
+        if gemini_api_key:
+            os.environ["GEMINI_API_KEY"] = gemini_api_key
+        if ollama_host:
+            os.environ["OLLAMA_HOST"] = ollama_host
+        if ollama_model:
+            os.environ["OLLAMA_MODEL"] = ollama_model
+
         self.services.assistant.reload_provider()
 
     def _set_theme(self, key: str):

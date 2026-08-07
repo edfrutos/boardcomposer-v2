@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from boardcomposer.ai import AIProvider, default_provider
+from boardcomposer.ai import AIProvider, MockAIProvider, default_provider
 
 PROMPT_TEMPLATE = (
     "Eres el asistente de ayuda de BoardComposer Studio. Responde en "
@@ -19,14 +19,31 @@ class AssistantService:
 
     def __init__(self, services, provider: AIProvider | None = None):
         self.services = services
-        self.provider = provider or default_provider()
+        self.provider = provider if provider is not None else self._resolve_provider()
         self.history: list[tuple[str, str]] = []
 
     def reload_provider(self) -> None:
-        """Re-resolves the provider from scratch — call after
-        ANTHROPIC_API_KEY changes (Preferences, IDE-0032 follow-up), since
-        __init__ only resolves it once at construction time."""
-        self.provider = default_provider()
+        """Re-resolves the provider from scratch — call after the active
+        provider or one of its credentials changes (Preferences, IDE-0034/
+        IDE-0036), since __init__ only resolves it once at construction
+        time."""
+        self.provider = self._resolve_provider()
+
+    def _resolve_provider(self) -> AIProvider:
+        """default_provider() can now construct any of 4 real SDK clients
+        (IDE-0036), each of which validates its own credentials eagerly at
+        construction time (missing OPENAI_API_KEY/GEMINI_API_KEY/etc. raises
+        immediately, same as AnthropicProvider always did). A provider
+        picked in Preferences without its key configured yet shouldn't
+        crash Studio's startup or the Preferences dialog itself — fall back
+        to Mock with the reason visible, same spirit as ask()'s handling of
+        a provider that fails mid-conversation."""
+        try:
+            return default_provider()
+        except Exception as error:
+            return MockAIProvider(
+                response=f"No se pudo inicializar el proveedor de IA configurado: {error}"
+            )
 
     def ask(self, question: str) -> str:
         question = question.strip()

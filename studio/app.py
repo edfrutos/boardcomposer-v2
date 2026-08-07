@@ -6,9 +6,28 @@ import sys
 from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QApplication
 
-from studio.main_window import ANTHROPIC_API_KEY_SETTINGS_KEY, MainWindow
+from studio.main_window import (
+    AI_PROVIDER_SETTINGS_KEY,
+    ANTHROPIC_API_KEY_SETTINGS_KEY,
+    GEMINI_API_KEY_SETTINGS_KEY,
+    OLLAMA_HOST_SETTINGS_KEY,
+    OLLAMA_MODEL_SETTINGS_KEY,
+    OPENAI_API_KEY_SETTINGS_KEY,
+    MainWindow,
+)
 from studio.services import StudioServices
 from studio.theme import apply_theme
+
+# Maps each Preferences-stored AI setting to the env var boardcomposer.ai
+# actually reads for it.
+_AI_SETTINGS_TO_ENV_VAR = {
+    AI_PROVIDER_SETTINGS_KEY: "BOARDCOMPOSER_AI_PROVIDER",
+    ANTHROPIC_API_KEY_SETTINGS_KEY: "ANTHROPIC_API_KEY",
+    OPENAI_API_KEY_SETTINGS_KEY: "OPENAI_API_KEY",
+    GEMINI_API_KEY_SETTINGS_KEY: "GEMINI_API_KEY",
+    OLLAMA_HOST_SETTINGS_KEY: "OLLAMA_HOST",
+    OLLAMA_MODEL_SETTINGS_KEY: "OLLAMA_MODEL",
+}
 
 
 def main() -> int:
@@ -20,15 +39,18 @@ def main() -> int:
     app.setApplicationName("BoardComposer Studio")
     apply_theme(app)
 
-    # Bridges a Preferences-stored Anthropic key into the env var
+    # Bridges Preferences-stored AI settings (active provider + one
+    # credential per provider, IDE-0034/IDE-0036) into the env vars
     # boardcomposer.ai actually reads, before StudioServices() resolves the
     # AI provider — an already-exported env var wins, so this only fills
     # the gap for a double-clicked .app that never inherits one from a
-    # shell. See MainWindow._set_anthropic_api_key() for the interactive
+    # shell. See MainWindow._set_ai_preferences() for the interactive
     # (Preferences dialog) half of this.
-    stored_api_key = QSettings().value(ANTHROPIC_API_KEY_SETTINGS_KEY, "")
-    if stored_api_key and not os.environ.get("ANTHROPIC_API_KEY"):
-        os.environ["ANTHROPIC_API_KEY"] = stored_api_key
+    settings = QSettings()
+    for settings_key, env_var in _AI_SETTINGS_TO_ENV_VAR.items():
+        stored_value = settings.value(settings_key, "")
+        if stored_value and not os.environ.get(env_var):
+            os.environ[env_var] = stored_value
 
     services = StudioServices()
     window = MainWindow(services=services)
