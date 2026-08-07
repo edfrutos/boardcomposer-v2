@@ -1,4 +1,4 @@
-from boardcomposer.ai import AIProvider, MockAIProvider
+from boardcomposer.ai import AIProvider, AnthropicProvider, MockAIProvider
 from studio.assistant_service import AssistantService
 from studio.models import StudioBoard, StudioPiece, StudioProject
 from studio.services import StudioServices
@@ -88,3 +88,18 @@ def test_ask_reports_a_provider_failure_instead_of_raising():
 
     assert "invalid x-api-key" in answer
     assert assistant.history == [("¿cómo exporto a PDF?", answer)]
+
+
+def test_reload_provider_picks_up_a_newly_set_api_key(monkeypatch):
+    # Regression: __init__ only resolves default_provider() once — without
+    # reload_provider(), setting an API key in Preferences mid-session
+    # would need a restart to take effect.
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    services = StudioServices()
+    assistant = AssistantService(services)
+    assert isinstance(assistant.provider, MockAIProvider)
+
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-abc123")
+    assistant.reload_provider()
+
+    assert isinstance(assistant.provider, AnthropicProvider)

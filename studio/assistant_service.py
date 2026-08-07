@@ -22,6 +22,12 @@ class AssistantService:
         self.provider = provider or default_provider()
         self.history: list[tuple[str, str]] = []
 
+    def reload_provider(self) -> None:
+        """Re-resolves the provider from scratch — call after
+        ANTHROPIC_API_KEY changes (Preferences, IDE-0032 follow-up), since
+        __init__ only resolves it once at construction time."""
+        self.provider = default_provider()
+
     def ask(self, question: str) -> str:
         question = question.strip()
         if not question:

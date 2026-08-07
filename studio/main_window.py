@@ -1,6 +1,7 @@
 """Main window for BoardComposer Studio."""
 
 import dataclasses
+import os
 import pathlib
 import sys
 import uuid
@@ -17,6 +18,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QMainWindow,
+    QMenu,
     QMenuBar,
     QMessageBox,
     QStatusBar,
@@ -98,6 +100,7 @@ from studio.commands import (
     MoveToBoardCommand,
     RotatePieceCommand,
     SetKerfCommand,
+    UnplacePieceCommand,
 )
 from studio.update_check import check_for_update
 
@@ -107,6 +110,7 @@ PROJECT_FILE_FILTER = "BoardComposer Studio (*.bcstudio.json)"
 
 LAST_PROJECT_PATH_SETTINGS_KEY = "last_project/path"
 THEME_SETTINGS_KEY = "preferences/theme"
+ANTHROPIC_API_KEY_SETTINGS_KEY = "preferences/anthropic_api_key"
 
 # Extensions read as plain text when attached to an assistant question — the
 # AI provider is text-only (studio/assistant_service.py), so anything else
@@ -365,9 +369,26 @@ class MainWindow(QMainWindow):
         menus["Editar"].addAction(self._actions["preferences"])
         self._actions["preferences"].triggered.connect(self._open_preferences)
 
+        self._actions["about"] = QAction("Acerca de BoardComposer Studio…", self)
+        self._actions["about"].setMenuRole(QAction.MenuRole.AboutRole)
+        menus["Ayuda"].addAction(self._actions["about"])
+        self._actions["about"].triggered.connect(self._show_about)
+
         self._actions["check_for_updates"] = QAction("Buscar actualizaciones…", self)
         menus["Ayuda"].addAction(self._actions["check_for_updates"])
         self._actions["check_for_updates"].triggered.connect(self._check_for_updates)
+
+    def _show_about(self):
+        QMessageBox.about(
+            self,
+            "Acerca de BoardComposer Studio",
+            "<h3>BoardComposer Studio</h3>"
+            f"<p>Versión {STUDIO_VERSION}</p>"
+            "<p>Optimización de corte de tableros.</p>"
+            "<p>Desarrollado por EDF Developer.</p>"
+            '<p><a href="https://github.com/edfrutos/boardcomposer-v2">'
+            "github.com/edfrutos/boardcomposer-v2</a></p>",
+        )
 
     def _check_for_updates(self):
         result = check_for_update(STUDIO_VERSION)
@@ -376,8 +397,7 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(
                 self,
                 "Buscar actualizaciones",
-                "No se pudo comprobar si hay una versión nueva.\n\n"
-                f"{result.error}",
+                f"No se pudo comprobar si hay una versión nueva.\n\n{result.error}",
             )
             return
 
@@ -397,11 +417,29 @@ class MainWindow(QMainWindow):
         )
 
     def _open_preferences(self):
-        dialog = PreferencesDialog(self, theme_key=self._current_theme_key)
+        dialog = PreferencesDialog(
+            self,
+            theme_key=self._current_theme_key,
+            anthropic_api_key=QSettings().value(ANTHROPIC_API_KEY_SETTINGS_KEY, ""),
+        )
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
         self._set_theme(dialog.theme_key())
+        self._set_anthropic_api_key(dialog.anthropic_api_key())
+
+    def _set_anthropic_api_key(self, key: str) -> None:
+        """Bridges Preferences' stored key into ANTHROPIC_API_KEY — the
+        Core (boardcomposer.ai.default_provider()) only ever reads that
+        env var, by design (ADR-001: Core stays environment-driven, no
+        Studio-specific config). A double-clicked .app never inherits a
+        Terminal's exported env var, so without this the Asistente has no
+        way to pick up a key short of relaunching Studio from a shell.
+        """
+        QSettings().setValue(ANTHROPIC_API_KEY_SETTINGS_KEY, key)
+        if key:
+            os.environ["ANTHROPIC_API_KEY"] = key
+        self.services.assistant.reload_provider()
 
     def _set_theme(self, key: str):
         self._current_theme_key = key
@@ -593,6 +631,10 @@ class MainWindow(QMainWindow):
         self.explorer = QTreeWidget()
         self.explorer.setHeaderHidden(True)
         self.explorer.itemSelectionChanged.connect(self._on_explorer_selection_changed)
+        self.explorer.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.explorer.customContextMenuRequested.connect(
+            self._show_explorer_context_menu
+        )
 
         explorer_dock = QDockWidget("Explorer", self)
         explorer_dock.setObjectName("Explorer")
@@ -1411,6 +1453,46 @@ class MainWindow(QMainWindow):
         if piece_id is None:
             return
 
+        # Only takes the piece off its board — reported by the user: it
+        # used to also erase it from Explorer's Piezas list entirely. Full
+        # removal from the project is Explorer's "Eliminar del
+        # proyecto…" (_delete_piece_from_project below), a separate and
+        # more deliberate action.
+        command = UnplacePieceCommand(self.services, piece_id)
+        self._execute(command)
+
+        self.workspace.reload_project()
+        self.workspace.selection.clear()
+        self.workspace.selection.sync_inspector(self)
+
+        self.services.projects.mark_modified()
+        self._reload_explorer()
+        self._update_window_title()
+        self._update_undo_redo()
+
+    def _show_explorer_context_menu(self, position) -> None:
+        item = self.explorer.itemAt(position)
+        if item is None:
+            return
+
+        data = item.data(0, Qt.ItemDataRole.UserRole)
+        if data is None:
+            return
+
+        kind, object_id = data.split(":", 1)
+        if kind != "piece":
+            return
+
+        menu = QMenu(self)
+        delete_action = menu.addAction("Eliminar del proyecto…")
+        delete_action.triggered.connect(
+            lambda: self._delete_piece_from_project(object_id)
+        )
+        menu.exec(self.explorer.viewport().mapToGlobal(position))
+
+    def _delete_piece_from_project(self, piece_id: str) -> None:
+        """Full removal from the project — distinct from taking a piece
+        off a board (_delete_selected_piece, which only unplaces it)."""
         command = DeletePieceCommand(self.services, piece_id)
         self._execute(command)
 

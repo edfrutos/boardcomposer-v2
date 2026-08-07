@@ -2,9 +2,14 @@ from studio.commands.command import Command
 
 
 class DeletePieceCommand(Command):
-    """Removes a piece and its placement, mirroring what AddPieceCommand
-    adds together — otherwise the piece would keep showing up in the
-    Explorer's piece list after "deleting" it from the board."""
+    """Removes a piece and its placement together, mirroring what
+    AddPieceCommand adds together — full removal from the project, not
+    just off whichever board it's on (see UnplacePieceCommand for that;
+    "Eliminar pieza" on the workspace canvas, Backspace, uses that one
+    instead). Wired to Explorer's "Eliminar del proyecto…" (right-click on
+    a piece), a deliberately separate, more explicit action from taking a
+    piece off a board.
+    """
 
     def __init__(self, services, piece_id: str):
         self.services = services

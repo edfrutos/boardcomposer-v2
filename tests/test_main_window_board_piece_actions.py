@@ -286,12 +286,29 @@ def _explorer_piece_texts(window) -> list[str]:
     return [pieces_root.child(i).text(0) for i in range(pieces_root.childCount())]
 
 
-def test_delete_selected_piece_removes_it_from_the_explorer(window):
+def test_delete_selected_piece_only_unplaces_it_keeps_it_in_the_explorer(window):
+    # Regression: "Eliminar pieza" used to remove the piece from the
+    # project entirely, not just off the board — reported by the user.
+    # It should still show up in Piezas, just without a placement.
     window.workspace.selection.select_many(["P-001"])
 
     window._delete_selected_piece()
 
+    assert any(text.startswith("P-001") for text in _explorer_piece_texts(window))
+    project = window.services.projects.current_project
+    assert project.placement_by_piece_id("P-001") is None
+    assert any(piece.piece_id == "P-001" for piece in project.pieces)
+
+
+def test_delete_piece_from_project_removes_it_from_the_explorer(window):
+    # Explorer's "Eliminar del proyecto…" context menu — the separate,
+    # more deliberate action for full removal (as opposed to
+    # _delete_selected_piece, which only unplaces).
+    window._delete_piece_from_project("P-001")
+
     assert not any(text.startswith("P-001") for text in _explorer_piece_texts(window))
+    project = window.services.projects.current_project
+    assert not any(piece.piece_id == "P-001" for piece in project.pieces)
 
 
 def _explorer_piece_item(window, piece_id: str):

@@ -31,7 +31,7 @@ class UpdateCheckResult:
 
 
 def _parse_version(version: str) -> tuple[int, ...]:
-    """"0.3.11" -> (0, 3, 11). Non-numeric fragments fall back to 0 instead
+    """ "0.3.11" -> (0, 3, 11). Non-numeric fragments fall back to 0 instead
     of raising — this only ever has to answer "is A newer than B", not
     validate that a version string is well-formed."""
     parts = []

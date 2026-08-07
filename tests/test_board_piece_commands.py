@@ -5,6 +5,7 @@ from studio.commands import (
     EditBoardCommand,
     EditPieceCommand,
     RotatePieceCommand,
+    UnplacePieceCommand,
 )
 from studio.models import StudioBoard, StudioPiece, StudioPlacement, StudioProject
 from studio.services import StudioServices
@@ -160,6 +161,61 @@ def test_delete_piece_command_on_an_unknown_piece_does_nothing():
     assert services.projects.current_project.pieces == [piece]
 
 
+def test_unplace_piece_command_removes_only_the_placement():
+    # Regression: taking a piece off a board used to erase it from the
+    # project entirely (DeletePieceCommand) — it should stay in Piezas as
+    # "sin colocar", reusable elsewhere later.
+    piece = StudioPiece("p1", 500, 200)
+    placement = StudioPlacement("p1", 0, 0, board_id="B1")
+    services = _services_with_project(pieces=[piece], placements=[placement])
+    command = UnplacePieceCommand(services, "p1")
+
+    command.execute()
+
+    project = services.projects.current_project
+    assert project.pieces == [piece]
+    assert project.placements == []
+
+
+def test_unplace_piece_command_undo_restores_the_placement():
+    piece = StudioPiece("p1", 500, 200)
+    placement = StudioPlacement("p1", 0, 0, board_id="B1")
+    services = _services_with_project(pieces=[piece], placements=[placement])
+    command = UnplacePieceCommand(services, "p1")
+    command.execute()
+
+    command.undo()
+
+    project = services.projects.current_project
+    assert project.pieces == [piece]
+    assert project.placements == [placement]
+
+
+def test_unplace_piece_command_redo_reapplies_it():
+    piece = StudioPiece("p1", 500, 200)
+    placement = StudioPlacement("p1", 0, 0, board_id="B1")
+    services = _services_with_project(pieces=[piece], placements=[placement])
+    command = UnplacePieceCommand(services, "p1")
+    command.execute()
+    command.undo()
+
+    command.redo()
+
+    project = services.projects.current_project
+    assert project.pieces == [piece]
+    assert project.placements == []
+
+
+def test_unplace_piece_command_on_an_already_unplaced_piece_does_nothing():
+    piece = StudioPiece("p1", 500, 200)
+    services = _services_with_project(pieces=[piece])
+    command = UnplacePieceCommand(services, "p1")
+
+    command.execute()
+
+    assert services.projects.current_project.pieces == [piece]
+
+
 def test_rotate_piece_command_sets_rotation_and_rotated_together():
     piece = StudioPiece("p1", 500, 200)
     placement = StudioPlacement("p1", 0, 0, board_id="B1")
@@ -235,3 +291,4 @@ def test_every_command_exposes_a_readable_name():
     assert "p1" in EditPieceCommand(services, piece, piece).name
     assert "p1" in RotatePieceCommand(services, "p1", 0, 90).name
     assert "p1" in DeletePieceCommand(services, "p1").name
+    assert "p1" in UnplacePieceCommand(services, "p1").name
