@@ -1,5 +1,13 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.16 - 2026-08-08
+
+### Añadido
+
+- Columna `quantity` opcional en el import CSV de piezas y tableros de Studio (`IDE-0037`): una fila con `quantity` > 1 se expande a esa cantidad de piezas/tableros idénticos, con ids derivados por sufijo (`P-101`, `P-101-2`, `P-101-3`, ...) — mismo esquema que el campo "Cantidad" de `PieceDialog`/`BoardDialog`, pero determinista en vez de probar el siguiente sufijo libre en silencio: cualquier id derivado que choque con el fichero o con el proyecto abierto aborta toda la importación, igual que un id literal repetido. Ausente o vacía, equivale a `quantity=1` — mismo comportamiento que hasta ahora.
+
+---
+
 ## 0.3.15 - 2026-08-08
 
 ### Arreglado

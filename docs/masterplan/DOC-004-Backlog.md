@@ -105,13 +105,13 @@ Observaciones:
 | IDE-0034 | Clave de API de Anthropic configurable en Preferencias | 🟢 | P2 |
 | IDE-0035 | Separar "quitar del tablero" de "eliminar del proyecto" | 🟢 | P1 |
 | IDE-0036 | Asistente IA: soporte multi-proveedor (OpenAI, Google Gemini, Ollama local) | 🟢 | P2 |
-| IDE-0037 | Columna `quantity` opcional en el import CSV de piezas/tableros | 🔵 | P3 |
+| IDE-0037 | Columna `quantity` opcional en el import CSV de piezas/tableros | 🟢 | P3 |
 
 ---
 
 ## IDE-0037 — Columna `quantity` opcional en el import CSV de piezas/tableros
 
-**Estado:** 🔵 Planificada. Pedido por el usuario el 08/08/2026: la
+**Estado:** 🟢 Completada en `v0.3.16`. Pedido por el usuario el 08/08/2026: la
 cabecera del CSV de importación (piezas y tableros, `IDE-0018`/
 `IDE-0029`) no tiene forma de indicar varias unidades idénticas por
 fila — solo el diálogo "Pieza"/"Tablero" tiene un campo "Cantidad"
