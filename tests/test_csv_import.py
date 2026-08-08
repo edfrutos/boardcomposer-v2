@@ -115,3 +115,106 @@ def test_rejects_an_empty_csv(tmp_path):
 
     with pytest.raises(CsvImportError, match="ninguna pieza"):
         load_pieces_from_csv(path)
+
+
+def test_quantity_defaults_to_one_piece_when_the_column_is_absent(tmp_path):
+    path = _write_csv(
+        tmp_path, "id,length_mm,width_mm,thickness_mm\nP-101,700,300,19\n"
+    )
+
+    pieces = load_pieces_from_csv(path)
+
+    assert [piece.piece_id for piece in pieces] == ["P-101"]
+
+
+def test_quantity_defaults_to_one_piece_when_the_cell_is_empty(tmp_path):
+    path = _write_csv(
+        tmp_path,
+        "id,length_mm,width_mm,thickness_mm,quantity\nP-101,700,300,19,\n",
+    )
+
+    pieces = load_pieces_from_csv(path)
+
+    assert [piece.piece_id for piece in pieces] == ["P-101"]
+
+
+def test_quantity_expands_a_row_into_several_identical_pieces(tmp_path):
+    path = _write_csv(
+        tmp_path,
+        "id,length_mm,width_mm,thickness_mm,quantity\nP-101,700,300,19,3\n",
+    )
+
+    pieces = load_pieces_from_csv(path)
+
+    assert [piece.piece_id for piece in pieces] == ["P-101", "P-101-2", "P-101-3"]
+    assert all(piece.length_mm == 700 for piece in pieces)
+    assert all(piece.width_mm == 300 for piece in pieces)
+    assert all(piece.thickness_mm == 19 for piece in pieces)
+
+
+def test_quantity_expansion_honors_material(tmp_path):
+    path = _write_csv(
+        tmp_path,
+        "id,length_mm,width_mm,thickness_mm,material,quantity\n"
+        "P-101,700,300,19,Roble,2\n",
+    )
+
+    pieces = load_pieces_from_csv(path)
+
+    assert all(piece.material == "Roble" for piece in pieces)
+
+
+def test_quantity_combines_with_other_rows_in_the_same_file(tmp_path):
+    path = _write_csv(
+        tmp_path,
+        "id,length_mm,width_mm,thickness_mm,quantity\n"
+        "P-101,700,300,19,2\n"
+        "P-200,500,250,19,\n",
+    )
+
+    pieces = load_pieces_from_csv(path)
+
+    assert [piece.piece_id for piece in pieces] == ["P-101", "P-101-2", "P-200"]
+
+
+def test_rejects_non_integer_quantity(tmp_path):
+    path = _write_csv(
+        tmp_path,
+        "id,length_mm,width_mm,thickness_mm,quantity\nP-101,700,300,19,dos\n",
+    )
+
+    with pytest.raises(CsvImportError, match="quantity debe ser un número entero"):
+        load_pieces_from_csv(path)
+
+
+@pytest.mark.parametrize("value", ["0", "-2"])
+def test_rejects_non_positive_quantity(tmp_path, value):
+    path = _write_csv(
+        tmp_path,
+        f"id,length_mm,width_mm,thickness_mm,quantity\nP-101,700,300,19,{value}\n",
+    )
+
+    with pytest.raises(CsvImportError, match="quantity debe ser 1 o mayor"):
+        load_pieces_from_csv(path)
+
+
+def test_rejects_a_quantity_derived_id_that_collides_within_the_file(tmp_path):
+    path = _write_csv(
+        tmp_path,
+        "id,length_mm,width_mm,thickness_mm,quantity\n"
+        "P-101,700,300,19,2\n"
+        "P-101-2,500,250,19,\n",
+    )
+
+    with pytest.raises(CsvImportError, match="repetido 'P-101-2'"):
+        load_pieces_from_csv(path)
+
+
+def test_rejects_a_quantity_derived_id_that_collides_with_the_project(tmp_path):
+    path = _write_csv(
+        tmp_path,
+        "id,length_mm,width_mm,thickness_mm,quantity\nP-101,700,300,19,2\n",
+    )
+
+    with pytest.raises(CsvImportError, match="repetido 'P-101-2'"):
+        load_pieces_from_csv(path, existing_ids=frozenset({"P-101-2"}))

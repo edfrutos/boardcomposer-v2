@@ -105,6 +105,50 @@ Observaciones:
 | IDE-0034 | Clave de API de Anthropic configurable en Preferencias | 🟢 | P2 |
 | IDE-0035 | Separar "quitar del tablero" de "eliminar del proyecto" | 🟢 | P1 |
 | IDE-0036 | Asistente IA: soporte multi-proveedor (OpenAI, Google Gemini, Ollama local) | 🟢 | P2 |
+| IDE-0037 | Columna `quantity` opcional en el import CSV de piezas/tableros | 🔵 | P3 |
+
+---
+
+## IDE-0037 — Columna `quantity` opcional en el import CSV de piezas/tableros
+
+**Estado:** 🔵 Planificada. Pedido por el usuario el 08/08/2026: la
+cabecera del CSV de importación (piezas y tableros, `IDE-0018`/
+`IDE-0029`) no tiene forma de indicar varias unidades idénticas por
+fila — solo el diálogo "Pieza"/"Tablero" tiene un campo "Cantidad"
+(`PieceDialog`/`BoardDialog`), y es una comodidad del propio diálogo,
+no un campo persistido: al aceptar con Cantidad = N, `MainWindow` llama
+N veces al comando de añadir con ids derivados
+(`_generate_ids()`, `main_window.py`) — `StudioPiece`/`StudioBoard` no
+tienen ningún atributo `quantity`.
+
+**Alcance:**
+
+- Columna `quantity` opcional (como `material`) en `load_pieces_from_csv()`
+  (`studio/project/csv_import.py`) y `load_boards_from_csv()`
+  (`studio/project/board_csv_import.py`) — mismas dos columnas
+  obligatorias sin cambios (`id`/`length_mm`/`width_mm`/`thickness_mm`).
+  Ausente o vacía = 1, mismo comportamiento que hoy.
+- Con `quantity` = N > 1, una fila expande a N piezas/tableros
+  idénticos (mismas dimensiones/material/grosor), con ids derivados del
+  id de la fila: el primero tal cual, los siguientes con sufijo `-2`,
+  `-3`... — mismo esquema de sufijo que `_generate_ids()`, pero
+  **determinista, sin saltarse colisiones**: a diferencia del diálogo
+  (que prueba el siguiente sufijo libre en silencio), aquí una colisión
+  de cualquier id derivado con el fichero o el proyecto abierto es un
+  error que aborta toda la importación — mismo criterio "todo o nada,
+  nunca magia silenciosa" que ya rige el resto del validador.
+- `quantity` no entero, cero o negativo: error con el número de fila,
+  mismo patrón que las dimensiones.
+- Vista previa (`CsvImportPreviewDialog`/`BoardCsvImportPreviewDialog`)
+  sin cambios — la expansión ocurre dentro del loader, así que la
+  vista previa ya muestra las N piezas resultantes sin saber nada de
+  "quantity".
+- Documentación: `docs/studio.md` (columnas del importador).
+
+**Fuera de alcance:** el CSV/CLI del Core (`src/boardcomposer/io/csv_loader.py`)
+no se toca — "Cantidad" solo existe en los diálogos de Studio, nunca
+existió en el CLI/API, y el usuario preguntó específicamente por el
+import de Studio.
 
 ---
 

@@ -95,3 +95,82 @@ def test_empty_file_raises(tmp_path):
 
     with pytest.raises(BoardCsvImportError):
         load_boards_from_csv(path)
+
+
+def test_quantity_defaults_to_one_board_when_the_column_is_absent(tmp_path):
+    path = _write_csv(
+        tmp_path, "id,length_mm,width_mm,thickness_mm\nT-101,1200,600,19\n"
+    )
+
+    boards = load_boards_from_csv(path)
+
+    assert [board.board_id for board in boards] == ["T-101"]
+
+
+def test_quantity_expands_a_row_into_several_identical_boards(tmp_path):
+    path = _write_csv(
+        tmp_path,
+        "id,length_mm,width_mm,thickness_mm,quantity\nT-101,1200,600,19,3\n",
+    )
+
+    boards = load_boards_from_csv(path)
+
+    assert [board.board_id for board in boards] == ["T-101", "T-101-2", "T-101-3"]
+    assert all(board.length_mm == 1200 for board in boards)
+    assert all(board.width_mm == 600 for board in boards)
+
+
+def test_quantity_combines_with_other_rows_in_the_same_file(tmp_path):
+    path = _write_csv(
+        tmp_path,
+        "id,length_mm,width_mm,thickness_mm,quantity\n"
+        "T-101,1200,600,19,2\n"
+        "T-200,800,400,19,\n",
+    )
+
+    boards = load_boards_from_csv(path)
+
+    assert [board.board_id for board in boards] == ["T-101", "T-101-2", "T-200"]
+
+
+def test_rejects_non_integer_quantity(tmp_path):
+    path = _write_csv(
+        tmp_path,
+        "id,length_mm,width_mm,thickness_mm,quantity\nT-101,1200,600,19,dos\n",
+    )
+
+    with pytest.raises(BoardCsvImportError, match="quantity debe ser un número entero"):
+        load_boards_from_csv(path)
+
+
+@pytest.mark.parametrize("value", ["0", "-2"])
+def test_rejects_non_positive_quantity(tmp_path, value):
+    path = _write_csv(
+        tmp_path,
+        f"id,length_mm,width_mm,thickness_mm,quantity\nT-101,1200,600,19,{value}\n",
+    )
+
+    with pytest.raises(BoardCsvImportError, match="quantity debe ser 1 o mayor"):
+        load_boards_from_csv(path)
+
+
+def test_rejects_a_quantity_derived_id_that_collides_within_the_file(tmp_path):
+    path = _write_csv(
+        tmp_path,
+        "id,length_mm,width_mm,thickness_mm,quantity\n"
+        "T-101,1200,600,19,2\n"
+        "T-101-2,800,400,19,\n",
+    )
+
+    with pytest.raises(BoardCsvImportError, match="repetido 'T-101-2'"):
+        load_boards_from_csv(path)
+
+
+def test_rejects_a_quantity_derived_id_that_collides_with_the_project(tmp_path):
+    path = _write_csv(
+        tmp_path,
+        "id,length_mm,width_mm,thickness_mm,quantity\nT-101,1200,600,19,2\n",
+    )
+
+    with pytest.raises(BoardCsvImportError, match="repetido 'T-101-2'"):
+        load_boards_from_csv(path, existing_ids=frozenset({"T-101-2"}))

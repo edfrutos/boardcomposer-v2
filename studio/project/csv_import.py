@@ -7,7 +7,12 @@ piece placed onto a stock board, so the columns map to StudioPiece.
 
 Expected columns (same as the Core/CLI CSV format): `id`, `length_mm`,
 `width_mm`, `thickness_mm`. An optional `material` column is honored;
-absent, StudioPiece's default applies.
+absent, StudioPiece's default applies. An optional `quantity` column
+(IDE-0037) expands a row into that many identical pieces, with ids
+derived from the row's id (`P-101`, `P-101-2`, `P-101-3`, ...) — same
+suffix scheme as the "Cantidad" field in PieceDialog, but deterministic
+rather than collision-probing: any derived id that collides aborts the
+whole import, same as a literal duplicate id.
 """
 
 import csv
@@ -27,10 +32,12 @@ REQUIRED_COLUMNS = ("id", "length_mm", "width_mm", "thickness_mm")
 def load_pieces_from_csv(
     path: str | Path, existing_ids: frozenset[str] = frozenset()
 ) -> list[StudioPiece]:
-    """Reads `path` and returns one StudioPiece per row.
+    """Reads `path` and returns one StudioPiece per row (more than one if
+    the row's `quantity` column is greater than 1).
 
     Raises CsvImportError on a missing/empty required column, a non-numeric
-    dimension, or an id that repeats — within the file or against
+    dimension, a non-integer/non-positive `quantity`, or an id (literal or
+    quantity-derived) that repeats — within the file or against
     `existing_ids` (the ids already present in the open project): importing
     must never corrupt the project, so any bad row aborts the whole import
     instead of partially applying it.
@@ -81,23 +88,57 @@ def load_pieces_from_csv(
                         f"mayor que 0 (se recibió {row[column]!r})"
                     )
 
+            quantity_raw = (row.get("quantity") or "").strip()
+            if quantity_raw:
+                try:
+                    quantity = int(quantity_raw)
+                except ValueError as error:
+                    raise CsvImportError(
+                        f"Fila {line_number}: quantity debe ser un número entero "
+                        f"(se recibió {quantity_raw!r})"
+                    ) from error
+                if quantity < 1:
+                    raise CsvImportError(
+                        f"Fila {line_number}: quantity debe ser 1 o mayor "
+                        f"(se recibió {quantity})"
+                    )
+            else:
+                quantity = 1
+
+            # Determinista, no colisión-probing como _generate_ids()
+            # (main_window.py): una colisión con cualquier id derivado es un
+            # error que aborta todo, igual que un id literal repetido —
+            # nunca renombra en silencio.
+            unit_ids = [piece_id] + [
+                f"{piece_id}-{suffix}" for suffix in range(2, quantity + 1)
+            ]
+            for unit_id in unit_ids[1:]:
+                if unit_id in seen_ids:
+                    raise CsvImportError(
+                        f"Fila {line_number}: id repetido '{unit_id}' (derivado de "
+                        f"'{piece_id}' x quantity={quantity}; ya existe en el CSV o "
+                        "en el proyecto abierto)"
+                    )
+                seen_ids.add(unit_id)
+
             material = (row.get("material") or "").strip()
             # StudioPiece valida también por su cuenta; traducir su ValueError
             # mantiene la promesa del docstring (todo fallo sale como
             # CsvImportError) y evita que un invariante añadido ahí en el
             # futuro se escape hasta _import_pieces_csv, que no lo captura.
-            try:
-                if material:
-                    piece = StudioPiece(
-                        piece_id, length_mm, width_mm, material, thickness_mm
-                    )
-                else:
-                    piece = StudioPiece(
-                        piece_id, length_mm, width_mm, thickness_mm=thickness_mm
-                    )
-            except ValueError as error:
-                raise CsvImportError(f"Fila {line_number}: {error}") from error
-            pieces.append(piece)
+            for unit_id in unit_ids:
+                try:
+                    if material:
+                        piece = StudioPiece(
+                            unit_id, length_mm, width_mm, material, thickness_mm
+                        )
+                    else:
+                        piece = StudioPiece(
+                            unit_id, length_mm, width_mm, thickness_mm=thickness_mm
+                        )
+                except ValueError as error:
+                    raise CsvImportError(f"Fila {line_number}: {error}") from error
+                pieces.append(piece)
 
     if not pieces:
         raise CsvImportError("El CSV no contiene ninguna pieza")

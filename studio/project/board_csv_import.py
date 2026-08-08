@@ -9,7 +9,12 @@ more than a couple.
 
 Expected columns: `id`, `length_mm`, `width_mm`, `thickness_mm`. An
 optional `material` column is honored; absent, StudioBoard's default
-applies.
+applies. An optional `quantity` column (IDE-0037) expands a row into
+that many identical boards, with ids derived from the row's id
+(`T-101`, `T-101-2`, `T-101-3`, ...) — same suffix scheme as the
+"Cantidad" field in BoardDialog, but deterministic rather than
+collision-probing: any derived id that collides aborts the whole
+import, same as a literal duplicate id.
 """
 
 import csv
@@ -29,10 +34,12 @@ REQUIRED_COLUMNS = ("id", "length_mm", "width_mm", "thickness_mm")
 def load_boards_from_csv(
     path: str | Path, existing_ids: frozenset[str] = frozenset()
 ) -> list[StudioBoard]:
-    """Reads `path` and returns one StudioBoard per row.
+    """Reads `path` and returns one StudioBoard per row (more than one if
+    the row's `quantity` column is greater than 1).
 
     Raises BoardCsvImportError on a missing/empty required column, a
-    non-numeric dimension, or an id that repeats — within the file or
+    non-numeric dimension, a non-integer/non-positive `quantity`, or an id
+    (literal or quantity-derived) that repeats — within the file or
     against `existing_ids` (the ids already present in the open project):
     importing must never corrupt the project, so any bad row aborts the
     whole import instead of partially applying it. Same all-or-nothing
@@ -83,19 +90,53 @@ def load_boards_from_csv(
                         f"mayor que 0 (se recibió {row[column]!r})"
                     )
 
+            quantity_raw = (row.get("quantity") or "").strip()
+            if quantity_raw:
+                try:
+                    quantity = int(quantity_raw)
+                except ValueError as error:
+                    raise BoardCsvImportError(
+                        f"Fila {line_number}: quantity debe ser un número entero "
+                        f"(se recibió {quantity_raw!r})"
+                    ) from error
+                if quantity < 1:
+                    raise BoardCsvImportError(
+                        f"Fila {line_number}: quantity debe ser 1 o mayor "
+                        f"(se recibió {quantity})"
+                    )
+            else:
+                quantity = 1
+
+            # Determinista, no colisión-probing como _generate_ids()
+            # (main_window.py): una colisión con cualquier id derivado es un
+            # error que aborta todo, igual que un id literal repetido —
+            # nunca renombra en silencio.
+            unit_ids = [board_id] + [
+                f"{board_id}-{suffix}" for suffix in range(2, quantity + 1)
+            ]
+            for unit_id in unit_ids[1:]:
+                if unit_id in seen_ids:
+                    raise BoardCsvImportError(
+                        f"Fila {line_number}: id repetido '{unit_id}' (derivado de "
+                        f"'{board_id}' x quantity={quantity}; ya existe en el CSV o "
+                        "en el proyecto abierto)"
+                    )
+                seen_ids.add(unit_id)
+
             material = (row.get("material") or "").strip()
-            try:
-                if material:
-                    board = StudioBoard(
-                        board_id, length_mm, width_mm, material, thickness_mm
-                    )
-                else:
-                    board = StudioBoard(
-                        board_id, length_mm, width_mm, thickness_mm=thickness_mm
-                    )
-            except ValueError as error:
-                raise BoardCsvImportError(f"Fila {line_number}: {error}") from error
-            boards.append(board)
+            for unit_id in unit_ids:
+                try:
+                    if material:
+                        board = StudioBoard(
+                            unit_id, length_mm, width_mm, material, thickness_mm
+                        )
+                    else:
+                        board = StudioBoard(
+                            unit_id, length_mm, width_mm, thickness_mm=thickness_mm
+                        )
+                except ValueError as error:
+                    raise BoardCsvImportError(f"Fila {line_number}: {error}") from error
+                boards.append(board)
 
     if not boards:
         raise BoardCsvImportError("El CSV no contiene ningún tablero")
