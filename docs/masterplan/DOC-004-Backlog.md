@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 07/08/2026
+**Última revisión:** 08/08/2026
 
 ---
 
@@ -195,6 +195,26 @@ OpenAI/Gemini/Anthropic (fijo por constante `DEFAULT_MODEL`, igual que
 ya era el caso solo con Anthropic); comparar respuestas de varios
 proveedores a la vez; cualquier parche de `json_response.py` específico
 de un proveedor nuevo, pendiente de necesidad real.
+
+**Actualización (`DT-0023`, 08/08/2026):** el `.app` publicado en
+`v0.3.14` no arrancaba en absoluto — `ModuleNotFoundError: No module
+named 'google.genai._gaos.utils.url'` al importar el Asistente IA.
+`google-genai` resuelve buena parte de su subsistema interno con
+`importlib.import_module()` sobre un nombre calculado en tiempo de
+ejecución en vez de sentencias `import` normales, invisible para el
+análisis estático de Nuitka. CI en verde (compiló, firmó y notarizó sin
+fallos) no lo detectó porque notarizar solo valida la firma del
+binario, nunca lo ejecuta — el primer arranque real fue el del usuario
+tras descargar la release. Detectado pidiéndole que ejecutara el
+binario desde Terminal en vez de con doble clic, para ver el traceback
+que Finder/`open` se traga en silencio. Arreglado en `v0.3.15`
+añadiendo `--include-package=google.genai --include-package=openai` a
+`extra_args` (`studio/pysidedeploy.spec`) — fuerza el empaquetado
+completo de ambos paquetes, ignorando lo que Nuitka no puede ver por su
+cuenta. Ver `DT-0023` (`DOC-006-DeudaTecnica.md`) para el detalle
+completo; pendiente de que el usuario confirme que `v0.3.15` arranca,
+sin macOS/Nuitka disponibles para verificarlo en el entorno donde se
+hizo el fix.
 
 ---
 

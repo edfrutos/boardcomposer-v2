@@ -1,6 +1,6 @@
 # BoardComposer — MASTERPLAN
 
-**Última revisión:** 07/08/2026
+**Última revisión:** 08/08/2026
 
 > Este documento resume el estado del proyecto y las normas de trabajo.
 > El detalle vivo de cada funcionalidad está en `DOC-004-Backlog.md`, la
@@ -10,22 +10,35 @@
 ## Estado actual
 
 Rama: `main`
-Versión publicada: `0.3.14` (07/08/2026, tag `v0.3.14`) —
-`IDE-0036`: soporte multi-proveedor en el Asistente IA. Propuesto por
-el usuario al abrir la conversación de alcance de la Fase 5
-(Ecosistema): además de Anthropic (Claude), ahora se puede elegir
-OpenAI (GPT), Google Gemini u Ollama (local, sin clave — host/puerto +
-nombre de modelo) desde un desplegable nuevo en Preferencias
-(`BOARDCOMPOSER_AI_PROVIDER`, mismo bridge QSettings→entorno que
-`IDE-0034`, `ADR-001`). Hallazgo real: `OpenAI()`/`genai.Client()`
-lanzan de inmediato sin su clave, a diferencia de `Anthropic()` —
-`AssistantService._resolve_provider()` (nuevo) evita que elegir un
-proveedor sin configurar tumbe el arranque de Studio. Verificado con
-una clave real de OpenAI: llamada real al SDK, flujo completo de
-Preferencias, y una pregunta con contexto de proyecto real respondida
-correctamente; Gemini y Ollama sin verificar aún con
-credenciales/servidor reales. Duodécima release firmada y notarizada
-con la cuenta de Apple Developer activa (`DT-0011`).
+Versión publicada: `0.3.15` (08/08/2026, tag `v0.3.15`) — arreglo
+urgente sobre `v0.3.14` (`DT-0023`): el `.app` publicado no arrancaba,
+`ModuleNotFoundError: No module named 'google.genai._gaos.utils.url'`.
+`google-genai` resuelve buena parte de su subsistema interno con
+`importlib.import_module()` sobre un nombre calculado en tiempo de
+ejecución, invisible para el análisis estático de Nuitka — CI en verde
+(compiló, firmó y notarizó sin fallos) no lo detectó porque notarizar
+solo valida la firma, nunca ejecuta el binario. Detectado pidiendo al
+usuario que ejecutara el binario desde Terminal en vez de con doble
+clic, para ver el traceback que Finder se traga en silencio.
+`studio/pysidedeploy.spec` fuerza ahora el empaquetado completo de
+`google.genai`/`openai` (`--include-package`). Pendiente de confirmar
+por el usuario contra esta build — sin macOS/Nuitka disponibles en el
+entorno donde se hizo el fix.
+
+`v0.3.14` (07/08/2026): `IDE-0036`, soporte multi-proveedor en el
+Asistente IA. Propuesto por el usuario al abrir la conversación de
+alcance de la Fase 5 (Ecosistema): además de Anthropic (Claude), ahora
+se puede elegir OpenAI (GPT), Google Gemini u Ollama (local, sin clave
+— host/puerto + nombre de modelo) desde un desplegable nuevo en
+Preferencias (`BOARDCOMPOSER_AI_PROVIDER`, mismo bridge
+QSettings→entorno que `IDE-0034`, `ADR-001`). Hallazgo real:
+`OpenAI()`/`genai.Client()` lanzan de inmediato sin su clave, a
+diferencia de `Anthropic()` — `AssistantService._resolve_provider()`
+(nuevo) evita que elegir un proveedor sin configurar tumbe el arranque
+de Studio. Verificado con una clave real de OpenAI: llamada real al
+SDK, flujo completo de Preferencias, y una pregunta con contexto de
+proyecto real respondida correctamente; Gemini y Ollama sin verificar
+aún con credenciales/servidor reales.
 Tests: 960, en verde.
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
@@ -41,7 +54,9 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0036`, todos 🟢 completados
 y en `main`.
 
-Deuda técnica (`DOC-006-DeudaTecnica.md`): 22 registros, los 22 resueltos.
+Deuda técnica (`DOC-006-DeudaTecnica.md`): 23 registros, 22 resueltos y 1
+mitigado pendiente de confirmar (`DT-0023`, el `.app` de `v0.3.14` no
+arrancaba — `google-genai`/Nuitka, ver abajo).
 `DT-0011` (el `.app` de macOS sin firmar/notarizar) cerrada del todo el
 01/08/2026: cuenta de Apple Developer activada, secrets cargados, `v0.3.3`
 es la primera release firmada y notarizada de verdad — tres bugs reales en

@@ -1,5 +1,13 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.15 - 2026-08-08
+
+### Arreglado
+
+- El `.app` de `v0.3.14` no arrancaba en absoluto tras descargarlo: `ModuleNotFoundError: No module named 'google.genai._gaos.utils.url'` al importar el Asistente IA. `google-genai` resuelve buena parte de su subsistema interno con `importlib.import_module()` sobre un nombre calculado en tiempo de ejecución en vez de sentencias `import` normales — invisible para el análisis estático de Nuitka, que solo empaqueta lo que puede ver siguiendo imports literales. La build había compilado, firmado y notarizado sin fallos (notarización solo valida la firma, nunca ejecuta el binario), así que CI en verde no lo detectó — el primer arranque real fue el del usuario tras descargar la release. `studio/pysidedeploy.spec` fuerza ahora el empaquetado completo de `google.genai` y `openai` (`--include-package`), no solo lo que Nuitka detecta por su cuenta.
+
+---
+
 ## 0.3.14 - 2026-08-07
 
 ### Añadido

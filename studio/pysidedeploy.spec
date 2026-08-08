@@ -91,7 +91,18 @@ mode = onefile
 # app name even though the window title was correct).
 # --macos-app-version must match the version in pyproject.toml.
 # scripts/check_project.py fails the build if the two drift apart.
-extra_args = --quiet --noinclude-qt-translations --macos-signed-app-name=com.efjdefrutos.boardcomposer.studio --macos-app-name="BoardComposer Studio" --macos-app-version=0.3.14
+# --include-package=google.genai / --include-package=openai: both SDKs
+# resolve part of their own submodules through importlib.import_module()
+# with a computed name (google-genai's _gaos layer does this for ~282
+# files, via a module-level __getattr__/lazy_getattr indirection) rather
+# than a plain `import` statement — invisible to Nuitka's static
+# follow-imports analysis, so without this flag it silently drops files
+# like google/genai/_gaos/utils/url.py from the frozen build. Confirmed
+# in v0.3.14: notarization and codesign both succeeded (they only check
+# the signature, not that the binary runs), the .app still crashed at
+# startup with ModuleNotFoundError the first time a real user launched
+# it — CI going green is not proof the packaged app actually starts.
+extra_args = --quiet --noinclude-qt-translations --macos-signed-app-name=com.efjdefrutos.boardcomposer.studio --macos-app-name="BoardComposer Studio" --macos-app-version=0.3.15 --include-package=google.genai --include-package=openai
 
 [buildozer]
 
