@@ -106,6 +106,68 @@ Observaciones:
 | IDE-0035 | Separar "quitar del tablero" de "eliminar del proyecto" | 🟢 | P1 |
 | IDE-0036 | Asistente IA: soporte multi-proveedor (OpenAI, Google Gemini, Ollama local) | 🟢 | P2 |
 | IDE-0037 | Columna `quantity` opcional en el import CSV de piezas/tableros | 🟢 | P3 |
+| IDE-0038 | `material`/`quantity` en el CSV del Core + restricción dura de material en Studio | 🟢 | P2 |
+
+---
+
+## IDE-0038 — `material`/`quantity` en el CSV del Core + restricción dura de material en Studio
+
+**Estado:** 🟢 Completada en `v0.3.17`. Pedido por el usuario el 09/08/2026, ampliando
+`IDE-0037`: los tres formatos de CSV (Core, piezas de Studio, tableros de
+Studio) deben admitir `quantity` y `material`, en ese orden. Al investigar
+salieron dos decisiones de diseño reales, resueltas con el usuario:
+
+1. El Core nunca ha tenido `material` en `Board` (el único "material" que
+   existe hoy es `material_usage_score`, una métrica del solver, sin
+   relación). Se añade como campo pasivo — se guarda y se expone, pero sin
+   efecto en el solver — porque el Core solo empaqueta piezas sobre **una
+   única lámina implícita** (`ProjectConstraints`), sin varias tablas entre
+   las que el solver pueda elegir por material. Convertir el Core a
+   multi-lámina con material queda fuera de alcance, es un cambio de
+   arquitectura mayor que se registrará como su propio ticket si hace falta.
+2. En Studio sí hay varias `StudioBoard` reales, así que ahí `material` pasa
+   de etiqueta pasiva a **restricción dura**, exactamente el mismo patrón que
+   ya existe para `thickness_mm` (`piece.material == board.material`, sin
+   comodín): una pieza de un material no encaja en un tablero de otro.
+
+**Alcance — Core:**
+
+- `src/boardcomposer/domain/board.py`: campo `material: str = ""` en
+  `Board`, sin validación más allá del tipo — pasivo, igual que `id`.
+- `src/boardcomposer/io/csv_loader.py` (`load_project_from_csv`): columnas
+  opcionales `quantity` y `material`, en ese orden. `quantity` > 1 expande
+  la fila en N `Board`; con `id` presente, ids derivados por sufijo
+  (`T-101-2`...) sin comprobar colisión (el Core nunca ha validado ids
+  únicos, ni siquiera literales); sin `id`, las N boards quedan con
+  `id=None`, igual que hoy con `quantity=1`. `quantity` no entero o no
+  positivo, error con número de fila, mismo patrón que las dimensiones.
+- `data/samples/basic_boards.csv` y tests (`tests/test_models.py`,
+  `tests/test_csv_loader.py`) sin tocar salvo los casos nuevos.
+
+**Alcance — Studio:**
+
+- `studio/project/csv_import.py`/`board_csv_import.py`: sin cambio
+  funcional (ya soportaban `material`+`quantity` desde `IDE-0037`, el
+  `DictReader` lee por nombre de columna, no por posición) — se reordenan
+  los docstrings y `docs/studio.md` a `quantity,material`.
+- `studio/layout_service.py`: `to_core_project()` filtra piezas también por
+  `piece.material == source_board.material`, junto al filtro de
+  `thickness_mm` ya existente (mismo comentario, misma razón física: una
+  pieza de roble no tiene nada que hacer en un tablero de pino).
+  `apply_best_fit_distribution()` añade el mismo criterio al *skip*
+  temprano por tablero.
+- `studio/main_window.py`: `_edit_board()` y `_edit_piece()` comprueban
+  también el material contra las colocaciones/tablero existentes, junto al
+  `thickness_mm` que ya comprueban; `_move_piece_to_board()` filtra
+  `matching_boards` también por material.
+- `studio/workspace/placement_fit.py` **no** cambia — `piece_fits_on_board()`
+  es geometría pura (solape/límites/kerf); `thickness_mm` tampoco se
+  comprueba ahí, sino en cada punto de llamada de `main_window.py`/
+  `layout_service.py` — mismo patrón para `material`.
+
+**Fuera de alcance:** Excel (`excel_loader.py`) — el usuario pidió los tres
+formatos de CSV, no Excel. Multi-lámina con material en el Core (ver punto 1
+de más arriba).
 
 ---
 

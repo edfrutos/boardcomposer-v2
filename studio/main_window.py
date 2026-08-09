@@ -1651,6 +1651,15 @@ class MainWindow(QMainWindow):
                 )
                 return
 
+            if piece.material != new_board.material:
+                self.statusBar().showMessage(
+                    f"La pieza '{piece.piece_id}' es de material "
+                    f"'{piece.material}' — no coincide con el nuevo material "
+                    "del tablero.",
+                    5000,
+                )
+                return
+
             other_placements = [
                 other
                 for other in board_placements
@@ -1783,6 +1792,14 @@ class MainWindow(QMainWindow):
                     )
                     return
 
+                if new_piece.material != target_board.material:
+                    self.statusBar().showMessage(
+                        f"El material '{new_piece.material}' no coincide con "
+                        f"el del tablero '{placement.board_id}'.",
+                        5000,
+                    )
+                    return
+
                 other_placements = [
                     other
                     for other in project.placements
@@ -1840,15 +1857,18 @@ class MainWindow(QMainWindow):
             )
             return
 
-        # A piece can only go on a board of its own thickness — same physical
-        # constraint the solver already enforces (IDE-00xx).
+        # A piece can only go on a board of its own thickness and material —
+        # same physical constraint the solver already enforces (IDE-0038).
         matching_boards = [
-            board for board in other_boards if board.thickness_mm == piece.thickness_mm
+            board
+            for board in other_boards
+            if board.thickness_mm == piece.thickness_mm
+            and board.material == piece.material
         ]
         if not matching_boards:
             self.statusBar().showMessage(
-                f"Ningún otro tablero tiene el grosor de esta pieza "
-                f"({piece.thickness_mm:g} mm).",
+                f"Ningún otro tablero tiene el grosor y material de esta pieza "
+                f"({piece.thickness_mm:g} mm, '{piece.material}').",
                 5000,
             )
             return

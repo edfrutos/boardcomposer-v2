@@ -10,6 +10,16 @@ def test_board_area():
     assert board.area_mm2 == 600000
 
 
+def test_board_material_defaults_to_empty_string():
+    board = Board(length_mm=2000, width_mm=300, thickness_mm=20)
+    assert board.material == ""
+
+
+def test_board_material_is_a_passive_label():
+    board = Board(length_mm=2000, width_mm=300, thickness_mm=20, material="Roble")
+    assert board.material == "Roble"
+
+
 def test_board_requires_positive_dimensions():
     with pytest.raises(ValueError):
         Board(length_mm=0, width_mm=300, thickness_mm=20)

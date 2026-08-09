@@ -6,13 +6,13 @@ CSV row is a `Board` (the item to cut); in Studio that same item is a
 piece placed onto a stock board, so the columns map to StudioPiece.
 
 Expected columns (same as the Core/CLI CSV format): `id`, `length_mm`,
-`width_mm`, `thickness_mm`. An optional `material` column is honored;
-absent, StudioPiece's default applies. An optional `quantity` column
-(IDE-0037) expands a row into that many identical pieces, with ids
-derived from the row's id (`P-101`, `P-101-2`, `P-101-3`, ...) — same
-suffix scheme as the "Cantidad" field in PieceDialog, but deterministic
-rather than collision-probing: any derived id that collides aborts the
-whole import, same as a literal duplicate id.
+`width_mm`, `thickness_mm`, plus two optional columns, in this order:
+`quantity` (IDE-0037) expands a row into that many identical pieces,
+with ids derived from the row's id (`P-101`, `P-101-2`, `P-101-3`, ...)
+— same suffix scheme as the "Cantidad" field in PieceDialog, but
+deterministic rather than collision-probing: any derived id that
+collides aborts the whole import, same as a literal duplicate id.
+`material` is honored as-is; absent, StudioPiece's default applies.
 """
 
 import csv

@@ -147,6 +147,23 @@ def test_edit_board_rejects_a_thickness_that_no_longer_matches_its_pieces(
     assert "grosor" in window.statusBar().currentMessage()
 
 
+def test_edit_board_rejects_a_material_that_no_longer_matches_its_pieces(
+    window, monkeypatch
+):
+    board_id = window.workspace.active_board_id
+    monkeypatch.setattr(
+        "studio.main_window.BoardDialog",
+        lambda *a, **k: _FakeDialog((board_id, 3000, 1000, "Roble", 19.0)),
+    )
+
+    window._edit_board()
+
+    project = window.services.projects.current_project
+    board = next(b for b in project.boards if b.board_id == board_id)
+    assert board.material == "Demo"
+    assert "material" in window.statusBar().currentMessage()
+
+
 def test_add_piece_appends_a_piece_visible_on_the_active_board(window, monkeypatch):
     active_board_id = window.workspace.active_board_id
     monkeypatch.setattr(
@@ -274,6 +291,23 @@ def test_edit_piece_rejects_a_thickness_that_no_longer_matches_its_board(
     piece = next(p for p in project.pieces if p.piece_id == "P-001")
     assert piece.thickness_mm == 19.0
     assert "grosor" in window.statusBar().currentMessage()
+
+
+def test_edit_piece_rejects_a_material_that_no_longer_matches_its_board(
+    window, monkeypatch
+):
+    monkeypatch.setattr(
+        "studio.main_window.PieceDialog",
+        lambda *a, **k: _FakeDialog(("P-001", 700, 300, "Roble", 19.0)),
+    )
+    window.workspace.selection.select_many(["P-001"])
+
+    window._edit_piece()
+
+    project = window.services.projects.current_project
+    piece = next(p for p in project.pieces if p.piece_id == "P-001")
+    assert piece.material == "Demo"
+    assert "material" in window.statusBar().currentMessage()
 
 
 def _explorer_piece_texts(window) -> list[str]:
@@ -445,6 +479,24 @@ def test_move_piece_to_board_rejects_a_different_thickness(window, monkeypatch):
     placement = project.placement_by_piece_id("P-001")
     assert placement.board_id == "TAB-001"
     assert "grosor" in window.statusBar().currentMessage()
+
+
+def test_move_piece_to_board_rejects_a_different_material(window, monkeypatch):
+    project = window.services.projects.current_project
+    from studio.models import StudioBoard
+
+    project.boards.append(StudioBoard("TAB-002", 3000, 1000, material="Roble"))
+    window.workspace.selection.select_many(["P-001"])
+    monkeypatch.setattr(
+        "studio.main_window.MoveToBoardDialog",
+        lambda *a, **k: _FakeMoveDialog("TAB-002"),
+    )
+
+    window._move_piece_to_board()
+
+    placement = project.placement_by_piece_id("P-001")
+    assert placement.board_id == "TAB-001"
+    assert "material" in window.statusBar().currentMessage()
 
 
 def test_move_piece_to_board_rejects_a_piece_that_no_longer_fits(window, monkeypatch):

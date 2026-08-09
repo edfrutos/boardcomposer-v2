@@ -66,6 +66,29 @@ def test_best_fit_distribution_with_nothing_to_place_shows_a_message(
     assert project.placement_by_piece_id("p1") is None
 
 
+def test_best_fit_distribution_with_no_matching_material_shows_a_message(
+    window, monkeypatch
+):
+    window.services.projects.new_project(
+        StudioProject(
+            project_id="proj-2b",
+            name="Demo",
+            boards=[StudioBoard("A", 2000, 300, material="Roble")],
+            pieces=[StudioPiece("p1", 500, 300, material="Pino")],
+        )
+    )
+    messages = []
+    monkeypatch.setattr(
+        window.statusBar(), "showMessage", lambda text, *a: messages.append(text)
+    )
+
+    window._apply_best_fit_distribution()
+
+    assert len(messages) == 1
+    project = window.services.projects.current_project
+    assert project.placement_by_piece_id("p1") is None
+
+
 def test_best_fit_distribution_keeps_existing_placements_on_other_boards(window):
     window.services.projects.new_project(
         StudioProject(

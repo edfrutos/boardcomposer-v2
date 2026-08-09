@@ -48,7 +48,7 @@ solver.
 
 ## Formato del fichero de entrada
 
-Mismas columnas en CSV y en Excel. La primera fila es la cabecera.
+Mismas columnas obligatorias en CSV y en Excel. La primera fila es la cabecera.
 
 | Columna | Obligatoria | Contenido |
 |---|---|---|
@@ -56,8 +56,10 @@ Mismas columnas en CSV y en Excel. La primera fila es la cabecera.
 | `width_mm` | sí | Ancho en mm. |
 | `thickness_mm` | sí | Grosor en mm. |
 | `id` | no | Identificador de la tabla. Si falta o va vacío, se genera uno. |
+| `quantity` | no | Solo CSV (`IDE-0038`). Entero ≥ 1; una fila con `quantity` > 1 se expande a esa cantidad de tablas idénticas. Con `id`, los ids derivados llevan sufijo (`A`, `A-2`, `A-3`...); sin `id`, todas las tablas resultantes quedan sin id. Ausente o vacía, equivale a `quantity=1`. |
+| `material` | no | Solo CSV (`IDE-0038`). Etiqueta libre, sin efecto en el solver — el Core empaqueta las tablas sobre una única lámina, así que no hay varias tablas entre las que elegir por material. Se guarda y se puede leer luego desde `Board.material`. |
 
-Cualquier otra columna se ignora.
+Cualquier otra columna se ignora. `quantity` y `material` no están soportadas en Excel, solo en CSV.
 
     id,length_mm,width_mm,thickness_mm
     A,2000,300,20

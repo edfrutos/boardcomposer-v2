@@ -7,14 +7,14 @@ Same use case that motivated `DEC-0019` (retales) — adding several
 scrap boards by hand, one dialog at a time, doesn't scale once there are
 more than a couple.
 
-Expected columns: `id`, `length_mm`, `width_mm`, `thickness_mm`. An
-optional `material` column is honored; absent, StudioBoard's default
-applies. An optional `quantity` column (IDE-0037) expands a row into
-that many identical boards, with ids derived from the row's id
+Expected columns: `id`, `length_mm`, `width_mm`, `thickness_mm`, plus
+two optional columns, in this order: `quantity` (IDE-0037) expands a
+row into that many identical boards, with ids derived from the row's id
 (`T-101`, `T-101-2`, `T-101-3`, ...) — same suffix scheme as the
 "Cantidad" field in BoardDialog, but deterministic rather than
 collision-probing: any derived id that collides aborts the whole
-import, same as a literal duplicate id.
+import, same as a literal duplicate id. `material` is honored as-is;
+absent, StudioBoard's default applies.
 """
 
 import csv

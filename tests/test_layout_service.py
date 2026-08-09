@@ -119,6 +119,25 @@ def test_to_core_project_excludes_pieces_with_a_different_thickness():
     assert {board.id for board in core_project.boards} == {"p1"}
 
 
+def test_to_core_project_excludes_pieces_with_a_different_material():
+    services = StudioServices()
+    services.projects.new_project(
+        StudioProject(
+            project_id="proj-6b",
+            name="Demo",
+            boards=[StudioBoard("A", 2000, 300, material="Roble")],
+            pieces=[
+                StudioPiece("p1", 500, 300, material="Roble"),
+                StudioPiece("p2", 500, 300, material="Pino"),
+            ],
+        )
+    )
+
+    core_project = services.layout.to_core_project("A")
+
+    assert {board.id for board in core_project.boards} == {"p1"}
+
+
 def test_apply_last_solution_sends_leftover_to_the_matching_thickness_board():
     services = StudioServices()
     services.projects.new_project(

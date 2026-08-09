@@ -1,5 +1,18 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.17 - 2026-08-09
+
+### Añadido
+
+- Columnas `quantity` y `material` (en ese orden) en el CSV del Core/CLI (`IDE-0038`), que hasta ahora no admitía ninguna de las dos: `quantity` expande una fila en N tablas idénticas, con ids derivados por sufijo si la fila trae `id` (sin él, las N tablas quedan sin id, igual que hoy). `material` se añade como campo nuevo y pasivo en `Board` — se guarda y se puede leer, pero sin efecto en el solver, porque el Core empaqueta las piezas sobre una única lámina implícita y no tiene varias tablas entre las que elegir por material.
+- En Studio, `material` deja de ser una etiqueta decorativa: pasa a ser una restricción dura, exactamente el mismo patrón que ya existía para `thickness_mm` — una pieza de un material no encaja en un tablero de otro. Afecta al solver (`LayoutService.to_core_project()`, `apply_best_fit_distribution()`) y a las acciones manuales de `MainWindow` (mover pieza a otro tablero, editar pieza o tablero).
+
+### Cambiado
+
+- Documentación de los tres formatos de CSV (Core, piezas y tableros de Studio) reordenada a `quantity`, `material` — sin cambio funcional, `csv.DictReader` lee por nombre de columna, no por posición.
+
+---
+
 ## 0.3.16 - 2026-08-08
 
 ### Añadido

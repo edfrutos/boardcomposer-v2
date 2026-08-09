@@ -8,6 +8,7 @@ class Board:
     width_mm: float
     thickness_mm: float
     id: str | None = None
+    material: str = ""
 
     def __post_init__(self) -> None:
         # `<= 0` alone lets NaN through (`nan <= 0` is False) and Infinity

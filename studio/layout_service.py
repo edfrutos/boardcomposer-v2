@@ -84,6 +84,11 @@ class LayoutService:
             ):
                 continue
 
+            # Same physical constraint as thickness, for material: a piece
+            # of oak has no business on a pine board (IDE-0038).
+            if source_board is not None and piece.material != source_board.material:
+                continue
+
             # Each piece is handed to the solver one saw cut wider and one
             # taller than it really is, so the gap the blade needs is packed
             # along with it. The Core has no concept of a kerf and doesn't
@@ -208,6 +213,7 @@ class LayoutService:
             for board in boards_by_area:
                 if not any(
                     piece.thickness_mm == board.thickness_mm
+                    and piece.material == board.material
                     for piece in unplaced_pieces()
                 ):
                     continue
