@@ -54,9 +54,7 @@ def test_rejects_a_csv_without_rows(tmp_path):
 
 
 def test_material_defaults_to_empty_string_when_the_column_is_absent(tmp_path):
-    path = _write_csv(
-        tmp_path, "id,length_mm,width_mm,thickness_mm\nA,2000,300,20\n"
-    )
+    path = _write_csv(tmp_path, "id,length_mm,width_mm,thickness_mm\nA,2000,300,20\n")
 
     project = load_project_from_csv(path)
 
@@ -75,9 +73,7 @@ def test_material_is_honored_as_a_passive_label(tmp_path):
 
 
 def test_quantity_defaults_to_one_board_when_the_column_is_absent(tmp_path):
-    path = _write_csv(
-        tmp_path, "id,length_mm,width_mm,thickness_mm\nA,2000,300,20\n"
-    )
+    path = _write_csv(tmp_path, "id,length_mm,width_mm,thickness_mm\nA,2000,300,20\n")
 
     project = load_project_from_csv(path)
 
