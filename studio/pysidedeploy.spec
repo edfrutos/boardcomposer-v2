@@ -102,7 +102,14 @@ mode = onefile
 # the signature, not that the binary runs), the .app still crashed at
 # startup with ModuleNotFoundError the first time a real user launched
 # it — CI going green is not proof the packaged app actually starts.
-extra_args = --quiet --noinclude-qt-translations --macos-signed-app-name=com.efjdefrutos.boardcomposer.studio --macos-app-name="BoardComposer Studio" --macos-app-version=0.3.15 --include-package=google.genai --include-package=openai
+# --include-package=certifi / --include-package-data=certifi (DT-0024):
+# update_check.py pins its SSL context to certifi's CA bundle, a data
+# file (cacert.pem) inside the package, not a .py module — Nuitka's
+# import-following bundles code, not arbitrary package data, so without
+# --include-package-data the frozen build would carry certifi's Python
+# code but not the .pem file ssl.create_default_context(cafile=...)
+# actually reads, right back to CERTIFICATE_VERIFY_FAILED.
+extra_args = --quiet --noinclude-qt-translations --macos-signed-app-name=com.efjdefrutos.boardcomposer.studio --macos-app-name="BoardComposer Studio" --macos-app-version=0.3.20 --include-package=google.genai --include-package=openai --include-package=certifi --include-package-data=certifi
 
 [buildozer]
 

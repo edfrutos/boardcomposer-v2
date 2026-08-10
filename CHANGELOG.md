@@ -1,5 +1,14 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.20 - 2026-08-10
+
+### Arreglado
+
+- "Buscar actualizaciones" fallaba en el `.app` empaquetado con `<urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate>`, reportado por el usuario con una captura (`DT-0024`). El binario congelado por Nuitka no localiza el almacén de certificados CA del sistema como sí lo hace un intérprete normal — `update_check.py` ahora fija el contexto SSL al bundle de `certifi` (ya instalado como dependencia transitiva de los SDKs de IA), y `pysidedeploy.spec` lo empaqueta completo (código y datos).
+- `studio/_version.py` y el `--macos-app-version` de `pysidedeploy.spec` llevaban atascados en `0.3.15` desde `v0.3.16` — tres releases con la versión de "Acerca de" y del bundle equivocadas, y con el comparador de "Buscar actualizaciones" creyendo siempre desactualizada la última versión real. `scripts/check_project.py` ya detectaba justo este desfase, pero nunca se había enganchado a ningún workflow de CI; ahora corre en `ci.yml`, así que un desfase futuro rompe el pipeline en vez de pasar desapercibido.
+
+---
+
 ## 0.3.19 - 2026-08-10
 
 ### Añadido

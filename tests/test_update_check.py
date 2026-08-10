@@ -2,6 +2,7 @@ import json
 import urllib.error
 from unittest.mock import patch
 
+from studio import update_check
 from studio.update_check import _parse_version, check_for_update
 
 
@@ -31,7 +32,7 @@ class _FakeResponse:
 
 
 def _fake_urlopen(payload: dict):
-    def _open(request, timeout=None):  # noqa: ARG001
+    def _open(request, timeout=None, context=None):  # noqa: ARG001
         return _FakeResponse(payload)
 
     return _open
@@ -69,7 +70,7 @@ def test_reports_no_update_when_current_is_newer_than_latest_seen():
 
 
 def test_network_failure_comes_back_as_a_result_not_an_exception():
-    def _raise(request, timeout=None):  # noqa: ARG001
+    def _raise(request, timeout=None, context=None):  # noqa: ARG001
         raise urllib.error.URLError("no route to host")
 
     with patch("urllib.request.urlopen", side_effect=_raise):
@@ -87,3 +88,21 @@ def test_missing_tag_name_comes_back_as_a_result_not_an_exception():
 
     assert result.checked_ok is False
     assert result.error is not None
+
+
+def test_uses_a_certifi_backed_ssl_context():
+    # DT-0024: urlopen()'s default SSLContext failed to verify GitHub's
+    # certificate inside the Nuitka-packaged .app — the frozen binary
+    # doesn't see the same CA store a normal interpreter does. Pinning the
+    # context to certifi's bundle explicitly sidesteps that.
+    payload = {"tag_name": "v0.3.11", "html_url": "https://example.com/v0.3.11"}
+    received_contexts = []
+
+    def _open(request, timeout=None, context=None):  # noqa: ARG001
+        received_contexts.append(context)
+        return _FakeResponse(payload)
+
+    with patch("urllib.request.urlopen", side_effect=_open):
+        check_for_update("0.3.11")
+
+    assert received_contexts == [update_check._SSL_CONTEXT]

@@ -39,3 +39,6 @@ jobs:
         run: pytest -q
         env:
           QT_QPA_PLATFORM: offscreen
+
+      - name: Check project (paths, packaged version in sync with pyproject.toml)
+        run: python scripts/check_project.py

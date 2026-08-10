@@ -10,14 +10,26 @@ signing/notarization territory for a self-updater.
 from __future__ import annotations
 
 import json
+import ssl
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
+
+import certifi
 
 LATEST_RELEASE_API_URL = (
     "https://api.github.com/repos/edfrutos/boardcomposer-v2/releases/latest"
 )
 REQUEST_TIMEOUT_SECONDS = 5.0
+
+# Nuitka's frozen .app doesn't see the CA bundle a normal interpreter does
+# (same category of "works from source, breaks once packaged" as DT-0023):
+# urlopen()'s default SSLContext failed with CERTIFICATE_VERIFY_FAILED for
+# a real user, reported with a screenshot, even though the request works
+# fine from this venv. certifi is already installed transitively (the AI
+# provider SDKs pull it in) — pointing the context at its bundle explicitly
+# doesn't depend on Nuitka finding whatever the OS/venv would have used.
+_SSL_CONTEXT = ssl.create_default_context(cafile=certifi.where())
 
 
 @dataclass(frozen=True)
@@ -57,7 +69,9 @@ def check_for_update(
     )
 
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with urllib.request.urlopen(
+            request, timeout=timeout, context=_SSL_CONTEXT
+        ) as response:
             payload = json.load(response)
     except (urllib.error.URLError, OSError, ValueError, TimeoutError) as error:
         return UpdateCheckResult(

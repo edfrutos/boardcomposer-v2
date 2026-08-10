@@ -115,3 +115,11 @@ Tres releases desde `v0.3.13` (07/08 a 08/08):
 - **`QMenu.exec()` no se puede interceptar parcheando la clase** — para que los tests no se quedaran colgados esperando un clic que nunca llega (motivo por el que el menú contextual del Explorer, ya existente, nunca tuvo tests), `monkeypatch.setattr(QMenu, "exec", ...)` a nivel de clase resulta un no-op silencioso: PySide6 sigue despachando al `exec()` real y el test cuelga. Subclasear `QMenu` y parchear el nombre `QMenu` en el módulo de `MainWindow` sí funciona — mismo patrón de "sustituir lo que el código bajo prueba resuelve", no el método en sí.
 
 1037 tests en verde (15 nuevos sobre `v0.3.18`).
+
+## 2026-08-10 - Release v0.3.20
+
+`DT-0024`, reportado por el usuario con una captura: "Buscar actualizaciones" fallaba con `CERTIFICATE_VERIFY_FAILED` en el `.app` real — mismo patrón que `DT-0023` (un intérprete normal no lo ve, un binario congelado por Nuitka sí, porque no localiza el almacén de certificados CA del sistema). `update_check.py` fija ahora el contexto SSL al bundle de `certifi`, ya presente como dependencia transitiva de los SDKs de IA; `pysidedeploy.spec` lo empaqueta completo (código y datos, `cacert.pem` no es un `.py` que Nuitka siga por su cuenta).
+
+Investigar sacó a la luz un segundo bug, sin relación con SSL pero mismo tema de fondo: `studio/_version.py` y el `--macos-app-version` de `pysidedeploy.spec` llevaban **tres releases** (`v0.3.16`–`v0.3.19`) atascados en `0.3.15` — "Acerca de" mostraba la versión equivocada, y peor, el propio comparador de "Buscar actualizaciones" comparaba `"0.3.15"` contra el tag real más reciente, así que alguien ya en la última versión seguía viendo "hay una actualización". `scripts/check_project.py` existe justo para detectar este desfase y llevaba escrito desde hace semanas — nunca se enganchó a ningún workflow de CI, así que nadie lo vio fallar en rojo. Ahora corre en `ci.yml`.
+
+Pendiente de confirmar contra una build real, igual que `DT-0023` — sin macOS/Nuitka en este entorno.
