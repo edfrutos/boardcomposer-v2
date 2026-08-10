@@ -8,8 +8,10 @@ from studio.dialogs.kerf_dialog import KerfDialog
 from studio.dialogs.move_to_board_dialog import MoveToBoardDialog
 from studio.dialogs.piece_dialog import PieceDialog
 from studio.dialogs.preferences_dialog import PreferencesDialog
+from studio.dialogs.scrap_dialogs import AddScrapDialog, UseScrapDialog
 
 __all__ = [
+    "AddScrapDialog",
     "BoardCsvImportPreviewDialog",
     "BoardDialog",
     "ContainerGeneratorDialog",
@@ -18,4 +20,5 @@ __all__ = [
     "MoveToBoardDialog",
     "PieceDialog",
     "PreferencesDialog",
+    "UseScrapDialog",
 ]

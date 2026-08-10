@@ -159,6 +159,16 @@ El Core no sabe qué es un kerf y no necesita saberlo (`DEC-0016`): la traducci�
 
 En dos dimensiones sigue siendo una aproximación conservadora (una pieza puede reservar un corte que su posición concreta no necesita). Reservar de más desperdicia material sobre el papel; reservar de menos produce un plano que no se puede cortar.
 
+## Inventario de retales — `studio/project/scrap_inventory.py`, `studio/inventory_service.py`
+
+`IDE-0039`, promovida desde el punto 1 de la Candidata 1 de `docs/masterplan/DOC-999-Ideas.md` (`DEC-0019` la había dejado deliberadamente sin inventario persistente el 03/08/2026). Registro de restos de tablero de proyectos anteriores, para reutilizarlos en vez de comprar tablero nuevo.
+
+`scrap_inventory.py` es la capa pura (sin Qt, testeada en `tests/test_scrap_inventory.py`) — mismo patrón SQLite que `billing.py` en el Core, pero para un recurso de un solo taller/máquina, no multi-cliente: `init_db()`, `add_scrap()`, `list_available()` (ordenado por área ascendente, mismo criterio que `apply_best_fit_distribution()`) y `consume()`. Nunca hace `DELETE` — consumir pone `consumed_at` en vez de borrar la fila, así que la historia sobrevive aunque el retal ya no aparezca disponible; un id ya usado (consumido o no) no se puede volver a registrar.
+
+`inventory_service.py` (`ScrapInventoryService`) es el envoltorio con Qt: resuelve el fichero por defecto vía `QStandardPaths.AppDataLocation`, el mismo mecanismo que `QSettings()` ya usa para tema/último proyecto (`studio/app.py`) — así el inventario sobrevive entre proyectos y reinicios de Studio sin pedir al usuario que elija un fichero. `MainWindow` recibe una instancia por parámetro (`inventory=None` construye la real; los tests inyectan una con `db_path` en `tmp_path`, evitando tocar el perfil real del desarrollador — `tests/conftest.py` añade además `QStandardPaths.setTestModeEnabled(True)` como red de seguridad). Deliberadamente **no** vive dentro de `StudioServices`: es un recurso del taller, no estado de un proyecto — mismo razonamiento que ya mantiene `QSettings()` fuera de ahí.
+
+Dos entradas nuevas en el menú "Proyecto": "Añadir retal al inventario…" (`AddScrapDialog`, no exige proyecto abierto) y "Usar retal del inventario…" (`UseScrapDialog`, exige proyecto abierto; lista los retales disponibles y, al elegir uno, `MainWindow._use_scrap_from_inventory()` construye un `StudioBoard` con sus dimensiones/material/grosor y lo añade vía `AddBoardCommand` deshacible). El retal se marca consumido **en cuanto se usa**, fuera del historial de undo/redo del proyecto a propósito: deshacer el `AddBoardCommand` quita el tablero del proyecto, pero no devuelve el retal al inventario.
+
 ## Lienzo — etiquetas
 
 `create_board_item()` (`studio/workspace/board_item.py`) dibuja el rectángulo del tablero y añade su `board_id` como `QGraphicsSimpleTextItem` **fuera** de los límites del tablero, para no solaparse con una pieza colocada cerca del origen. Las piezas se etiquetan a su vez con su `piece_id` (`create_piece_item()`): con varios tableros, sin la etiqueta del tablero la única forma de saber cuál se estaba mirando era el Explorer o el Inspector.

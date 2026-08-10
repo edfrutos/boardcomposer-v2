@@ -33,6 +33,7 @@ from PySide6.QtWidgets import (
 )
 
 from studio.dialogs import (
+    AddScrapDialog,
     BoardCsvImportPreviewDialog,
     BoardDialog,
     ContainerGeneratorDialog,
@@ -41,10 +42,12 @@ from studio.dialogs import (
     MoveToBoardDialog,
     PieceDialog,
     PreferencesDialog,
+    UseScrapDialog,
 )
 from studio._version import __version__ as STUDIO_VERSION
 from studio.containers import CONTAINER_TEMPLATES, ContainerTemplateError
 from studio.icons import build_icons
+from studio.inventory_service import ScrapInventoryService
 from studio.prompt_input import PromptTextEdit
 from studio.theme import (
     ICON_COLOR,
@@ -84,6 +87,7 @@ from studio.panel_plugins import discover_panel_plugins
 from studio.project import (
     BoardCsvImportError,
     CsvImportError,
+    ScrapInventoryError,
     load_boards_from_csv,
     load_pieces_from_csv,
     load_project_from_file,
@@ -160,7 +164,7 @@ def _generate_ids(
 class MainWindow(QMainWindow):
     """Main application window."""
 
-    def __init__(self, services):
+    def __init__(self, services, inventory=None):
         super().__init__()
         # QSettings() needs an organization/application name to know where
         # to store its file — set here too (not just studio/app.py's entry
@@ -170,6 +174,11 @@ class MainWindow(QMainWindow):
         QCoreApplication.setApplicationName("BoardComposer Studio")
 
         self.services = services
+        # Own attribute, not part of StudioServices: the scrap inventory
+        # (IDE-0039) is a single-user, single-machine workshop resource tied
+        # to this running Studio instance, not shared project state — same
+        # reasoning that keeps QSettings() out of StudioServices too.
+        self.inventory = inventory if inventory is not None else ScrapInventoryService()
         self.setWindowTitle("BoardComposer Studio")
         self.resize(1400, 900)
 
@@ -245,6 +254,12 @@ class MainWindow(QMainWindow):
         self._actions["edit_board"].setShortcut("Ctrl+Alt+Shift+B")
         menus["Proyecto"].addAction(self._actions["edit_board"])
         self._actions["edit_board"].triggered.connect(self._edit_board)
+        self._actions["add_scrap"] = QAction("Añadir retal al inventario…", self)
+        menus["Proyecto"].addAction(self._actions["add_scrap"])
+        self._actions["add_scrap"].triggered.connect(self._add_scrap_to_inventory)
+        self._actions["use_scrap"] = QAction("Usar retal del inventario…", self)
+        menus["Proyecto"].addAction(self._actions["use_scrap"])
+        self._actions["use_scrap"].triggered.connect(self._use_scrap_from_inventory)
 
         menus["Proyecto"].addSeparator()
         self._actions["add_piece"] = QAction("Añadir pieza…", self)
@@ -1591,6 +1606,74 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage(
                 f"{len(board_ids)} tableros añadidos: {', '.join(board_ids)}.", 4000
             )
+
+    def _add_scrap_to_inventory(self):
+        # No project required — the inventory (IDE-0039) outlives any single
+        # project.
+        existing_ids = frozenset(
+            scrap.scrap_id for scrap in self.inventory.list_available()
+        )
+        dialog = AddScrapDialog(self, existing_ids=existing_ids)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        scrap_id, length_mm, width_mm, thickness_mm, material, origin = dialog.values()
+        try:
+            self.inventory.add(
+                scrap_id, length_mm, width_mm, thickness_mm, material, origin
+            )
+        except ScrapInventoryError as error:
+            self.statusBar().showMessage(str(error), 5000)
+            return
+
+        self.statusBar().showMessage(f"Retal '{scrap_id}' añadido al inventario.", 3000)
+
+    def _use_scrap_from_inventory(self):
+        project = self.services.projects.current_project
+        if project is None:
+            self.statusBar().showMessage("Añade primero un proyecto.", 5000)
+            return
+
+        scraps = self.inventory.list_available()
+        if not scraps:
+            self.statusBar().showMessage("El inventario de retales está vacío.", 5000)
+            return
+
+        dialog = UseScrapDialog(self, scraps=scraps)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+
+        scrap = dialog.selected_scrap()
+        if any(board.board_id == scrap.scrap_id for board in project.boards):
+            self.statusBar().showMessage(
+                f"Ya existe un tablero con id '{scrap.scrap_id}' en este proyecto.",
+                5000,
+            )
+            return
+
+        board = StudioBoard(
+            scrap.scrap_id,
+            scrap.length_mm,
+            scrap.width_mm,
+            scrap.material,
+            scrap.thickness_mm,
+        )
+        command = AddBoardCommand(self.services, board)
+        self._execute(command)
+        self.services.projects.mark_modified()
+        # Consumed outside the undo history on purpose (IDE-0039): the
+        # inventory is a workshop resource shared across unrelated
+        # projects, not project state — undoing the board add does not put
+        # the scrap back.
+        self.inventory.consume(scrap.scrap_id)
+
+        self.workspace.set_active_board(board.board_id)
+        self._reload_explorer()
+        self._update_window_title()
+        self._update_undo_redo()
+        self.statusBar().showMessage(
+            f"Retal '{scrap.scrap_id}' añadido como tablero '{board.board_id}'.", 3000
+        )
 
     def _edit_board(self):
         project = self.services.projects.current_project

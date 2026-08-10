@@ -107,6 +107,60 @@ Observaciones:
 | IDE-0036 | Asistente IA: soporte multi-proveedor (OpenAI, Google Gemini, Ollama local) | 🟢 | P2 |
 | IDE-0037 | Columna `quantity` opcional en el import CSV de piezas/tableros | 🟢 | P3 |
 | IDE-0038 | `material`/`quantity` en el CSV del Core + restricción dura de material en Studio | 🟢 | P2 |
+| IDE-0039 | Inventario persistente de retales en Studio | 🟢 | P3 |
+
+---
+
+## IDE-0039 — Inventario persistente de retales en Studio
+
+**Estado:** 🟢 Completada en `v0.3.18`. Promovida el 09/08/2026 desde el punto 1 de la
+"Candidata 1" de `docs/masterplan/DOC-999-Ideas.md` (aprovechamiento de
+retales) — en su momento (`DEC-0019`, 03/08/2026) se acotó deliberadamente
+sin inventario persistente ("solo alta manual, sin código nuevo que
+construir"); esto construye justo esa pieza que quedó pendiente.
+
+**Decisiones de alcance, resueltas con el usuario:**
+
+1. Solo Studio, local — no toca el Core ni la API. El inventario es del
+   taller de un usuario/máquina, no un recurso multi-cliente como
+   `billing.py` (que sí es de la API de pago).
+2. Flujo de uso: diálogo dedicado "Usar retal…" (no integrado en
+   `BoardDialog`).
+3. Un retal se marca consumido **en cuanto se usa** (se añade como
+   `StudioBoard` al proyecto activo) — no espera a que el proyecto se
+   guarde. Consecuencia documentada: deshacer el `AddBoardCommand`
+   resultante no devuelve el retal al inventario (el inventario vive fuera
+   del historial de undo/redo del proyecto).
+
+**Alcance:**
+
+- `studio/project/scrap_inventory.py`: capa pura sin Qt (mismo patrón que
+  `billing.py`, SQLite) — `init_db(db_path)`, `add_scrap()`,
+  `list_available()`, `consume()`. Nunca hace `DELETE`: consumir pone
+  `consumed_at`, no borra la fila — mismo criterio de trazabilidad que el
+  resto del proyecto ("nunca actúa en silencio/pierde datos"). Mismas
+  validaciones de dimensiones que `Board`/`StudioBoard`
+  (`math.isfinite`, positivas).
+- `studio/inventory_service.py`: envoltorio con Qt — resuelve el fichero
+  por defecto vía `QStandardPaths.AppDataLocation` (mismo mecanismo que
+  `QSettings()` ya usa para tema/último proyecto, `studio/app.py`), lo crea
+  si no existe. Registrado en `StudioServices.__post_init__` como
+  `self.inventory`.
+- `studio/dialogs/scrap_dialogs.py`: `AddScrapDialog` (mismos campos que
+  `BoardDialog` + "Procedencia" libre) y `UseScrapDialog` (lista de
+  retales disponibles, ordenados por área ascendente — mismo criterio que
+  `apply_best_fit_distribution()`).
+- `MainWindow`: dos entradas nuevas en el menú "Proyecto" — "Añadir retal
+  al inventario…" (no exige proyecto abierto) y "Usar retal del
+  inventario…" (exige proyecto abierto; ejecuta `AddBoardCommand`
+  deshacible y luego `inventory.consume()`).
+- Documentación: `docs/studio.md` (nueva sección), `DOC-999-Ideas.md`
+  (marcar el punto 1 de la Candidata 1 como promovido a `IDE-0039`).
+
+**Fuera de alcance:** priorización automática del solver sobre el
+inventario (punto 3 de la misma Candidata 1 en `DOC-999-Ideas.md`, sigue
+sin acotar); retales no rectangulares (punto 2, cambio de modelo
+geométrico mayor); CLI/API (decisión 1 de arriba).
 
 ---
 

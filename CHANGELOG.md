@@ -1,5 +1,13 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.18 - 2026-08-10
+
+### Añadido
+
+- Inventario persistente de retales en Studio (`IDE-0039`): dos entradas nuevas en el menú "Proyecto" — "Añadir retal al inventario…" registra un resto de tablero (dimensiones, material, grosor, procedencia) en un almacén SQLite local que sobrevive entre proyectos y reinicios de Studio; "Usar retal del inventario…" lista los retales disponibles (ordenados por área ascendente) y añade el elegido como tablero del proyecto activo, deshacible como cualquier otro tablero. Un retal nunca se borra al usarse — se marca consumido, no se elimina, así que la historia queda registrada. Promovida desde una idea sin acotar en `DOC-999-Ideas.md` que en agosto se había dejado deliberadamente sin inventario persistente.
+
+---
+
 ## 0.3.17 - 2026-08-09
 
 ### Añadido

@@ -11,8 +11,20 @@ import os
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import pytest
-from PySide6.QtCore import QSettings
+from PySide6.QtCore import QSettings, QStandardPaths
 from PySide6.QtWidgets import QMessageBox
+
+
+@pytest.fixture(autouse=True)
+def _isolate_standard_paths():
+    """MainWindow also defaults its scrap inventory (IDE-0039) to a real
+    per-user application-data path (QStandardPaths.AppDataLocation). Qt's
+    own test-mode flag redirects that (and friends) under the system temp
+    directory instead of the developer's real profile — same motivation as
+    _isolate_qsettings below, for a different Qt persistence mechanism."""
+    QStandardPaths.setTestModeEnabled(True)
+    yield
+    QStandardPaths.setTestModeEnabled(False)
 
 
 @pytest.fixture(autouse=True)
