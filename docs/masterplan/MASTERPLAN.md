@@ -21,9 +21,9 @@ solo valida la firma, nunca ejecuta el binario. Detectado pidiendo al
 usuario que ejecutara el binario desde Terminal en vez de con doble
 clic, para ver el traceback que Finder se traga en silencio.
 `studio/pysidedeploy.spec` fuerza ahora el empaquetado completo de
-`google.genai`/`openai` (`--include-package`). Pendiente de confirmar
-por el usuario contra esta build — sin macOS/Nuitka disponibles en el
-entorno donde se hizo el fix.
+`google.genai`/`openai` (`--include-package`). **Confirmado por el
+usuario el 10/08/2026** contra un `.dmg` real — arranca sin el
+`ModuleNotFoundError`, `DT-0023` cerrada.
 
 `v0.3.14` (07/08/2026): `IDE-0036`, soporte multi-proveedor en el
 Asistente IA. Propuesto por el usuario al abrir la conversación de
@@ -54,9 +54,9 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0036`, todos 🟢 completados
 y en `main`.
 
-Deuda técnica (`DOC-006-DeudaTecnica.md`): 23 registros, 22 resueltos y 1
-mitigado pendiente de confirmar (`DT-0023`, el `.app` de `v0.3.14` no
-arrancaba — `google-genai`/Nuitka, ver abajo).
+Deuda técnica (`DOC-006-DeudaTecnica.md`): 23 registros, los 23 resueltos
+(`DT-0023`, el `.app` de `v0.3.14` no arrancaba — `google-genai`/Nuitka,
+confirmado el 10/08/2026 contra un `.dmg` real, ver abajo).
 `DT-0011` (el `.app` de macOS sin firmar/notarizar) cerrada del todo el
 01/08/2026: cuenta de Apple Developer activada, secrets cargados, `v0.3.3`
 es la primera release firmada y notarizada de verdad — tres bugs reales en
