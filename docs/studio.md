@@ -122,6 +122,17 @@ Hay **dos** mecanismos de selección con responsabilidades distintas, que se sin
 
 `MainWindow._rotate_selected_piece()` llama a `can_rotate_item()` (envoltorio en `BoardWorkspace` sobre `PlacementValidator.can_rotate()`) **antes** de crear el `RotatePieceCommand`; si no cabe en su posición actual, se intenta recolocar (ver abajo) y solo si tampoco así cabe se muestra un mensaje en la barra de estado sin ejecutar nada.
 
+### Menú contextual del lienzo (clic derecho) — `IDE-0040`
+
+El botón derecho servía solo para panear (desplazar la vista) en cualquier punto del lienzo. `BoardWorkspace.mousePressEvent()` distingue ahora, solo para ese botón, tres casos: sobre un `BoardPieceItem` emite la señal Qt `piece_context_menu_requested(piece_id, pos)`; dentro de `self._board_item.sceneBoundingRect()` pero sin tocar ninguna pieza, `board_context_menu_requested(pos)`; en cualquier otro punto, panea exactamente igual que antes. La comprobación es geométrica (`sceneBoundingRect().contains()`), no `itemAt()`: la rejilla (`grid.py`) son líneas que cubren todo `sceneRect()`, mucho más grande que el tablero, así que `itemAt()` por sí solo no distingue "lienzo vacío" de "hueco vacío del tablero".
+
+`MainWindow` conecta ambas señales en `_build_workspace()` a `_show_piece_context_menu()`/`_show_board_context_menu()`, que abren un `QMenu` con las mismas acciones ya existentes — nada nuevo salvo "Eliminar tablero…", que no existía en ningún sitio hasta ahora:
+
+- **Pieza**: "Editar pieza…" (`_edit_piece()`) y "Eliminar del proyecto…" (`_delete_piece_from_project()`, la misma acción completa que ya ofrecía el Explorer). Como `_edit_piece()` lee la selección activa en vez de recibir un id, el manejador selecciona primero la pieza pulsada (`workspace.select_piece()`) — si no, editaría la que estuviera seleccionada antes, no la clicada.
+- **Tablero**: "Editar tablero…" (`_edit_board()`, que ya opera sobre `workspace.active_board_id` — el lienzo solo renderiza el tablero activo, así que siempre es el correcto) y "Eliminar tablero…" (`_delete_active_board()`, nuevo, ver abajo).
+
+`DeleteBoardCommand` (`studio/commands/delete_board_command.py`) quita el tablero de `project.boards` y sus colocaciones de `project.placements` — las piezas que tenía puestas **no se borran**, quedan "sin colocar" en Piezas, mismo criterio que `UnplacePieceCommand`. Deshacible como cualquier otro comando.
+
 ### Encaje fuera del lienzo — `placement_fit.py`
 
 `studio/workspace/placement_fit.py`. `PlacementValidator` hace el mismo trabajo pero solo para el arrastre/rotación interactivos, acoplado a los `QGraphicsItem` vivos de la escena. Las acciones que reasignan una pieza a **otro** tablero ocurren fuera de esa escena, así que necesitan un equivalente sin Qt. Dos funciones puras (testeadas en `tests/test_placement_fit.py`), que reutilizan `boardcomposer.geometry.Rectangle.overlaps()` en vez de reimplementar la geometría:

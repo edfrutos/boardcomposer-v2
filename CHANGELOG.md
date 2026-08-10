@@ -1,5 +1,13 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.19 - 2026-08-10
+
+### Añadido
+
+- Menú contextual (clic derecho) sobre una pieza o un tablero en el lienzo (`IDE-0040`): sobre una pieza, "Editar pieza…" y "Eliminar del proyecto…"; sobre el tablero, "Editar tablero…" y "Eliminar tablero…" — esta última no existía en ningún sitio hasta ahora. Eliminar un tablero desplaza sus piezas a "sin colocar" en vez de borrarlas, deshacible como cualquier otro comando. El botón derecho en el área vacía del lienzo sigue paneando exactamente igual que antes.
+
+---
+
 ## 0.3.18 - 2026-08-10
 
 ### Añadido

@@ -4,6 +4,7 @@ from studio.commands.add_board_command import AddBoardCommand
 from studio.commands.add_piece_command import AddPieceCommand
 from studio.commands.command import Command
 from studio.commands.command_manager import CommandManager
+from studio.commands.delete_board_command import DeleteBoardCommand
 from studio.commands.delete_piece_command import DeletePieceCommand
 from studio.commands.edit_board_command import EditBoardCommand
 from studio.commands.edit_piece_command import EditPieceCommand
@@ -18,6 +19,7 @@ __all__ = [
     "AddPieceCommand",
     "Command",
     "CommandManager",
+    "DeleteBoardCommand",
     "DeletePieceCommand",
     "EditBoardCommand",
     "EditPieceCommand",

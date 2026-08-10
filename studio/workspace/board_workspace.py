@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 from studio.workspace.workspace_camera import WorkspaceCamera
-from PySide6.QtCore import QPoint, QPointF, QRectF, Qt
+from PySide6.QtCore import QPoint, QPointF, QRectF, Qt, Signal
 from PySide6.QtGui import QMouseEvent, QPainter, QResizeEvent, QWheelEvent
 from PySide6.QtWidgets import (
     QGraphicsRectItem,
@@ -21,6 +21,13 @@ from studio.workspace.selection_controller import SelectionController
 
 
 class BoardWorkspace(QGraphicsView):
+    # Right-click on an element (IDE-0040), instead of the panning every
+    # other right-click still triggers: MainWindow owns the actual menus
+    # (it already owns the equivalent Explorer one), this widget only
+    # reports what got clicked and where.
+    piece_context_menu_requested = Signal(str, QPoint)
+    board_context_menu_requested = Signal(QPoint)
+
     def __init__(self, services):
         super().__init__()
         self._validator = None
@@ -191,7 +198,32 @@ class BoardWorkspace(QGraphicsView):
                 clicked_item.pos().y(),
             )
 
-        if event.button() == Qt.MouseButton.RightButton or clicked_item is None:
+        if event.button() == Qt.MouseButton.RightButton:
+            if isinstance(clicked_item, BoardPieceItem):
+                self.piece_context_menu_requested.emit(
+                    clicked_item.piece_id, event.globalPosition().toPoint()
+                )
+                event.accept()
+                return
+
+            # Geometric containment, not itemAt(): the grid (grid.py) is
+            # made of QGraphicsLineItems covering the whole sceneRect(),
+            # not just the board, so itemAt() alone can't tell "empty
+            # canvas" from "empty patch of board" apart.
+            scene_pos = self.mapToScene(event.position().toPoint())
+            if (
+                self._board_item is not None
+                and self._board_item.sceneBoundingRect().contains(scene_pos)
+            ):
+                self.board_context_menu_requested.emit(event.globalPosition().toPoint())
+                event.accept()
+                return
+
+            self._start_pan(event.position().toPoint())
+            event.accept()
+            return
+
+        if clicked_item is None:
             self._start_pan(event.position().toPoint())
             event.accept()
             return

@@ -98,6 +98,7 @@ from studio.workspace.placement_fit import find_free_position, piece_fits_on_boa
 from studio.commands import (
     AddBoardCommand,
     AddPieceCommand,
+    DeleteBoardCommand,
     DeletePieceCommand,
     EditBoardCommand,
     EditPieceCommand,
@@ -687,6 +688,12 @@ class MainWindow(QMainWindow):
     def _build_workspace(self):
         self.workspace = BoardWorkspace(self.services)
         self.setCentralWidget(self.workspace)
+        self.workspace.piece_context_menu_requested.connect(
+            self._show_piece_context_menu
+        )
+        self.workspace.board_context_menu_requested.connect(
+            self._show_board_context_menu
+        )
 
     def _build_panels(self):
         self.explorer = QTreeWidget()
@@ -1565,6 +1572,55 @@ class MainWindow(QMainWindow):
         self._reload_explorer()
         self._update_window_title()
         self._update_undo_redo()
+
+    def _show_piece_context_menu(self, piece_id: str, global_pos) -> None:
+        """Right-click on a piece on the canvas (IDE-0040) — same two
+        actions as the Explorer's own context menu plus "Editar pieza…",
+        which the Explorer doesn't offer. Selects the clicked piece first,
+        same as a real click would: _edit_piece() reads the current
+        selection, not a piece_id parameter."""
+        self.workspace.select_piece(piece_id)
+
+        menu = QMenu(self)
+        edit_action = menu.addAction("Editar pieza…")
+        edit_action.triggered.connect(self._edit_piece)
+        delete_action = menu.addAction("Eliminar del proyecto…")
+        delete_action.triggered.connect(
+            lambda: self._delete_piece_from_project(piece_id)
+        )
+        menu.exec(global_pos)
+
+    def _show_board_context_menu(self, global_pos) -> None:
+        """Right-click on empty board space on the canvas (IDE-0040). The
+        canvas only ever renders the active board, so "Editar tablero…"
+        always targets it (_edit_board() already reads
+        workspace.active_board_id, not a parameter)."""
+        menu = QMenu(self)
+        edit_action = menu.addAction("Editar tablero…")
+        edit_action.triggered.connect(self._edit_board)
+        delete_action = menu.addAction("Eliminar tablero…")
+        delete_action.triggered.connect(self._delete_active_board)
+        menu.exec(global_pos)
+
+    def _delete_active_board(self) -> None:
+        project = self.services.projects.current_project
+        active_board_id = self.workspace.active_board_id
+        if project is None or active_board_id is None:
+            return
+
+        board = next((b for b in project.boards if b.board_id == active_board_id), None)
+        if board is None:
+            return
+
+        command = DeleteBoardCommand(self.services, board)
+        self._execute(command)
+        self.services.projects.mark_modified()
+
+        self.workspace.reload_project()
+        self._reload_explorer()
+        self._update_window_title()
+        self._update_undo_redo()
+        self.statusBar().showMessage(f"Tablero '{board.board_id}' eliminado.", 3000)
 
     def _add_board(self):
         project = self.services.projects.current_project

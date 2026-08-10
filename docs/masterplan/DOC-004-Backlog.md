@@ -108,6 +108,60 @@ Observaciones:
 | IDE-0037 | Columna `quantity` opcional en el import CSV de piezas/tableros | 🟢 | P3 |
 | IDE-0038 | `material`/`quantity` en el CSV del Core + restricción dura de material en Studio | 🟢 | P2 |
 | IDE-0039 | Inventario persistente de retales en Studio | 🟢 | P3 |
+| IDE-0040 | Menú contextual (clic derecho) en el lienzo: editar/eliminar pieza o tablero | 🟢 | P2 |
+
+---
+
+## IDE-0040 — Menú contextual (clic derecho) en el lienzo: editar/eliminar pieza o tablero
+
+**Estado:** 🟢 Completada en `v0.3.19`. Pedido por el usuario el 10/08/2026: hoy
+"Editar tablero…"/"Editar pieza…" solo son alcanzables desde el menú
+"Proyecto" — quiere las mismas acciones (más eliminar) posicionándose
+sobre el elemento en el lienzo y pulsando el botón derecho.
+
+**Decisiones de alcance, resueltas con el usuario:**
+
+1. El botón derecho hoy desplaza la vista (paneo) en cualquier punto del
+   lienzo, incluida una pieza o el tablero (`BoardWorkspace.mousePressEvent()`).
+   Pasa a abrir un menú **solo** sobre un elemento (pieza o tablero); en el
+   área vacía del lienzo sigue paneando exactamente igual que hoy.
+2. Menú sobre una pieza: "Editar pieza…" + "Eliminar del proyecto…" (misma
+   acción completa que ya existe en el Explorer, `DeletePieceCommand`) —
+   no "quitar del tablero" (eso ya tiene su propio atajo, Backspace).
+3. **"Eliminar tablero" no existe hoy en ningún sitio** (ni menú, ni clic
+   derecho) — se construye nuevo: `DeleteBoardCommand`, deshacible, borra
+   el tablero y **desplaza sus piezas a "sin colocar"** (unplace, mismo
+   criterio que `UnplacePieceCommand`) en vez de borrarlas también — nunca
+   se pierden piezas por eliminar el tablero en el que estaban.
+
+**Alcance:**
+
+- `studio/commands/delete_board_command.py`: `DeleteBoardCommand` —
+  quita el tablero de `project.boards` y sus colocaciones de
+  `project.placements` (las piezas afectadas siguen en `project.pieces`);
+  `undo()` restaura ambas listas.
+- `studio/workspace/board_workspace.py`: dos señales Qt nuevas,
+  `piece_context_menu_requested(str, QPoint)` y
+  `board_context_menu_requested(QPoint)`. `mousePressEvent()` distingue,
+  solo para el botón derecho: sobre un `BoardPieceItem` → señal de pieza;
+  dentro de `self._board_item.sceneBoundingRect()` (no sobre una pieza) →
+  señal de tablero; en cualquier otro punto → paneo, sin cambios. La
+  distinción geométrica (no `itemAt()`) evita falsos positivos contra las
+  líneas de la rejilla (`grid.py`), que cubren todo `sceneRect()`, no solo
+  el tablero.
+- `MainWindow._show_piece_context_menu()`/`_show_board_context_menu()`
+  (conectadas en `_build_workspace()`): reutilizan `_edit_piece()`/
+  `_edit_board()`/`_delete_piece_from_project()` tal cual (el de pieza
+  selecciona primero con `workspace.select_piece()`, para que
+  `_edit_piece()` opere sobre la pieza pulsada y no sobre la selección
+  previa) más un `_delete_board_from_project()` nuevo para el
+  `DeleteBoardCommand`.
+- Documentación: `docs/studio.md`.
+
+**Fuera de alcance:** distinguir clic derecho corto de arrastrar con el
+botón derecho sobre un elemento (permitiría panear también desde ahí) —
+descartado explícitamente por el usuario, más complejidad sin necesidad
+clara.
 
 ---
 

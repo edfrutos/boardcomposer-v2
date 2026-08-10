@@ -1,6 +1,7 @@
 from studio.commands import (
     AddBoardCommand,
     AddPieceCommand,
+    DeleteBoardCommand,
     DeletePieceCommand,
     EditBoardCommand,
     EditPieceCommand,
@@ -292,3 +293,82 @@ def test_every_command_exposes_a_readable_name():
     assert "p1" in RotatePieceCommand(services, "p1", 0, 90).name
     assert "p1" in DeletePieceCommand(services, "p1").name
     assert "p1" in UnplacePieceCommand(services, "p1").name
+    assert "B1" in DeleteBoardCommand(services, board).name
+
+
+def test_delete_board_command_removes_the_board():
+    board = StudioBoard("B1", 2000, 300)
+    services = _services_with_project(boards=[board])
+    command = DeleteBoardCommand(services, board)
+
+    command.execute()
+
+    assert services.projects.current_project.boards == []
+
+
+def test_delete_board_command_unplaces_its_pieces_without_deleting_them():
+    board = StudioBoard("B1", 2000, 300)
+    piece = StudioPiece("p1", 500, 200)
+    placement = StudioPlacement("p1", 0, 0, board_id="B1")
+    services = _services_with_project(
+        boards=[board], pieces=[piece], placements=[placement]
+    )
+    command = DeleteBoardCommand(services, board)
+
+    command.execute()
+
+    project = services.projects.current_project
+    assert project.pieces == [piece]
+    assert project.placements == []
+
+
+def test_delete_board_command_leaves_placements_on_other_boards_untouched():
+    board = StudioBoard("B1", 2000, 300)
+    other_board = StudioBoard("B2", 2000, 300)
+    piece = StudioPiece("p1", 500, 200)
+    placement = StudioPlacement("p1", 0, 0, board_id="B2")
+    services = _services_with_project(
+        boards=[board, other_board], pieces=[piece], placements=[placement]
+    )
+    command = DeleteBoardCommand(services, board)
+
+    command.execute()
+
+    project = services.projects.current_project
+    assert project.boards == [other_board]
+    assert project.placements == [placement]
+
+
+def test_delete_board_command_undo_restores_the_board_and_its_placements():
+    board = StudioBoard("B1", 2000, 300)
+    piece = StudioPiece("p1", 500, 200)
+    placement = StudioPlacement("p1", 0, 0, board_id="B1")
+    services = _services_with_project(
+        boards=[board], pieces=[piece], placements=[placement]
+    )
+    command = DeleteBoardCommand(services, board)
+    command.execute()
+
+    command.undo()
+
+    project = services.projects.current_project
+    assert project.boards == [board]
+    assert project.placements == [placement]
+
+
+def test_delete_board_command_redo_reapplies_it():
+    board = StudioBoard("B1", 2000, 300)
+    piece = StudioPiece("p1", 500, 200)
+    placement = StudioPlacement("p1", 0, 0, board_id="B1")
+    services = _services_with_project(
+        boards=[board], pieces=[piece], placements=[placement]
+    )
+    command = DeleteBoardCommand(services, board)
+    command.execute()
+    command.undo()
+
+    command.redo()
+
+    project = services.projects.current_project
+    assert project.boards == []
+    assert project.placements == []

@@ -1,3 +1,5 @@
+from PySide6.QtCore import QPointF, Qt
+from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QApplication
 
 from studio.activity_log import ACTIVITY_EVENT
@@ -93,3 +95,70 @@ def test_reload_project_falls_back_to_the_first_board_if_the_active_one_is_gone(
     workspace.reload_project()
 
     assert workspace.active_board_id == "B1"
+
+
+def _right_click(workspace, scene_point):
+    viewport_point = workspace.mapFromScene(scene_point)
+    event = QMouseEvent(
+        QMouseEvent.Type.MouseButtonPress,
+        QPointF(viewport_point),
+        workspace.mapToGlobal(viewport_point),
+        Qt.MouseButton.RightButton,
+        Qt.MouseButton.RightButton,
+        Qt.KeyboardModifier.NoModifier,
+    )
+    workspace.mousePressEvent(event)
+
+
+def test_right_click_on_a_piece_emits_piece_context_menu_requested():
+    workspace = _workspace()
+    workspace.resize(800, 600)
+    workspace.reload_project()
+    workspace.fit_board()
+
+    received = []
+    workspace.piece_context_menu_requested.connect(
+        lambda piece_id, pos: received.append(piece_id)
+    )
+
+    item = workspace.piece_item_by_id("p1")
+    _right_click(workspace, item.sceneBoundingRect().center())
+
+    assert received == ["p1"]
+    assert workspace._panning is False
+
+
+def test_right_click_on_the_board_background_emits_board_context_menu_requested():
+    workspace = _workspace()
+    workspace.resize(800, 600)
+    workspace.reload_project()
+    workspace.fit_board()
+
+    received = []
+    workspace.board_context_menu_requested.connect(lambda pos: received.append(pos))
+
+    # B1 is 2000x300; p1 (500x200 at 0,0) doesn't reach this point.
+    _right_click(workspace, QPointF(1500, 150))
+
+    assert len(received) == 1
+    assert workspace._panning is False
+
+
+def test_right_click_outside_the_board_still_pans():
+    workspace = _workspace()
+    workspace.resize(800, 600)
+    workspace.reload_project()
+    workspace.fit_board()
+
+    piece_signals = []
+    board_signals = []
+    workspace.piece_context_menu_requested.connect(lambda *a: piece_signals.append(a))
+    workspace.board_context_menu_requested.connect(lambda *a: board_signals.append(a))
+
+    # Far outside B1's bounds (2000x300) but still inside sceneRect(),
+    # where the grid lives — itemAt() alone would see a grid line here.
+    _right_click(workspace, QPointF(-4000, -4000))
+
+    assert piece_signals == []
+    assert board_signals == []
+    assert workspace._panning is True
