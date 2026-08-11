@@ -1,10 +1,21 @@
-"""Checks GitHub for a newer BoardComposer Studio release (IDE-0032).
+"""Checks for a newer BoardComposer Studio release (IDE-0032).
 
 Qt-free on purpose, same split as studio/panels/: this only figures out
 *whether* an update exists, MainWindow decides how to show it. Never
 downloads or installs anything — just points at the release page and lets
 the user take it from there, so this doesn't need to get into
 signing/notarization territory for a self-updater.
+
+Points at a public Gist (`version.json`), not the GitHub Releases API
+(DT-0025): the repo itself is private, so an unauthenticated request to
+`/repos/.../releases/latest` gets a 404 — GitHub returns that instead of
+403 for a private resource, specifically so an outsider can't even tell
+it exists. Embedding a token in a binary anyone can download and
+disassemble isn't an acceptable fix, so instead a single small public
+file carries just the version number and the release page's URL —
+nothing about the private repo's contents. The gist's own history stays
+as a changelog of past "latest version" values, which is fine to be
+public even though the code behind it isn't.
 """
 
 from __future__ import annotations
@@ -17,8 +28,9 @@ from dataclasses import dataclass
 
 import certifi
 
-LATEST_RELEASE_API_URL = (
-    "https://api.github.com/repos/edfrutos/boardcomposer-v2/releases/latest"
+LATEST_VERSION_URL = (
+    "https://gist.githubusercontent.com/edfrutos/"
+    "65bd1ae68d45dc9bee418622c39ca8b7/raw/version.json"
 )
 REQUEST_TIMEOUT_SECONDS = 5.0
 
@@ -56,16 +68,14 @@ def _parse_version(version: str) -> tuple[int, ...]:
 def check_for_update(
     current_version: str, *, timeout: float = REQUEST_TIMEOUT_SECONDS
 ) -> UpdateCheckResult:
-    """Compares `current_version` against the latest published GitHub
-    release. Never raises — network/parsing failures come back as a result
-    with checked_ok=False rather than an exception, so a caller on the UI
-    thread can show a plain message instead of a stack trace."""
+    """Compares `current_version` against the version published in the
+    public Gist (see module docstring). Never raises — network/parsing
+    failures come back as a result with checked_ok=False rather than an
+    exception, so a caller on the UI thread can show a plain message
+    instead of a stack trace."""
     request = urllib.request.Request(
-        LATEST_RELEASE_API_URL,
-        headers={
-            "Accept": "application/vnd.github+json",
-            "User-Agent": "BoardComposer-Studio",
-        },
+        LATEST_VERSION_URL,
+        headers={"User-Agent": "BoardComposer-Studio"},
     )
 
     try:
@@ -81,13 +91,13 @@ def check_for_update(
             error=str(error),
         )
 
-    latest_version = str(payload.get("tag_name") or "").lstrip("vV") or None
+    latest_version = str(payload.get("version") or "").lstrip("vV") or None
     if latest_version is None:
         return UpdateCheckResult(
             checked_ok=False,
             update_available=False,
             current_version=current_version,
-            error="La respuesta de GitHub no incluía una versión (tag_name).",
+            error="El fichero de versión no incluía un campo 'version'.",
         )
 
     return UpdateCheckResult(
@@ -96,5 +106,5 @@ def check_for_update(
         > _parse_version(current_version),
         current_version=current_version,
         latest_version=latest_version,
-        release_url=payload.get("html_url"),
+        release_url=payload.get("release_url"),
     )

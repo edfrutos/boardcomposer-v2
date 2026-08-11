@@ -1,5 +1,5 @@
 from PySide6.QtCore import QPointF, Qt
-from PySide6.QtGui import QMouseEvent
+from PySide6.QtGui import QContextMenuEvent, QMouseEvent
 from PySide6.QtWidgets import QApplication
 
 from studio.activity_log import ACTIVITY_EVENT
@@ -98,6 +98,8 @@ def test_reload_project_falls_back_to_the_first_board_if_the_active_one_is_gone(
 
 
 def _right_click(workspace, scene_point):
+    """A physical right mouse button press — still handled by
+    mousePressEvent() for panning, unchanged by DT-0026."""
     viewport_point = workspace.mapFromScene(scene_point)
     event = QMouseEvent(
         QMouseEvent.Type.MouseButtonPress,
@@ -110,7 +112,20 @@ def _right_click(workspace, scene_point):
     workspace.mousePressEvent(event)
 
 
-def test_right_click_on_a_piece_emits_piece_context_menu_requested():
+def _request_context_menu(workspace, scene_point):
+    """Whatever platform mechanism asks for a context menu — right-click,
+    Magic Mouse secondary click, trackpad gesture, the keyboard Menu key —
+    Qt normalizes all of it into this one event (DT-0026)."""
+    viewport_point = workspace.mapFromScene(scene_point)
+    event = QContextMenuEvent(
+        QContextMenuEvent.Reason.Mouse,
+        viewport_point,
+        workspace.mapToGlobal(viewport_point),
+    )
+    workspace.contextMenuEvent(event)
+
+
+def test_context_menu_on_a_piece_emits_piece_context_menu_requested():
     workspace = _workspace()
     workspace.resize(800, 600)
     workspace.reload_project()
@@ -122,13 +137,12 @@ def test_right_click_on_a_piece_emits_piece_context_menu_requested():
     )
 
     item = workspace.piece_item_by_id("p1")
-    _right_click(workspace, item.sceneBoundingRect().center())
+    _request_context_menu(workspace, item.sceneBoundingRect().center())
 
     assert received == ["p1"]
-    assert workspace._panning is False
 
 
-def test_right_click_on_the_board_background_emits_board_context_menu_requested():
+def test_context_menu_on_the_board_background_emits_board_context_menu_requested():
     workspace = _workspace()
     workspace.resize(800, 600)
     workspace.reload_project()
@@ -138,13 +152,12 @@ def test_right_click_on_the_board_background_emits_board_context_menu_requested(
     workspace.board_context_menu_requested.connect(lambda pos: received.append(pos))
 
     # B1 is 2000x300; p1 (500x200 at 0,0) doesn't reach this point.
-    _right_click(workspace, QPointF(1500, 150))
+    _request_context_menu(workspace, QPointF(1500, 150))
 
     assert len(received) == 1
-    assert workspace._panning is False
 
 
-def test_right_click_outside_the_board_still_pans():
+def test_context_menu_outside_the_board_requests_nothing():
     workspace = _workspace()
     workspace.resize(800, 600)
     workspace.reload_project()
@@ -157,8 +170,40 @@ def test_right_click_outside_the_board_still_pans():
 
     # Far outside B1's bounds (2000x300) but still inside sceneRect(),
     # where the grid lives — itemAt() alone would see a grid line here.
-    _right_click(workspace, QPointF(-4000, -4000))
+    _request_context_menu(workspace, QPointF(-4000, -4000))
 
     assert piece_signals == []
     assert board_signals == []
+
+
+def test_context_menu_cancels_an_in_progress_pan():
+    # A real right mouse button reaches mousePressEvent() (pan starts)
+    # *and* contextMenuEvent() for the same click — the menu blocks on
+    # exec(), so mouseReleaseEvent() never arrives to end the pan on its
+    # own. Left stuck, the next left-click drag would pan the view
+    # instead of moving a piece.
+    workspace = _workspace()
+    workspace.resize(800, 600)
+    workspace.reload_project()
+    workspace.fit_board()
+
+    item = workspace.piece_item_by_id("p1")
+    _right_click(workspace, item.sceneBoundingRect().center())
+    assert workspace._panning is True
+
+    _request_context_menu(workspace, item.sceneBoundingRect().center())
+
+    assert workspace._panning is False
+
+
+def test_right_click_outside_the_board_still_pans():
+    workspace = _workspace()
+    workspace.resize(800, 600)
+    workspace.reload_project()
+    workspace.fit_board()
+
+    # Far outside B1's bounds (2000x300) but still inside sceneRect(),
+    # where the grid lives — itemAt() alone would see a grid line here.
+    _right_click(workspace, QPointF(-4000, -4000))
+
     assert workspace._panning is True

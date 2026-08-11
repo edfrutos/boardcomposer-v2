@@ -117,6 +117,18 @@ def test_quantity_expands_a_row_into_several_identical_boards(tmp_path):
 
     assert [board.board_id for board in boards] == ["T-101", "T-101-2", "T-101-3"]
     assert all(board.length_mm == 1200 for board in boards)
+
+
+@pytest.mark.parametrize("header", ["Cantidad", "CANTIDAD", "Quantity", "QUANTITY"])
+def test_quantity_column_accepts_spanish_name_and_any_case(tmp_path, header):
+    path = _write_csv(
+        tmp_path,
+        f"id,length_mm,width_mm,thickness_mm,{header}\nT-101,1200,600,19,3\n",
+    )
+
+    boards = load_boards_from_csv(path)
+
+    assert [board.board_id for board in boards] == ["T-101", "T-101-2", "T-101-3"]
     assert all(board.width_mm == 600 for board in boards)
 
 

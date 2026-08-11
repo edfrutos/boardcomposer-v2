@@ -152,6 +152,18 @@ def test_quantity_expands_a_row_into_several_identical_pieces(tmp_path):
     assert all(piece.thickness_mm == 19 for piece in pieces)
 
 
+@pytest.mark.parametrize("header", ["Cantidad", "CANTIDAD", "Quantity", "QUANTITY"])
+def test_quantity_column_accepts_spanish_name_and_any_case(tmp_path, header):
+    path = _write_csv(
+        tmp_path,
+        f"id,length_mm,width_mm,thickness_mm,{header}\nP-101,700,300,19,3\n",
+    )
+
+    pieces = load_pieces_from_csv(path)
+
+    assert [piece.piece_id for piece in pieces] == ["P-101", "P-101-2", "P-101-3"]
+
+
 def test_quantity_expansion_honors_material(tmp_path):
     path = _write_csv(
         tmp_path,

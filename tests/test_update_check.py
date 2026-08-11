@@ -39,7 +39,7 @@ def _fake_urlopen(payload: dict):
 
 
 def test_reports_an_update_when_the_latest_release_is_newer():
-    payload = {"tag_name": "v0.3.12", "html_url": "https://example.com/v0.3.12"}
+    payload = {"version": "v0.3.12", "release_url": "https://example.com/v0.3.12"}
     with patch("urllib.request.urlopen", side_effect=_fake_urlopen(payload)):
         result = check_for_update("0.3.11")
 
@@ -50,7 +50,7 @@ def test_reports_an_update_when_the_latest_release_is_newer():
 
 
 def test_reports_no_update_when_already_on_the_latest_release():
-    payload = {"tag_name": "v0.3.11", "html_url": "https://example.com/v0.3.11"}
+    payload = {"version": "v0.3.11", "release_url": "https://example.com/v0.3.11"}
     with patch("urllib.request.urlopen", side_effect=_fake_urlopen(payload)):
         result = check_for_update("0.3.11")
 
@@ -59,9 +59,9 @@ def test_reports_no_update_when_already_on_the_latest_release():
 
 
 def test_reports_no_update_when_current_is_newer_than_latest_seen():
-    # A dev build ahead of the last published tag shouldn't nag to
+    # A dev build ahead of the last published version shouldn't nag to
     # "upgrade" to an older release.
-    payload = {"tag_name": "v0.3.9", "html_url": "https://example.com/v0.3.9"}
+    payload = {"version": "v0.3.9", "release_url": "https://example.com/v0.3.9"}
     with patch("urllib.request.urlopen", side_effect=_fake_urlopen(payload)):
         result = check_for_update("0.3.11")
 
@@ -81,8 +81,8 @@ def test_network_failure_comes_back_as_a_result_not_an_exception():
     assert "no route to host" in result.error
 
 
-def test_missing_tag_name_comes_back_as_a_result_not_an_exception():
-    payload = {"html_url": "https://example.com"}
+def test_missing_version_field_comes_back_as_a_result_not_an_exception():
+    payload = {"release_url": "https://example.com"}
     with patch("urllib.request.urlopen", side_effect=_fake_urlopen(payload)):
         result = check_for_update("0.3.11")
 
@@ -95,7 +95,7 @@ def test_uses_a_certifi_backed_ssl_context():
     # certificate inside the Nuitka-packaged .app — the frozen binary
     # doesn't see the same CA store a normal interpreter does. Pinning the
     # context to certifi's bundle explicitly sidesteps that.
-    payload = {"tag_name": "v0.3.11", "html_url": "https://example.com/v0.3.11"}
+    payload = {"version": "v0.3.11", "release_url": "https://example.com/v0.3.11"}
     received_contexts = []
 
     def _open(request, timeout=None, context=None):  # noqa: ARG001

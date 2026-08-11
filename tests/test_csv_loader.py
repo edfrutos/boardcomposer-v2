@@ -92,6 +92,18 @@ def test_quantity_expands_a_row_into_several_identical_boards(tmp_path):
     assert all(board.length_mm == 2000 for board in project.boards)
 
 
+@pytest.mark.parametrize("header", ["Cantidad", "CANTIDAD", "Quantity", "QUANTITY"])
+def test_quantity_column_accepts_spanish_name_and_any_case(tmp_path, header):
+    path = _write_csv(
+        tmp_path,
+        f"id,length_mm,width_mm,thickness_mm,{header}\nA,2000,300,20,3\n",
+    )
+
+    project = load_project_from_csv(path)
+
+    assert [board.id for board in project.boards] == ["A", "A-2", "A-3"]
+
+
 def test_quantity_without_an_id_produces_boards_with_no_id(tmp_path):
     path = _write_csv(
         tmp_path,

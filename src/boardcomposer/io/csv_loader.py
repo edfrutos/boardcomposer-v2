@@ -7,6 +7,18 @@ from boardcomposer.io.errors import LoaderError
 REQUIRED_COLUMNS = ("length_mm", "width_mm", "thickness_mm")
 
 
+def _quantity_from_row(row: dict) -> str:
+    """`quantity` accepted case-insensitively, plus its Spanish name
+    ("Cantidad") — same fix as Studio's csv_import.py/board_csv_import.py:
+    a CSV column named the way the app's UI is labeled elsewhere silently
+    defaulted every row to quantity=1, since the literal lowercase English
+    column name never matched."""
+    for key in row:
+        if key and key.strip().lower() in ("quantity", "cantidad"):
+            return (row[key] or "").strip()
+    return ""
+
+
 def load_project_from_csv(path: str | Path) -> Project:
     project = Project()
 
@@ -31,7 +43,7 @@ def load_project_from_csv(path: str | Path) -> Project:
             except (TypeError, ValueError) as error:
                 raise LoaderError(f"Fila {line_number}: {error}") from error
 
-            quantity_raw = (row.get("quantity") or "").strip()
+            quantity_raw = _quantity_from_row(row)
             if quantity_raw:
                 try:
                     quantity = int(quantity_raw)

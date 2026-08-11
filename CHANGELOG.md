@@ -1,5 +1,15 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.21 - 2026-08-11
+
+### Arreglado
+
+- "Buscar actualizaciones" fallaba ahora con `404` una vez arreglado el SSL de `v0.3.20` (`DT-0025`): el repositorio es privado, y GitHub devuelve `404` a una petición sin autenticar en vez de revelar que existe. Reemplazado el comparador para que apunte a un Gist público con solo la última versión (`version.json`), no a la API de Releases del repo — nada del código privado queda expuesto.
+- El importador CSV (Core, piezas y tableros de Studio) no leía la columna de cantidad si se llamaba `Cantidad` en vez de `quantity`, o llevaba mayúsculas (`DT-0026`) — reportado por el usuario. Los tres importadores aceptan ahora `quantity`/`Quantity`/`cantidad`/`Cantidad`, sin distinguir mayúsculas de minúsculas.
+- El menú contextual del lienzo (`IDE-0040`) no se abría con un Magic Mouse de Apple (`DT-0027`) — la detección vivía en `mousePressEvent()`, que un botón derecho físico dispara de forma fiable pero el clic secundario de un Magic Mouse no siempre. Movida a `contextMenuEvent()`, el mecanismo de Qt pensado justo para esto (normaliza botón derecho, Magic Mouse, trackpad y tecla Menú en un único evento).
+
+---
+
 ## 0.3.20 - 2026-08-10
 
 ### Arreglado

@@ -3,7 +3,13 @@
 from __future__ import annotations
 from studio.workspace.workspace_camera import WorkspaceCamera
 from PySide6.QtCore import QPoint, QPointF, QRectF, Qt, Signal
-from PySide6.QtGui import QMouseEvent, QPainter, QResizeEvent, QWheelEvent
+from PySide6.QtGui import (
+    QContextMenuEvent,
+    QMouseEvent,
+    QPainter,
+    QResizeEvent,
+    QWheelEvent,
+)
 from PySide6.QtWidgets import (
     QGraphicsRectItem,
     QGraphicsScene,
@@ -21,10 +27,10 @@ from studio.workspace.selection_controller import SelectionController
 
 
 class BoardWorkspace(QGraphicsView):
-    # Right-click on an element (IDE-0040), instead of the panning every
-    # other right-click still triggers: MainWindow owns the actual menus
-    # (it already owns the equivalent Explorer one), this widget only
-    # reports what got clicked and where.
+    # Requesting a context menu on a piece/tablero (IDE-0040), emitted from
+    # contextMenuEvent() (see DT-0026 for why not mousePressEvent):
+    # MainWindow owns the actual menus (it already owns the equivalent
+    # Explorer one), this widget only reports what got clicked and where.
     piece_context_menu_requested = Signal(str, QPoint)
     board_context_menu_requested = Signal(QPoint)
 
@@ -198,37 +204,53 @@ class BoardWorkspace(QGraphicsView):
                 clicked_item.pos().y(),
             )
 
-        if event.button() == Qt.MouseButton.RightButton:
-            if isinstance(clicked_item, BoardPieceItem):
-                self.piece_context_menu_requested.emit(
-                    clicked_item.piece_id, event.globalPosition().toPoint()
-                )
-                event.accept()
-                return
-
-            # Geometric containment, not itemAt(): the grid (grid.py) is
-            # made of QGraphicsLineItems covering the whole sceneRect(),
-            # not just the board, so itemAt() alone can't tell "empty
-            # canvas" from "empty patch of board" apart.
-            scene_pos = self.mapToScene(event.position().toPoint())
-            if (
-                self._board_item is not None
-                and self._board_item.sceneBoundingRect().contains(scene_pos)
-            ):
-                self.board_context_menu_requested.emit(event.globalPosition().toPoint())
-                event.accept()
-                return
-
-            self._start_pan(event.position().toPoint())
-            event.accept()
-            return
-
-        if clicked_item is None:
+        if event.button() == Qt.MouseButton.RightButton or clicked_item is None:
             self._start_pan(event.position().toPoint())
             event.accept()
             return
 
         super().mousePressEvent(event)
+
+    def contextMenuEvent(self, event: QContextMenuEvent) -> None:
+        """IDE-0040's menu on a piece/tablero, moved here from
+        mousePressEvent() (DT-0026): a physical right mouse button reaches
+        mousePressEvent() as Qt.RightButton, but a Magic Mouse's secondary
+        click (reported by a user: right-click did nothing at all) doesn't
+        reliably arrive the same way. contextMenuEvent() is Qt's own
+        abstraction over every platform mechanism that means "show a
+        context menu" — right-click, Magic Mouse, trackpad gestures, the
+        keyboard Menu key — so this is the correct place for it, not a
+        device-specific workaround.
+
+        Ends any in-progress pan first: on a real right mouse button this
+        event follows the mousePressEvent() above that already started
+        one, and it wouldn't get a matching mouseReleaseEvent() once a
+        menu opens and blocks — leaving the view stuck panning otherwise.
+        """
+        self._end_pan()
+
+        clicked_item = self.itemAt(event.pos())
+        if isinstance(clicked_item, BoardPieceItem):
+            self.piece_context_menu_requested.emit(
+                clicked_item.piece_id, event.globalPos()
+            )
+            event.accept()
+            return
+
+        # Geometric containment, not itemAt(): the grid (grid.py) is made
+        # of QGraphicsLineItems covering the whole sceneRect(), not just
+        # the board, so itemAt() alone can't tell "empty canvas" from
+        # "empty patch of board" apart.
+        scene_pos = self.mapToScene(event.pos())
+        if (
+            self._board_item is not None
+            and self._board_item.sceneBoundingRect().contains(scene_pos)
+        ):
+            self.board_context_menu_requested.emit(event.globalPos())
+            event.accept()
+            return
+
+        event.ignore()
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         if self._panning:

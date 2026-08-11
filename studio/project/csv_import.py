@@ -29,6 +29,18 @@ class CsvImportError(ValueError):
 REQUIRED_COLUMNS = ("id", "length_mm", "width_mm", "thickness_mm")
 
 
+def _quantity_from_row(row: dict) -> str:
+    """`quantity` accepted case-insensitively, plus its Spanish name
+    ("Cantidad", the label PieceDialog itself uses) — reported by the
+    user: a CSV column named the way the rest of the app's UI is
+    labeled silently defaulted every row to quantity=1, since the
+    literal lowercase English column name never matched."""
+    for key in row:
+        if key and key.strip().lower() in ("quantity", "cantidad"):
+            return (row[key] or "").strip()
+    return ""
+
+
 def load_pieces_from_csv(
     path: str | Path, existing_ids: frozenset[str] = frozenset()
 ) -> list[StudioPiece]:
@@ -88,7 +100,7 @@ def load_pieces_from_csv(
                         f"mayor que 0 (se recibió {row[column]!r})"
                     )
 
-            quantity_raw = (row.get("quantity") or "").strip()
+            quantity_raw = _quantity_from_row(row)
             if quantity_raw:
                 try:
                     quantity = int(quantity_raw)
