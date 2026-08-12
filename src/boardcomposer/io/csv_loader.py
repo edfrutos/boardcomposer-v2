@@ -7,16 +7,25 @@ from boardcomposer.io.errors import LoaderError
 REQUIRED_COLUMNS = ("length_mm", "width_mm", "thickness_mm")
 
 
-def _quantity_from_row(row: dict) -> str:
-    """`quantity` accepted case-insensitively, plus its Spanish name
-    ("Cantidad") — same fix as Studio's csv_import.py/board_csv_import.py:
-    a CSV column named the way the app's UI is labeled elsewhere silently
-    defaulted every row to quantity=1, since the literal lowercase English
-    column name never matched."""
+def _column_from_row(row: dict, *names: str) -> str:
+    """Column lookup accepted case-insensitively, and under any of
+    `names` — same fix as Studio's csv_import.py/board_csv_import.py: a
+    CSV column named the way the app's UI is labeled elsewhere ("Cantidad"
+    for `quantity`, "Material" capitalized) silently fell back to the
+    column's default, since the literal lowercase English column name
+    never matched."""
     for key in row:
-        if key and key.strip().lower() in ("quantity", "cantidad"):
+        if key and key.strip().lower() in names:
             return (row[key] or "").strip()
     return ""
+
+
+def _quantity_from_row(row: dict) -> str:
+    return _column_from_row(row, "quantity", "cantidad")
+
+
+def _material_from_row(row: dict) -> str:
+    return _column_from_row(row, "material")
 
 
 def load_project_from_csv(path: str | Path) -> Project:
@@ -70,7 +79,7 @@ def load_project_from_csv(path: str | Path) -> Project:
                     f"{board_id}-{suffix}" for suffix in range(2, quantity + 1)
                 ]
 
-            material = (row.get("material") or "").strip()
+            material = _material_from_row(row)
 
             for unit_id in unit_ids:
                 try:

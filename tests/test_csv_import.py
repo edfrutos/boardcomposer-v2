@@ -164,6 +164,18 @@ def test_quantity_column_accepts_spanish_name_and_any_case(tmp_path, header):
     assert [piece.piece_id for piece in pieces] == ["P-101", "P-101-2", "P-101-3"]
 
 
+@pytest.mark.parametrize("header", ["Material", "MATERIAL"])
+def test_material_column_accepts_any_case(tmp_path, header):
+    path = _write_csv(
+        tmp_path,
+        f"id,length_mm,width_mm,thickness_mm,{header}\nP-101,700,300,19,Roble\n",
+    )
+
+    pieces = load_pieces_from_csv(path)
+
+    assert pieces[0].material == "Roble"
+
+
 def test_quantity_expansion_honors_material(tmp_path):
     path = _write_csv(
         tmp_path,

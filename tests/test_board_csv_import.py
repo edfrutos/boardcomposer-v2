@@ -132,6 +132,18 @@ def test_quantity_column_accepts_spanish_name_and_any_case(tmp_path, header):
     assert all(board.width_mm == 600 for board in boards)
 
 
+@pytest.mark.parametrize("header", ["Material", "MATERIAL"])
+def test_material_column_accepts_any_case(tmp_path, header):
+    path = _write_csv(
+        tmp_path,
+        f"id,length_mm,width_mm,thickness_mm,{header}\nT-101,1200,600,19,Roble\n",
+    )
+
+    boards = load_boards_from_csv(path)
+
+    assert boards[0].material == "Roble"
+
+
 def test_quantity_combines_with_other_rows_in_the_same_file(tmp_path):
     path = _write_csv(
         tmp_path,

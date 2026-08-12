@@ -1,5 +1,13 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.22 - 2026-08-12
+
+### Arreglado
+
+- Verificando el arreglo de `v0.3.21` con el usuario salió el mismo bug en otra columna: la columna `Material` (con inicial mayúscula) tampoco se reconocía en el importador CSV — caía en silencio al valor por defecto ("Demo") en vez de leer el material real del fichero. Los tres importadores (Core, piezas y tableros de Studio) aceptan ahora `material`/`Material`/`MATERIAL` igual que ya aceptaban `quantity`/`Cantidad`.
+
+---
+
 ## 0.3.21 - 2026-08-11
 
 ### Arreglado

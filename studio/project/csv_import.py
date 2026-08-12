@@ -29,16 +29,24 @@ class CsvImportError(ValueError):
 REQUIRED_COLUMNS = ("id", "length_mm", "width_mm", "thickness_mm")
 
 
-def _quantity_from_row(row: dict) -> str:
-    """`quantity` accepted case-insensitively, plus its Spanish name
-    ("Cantidad", the label PieceDialog itself uses) — reported by the
-    user: a CSV column named the way the rest of the app's UI is
-    labeled silently defaulted every row to quantity=1, since the
+def _column_from_row(row: dict, *names: str) -> str:
+    """Column lookup accepted case-insensitively, and under any of
+    `names` — reported by the user: a CSV column named the way the rest
+    of the app's UI is labeled ("Cantidad" for `quantity`, "Material"
+    capitalized) silently fell back to the column's default, since the
     literal lowercase English column name never matched."""
     for key in row:
-        if key and key.strip().lower() in ("quantity", "cantidad"):
+        if key and key.strip().lower() in names:
             return (row[key] or "").strip()
     return ""
+
+
+def _quantity_from_row(row: dict) -> str:
+    return _column_from_row(row, "quantity", "cantidad")
+
+
+def _material_from_row(row: dict) -> str:
+    return _column_from_row(row, "material")
 
 
 def load_pieces_from_csv(
@@ -133,7 +141,7 @@ def load_pieces_from_csv(
                     )
                 seen_ids.add(unit_id)
 
-            material = (row.get("material") or "").strip()
+            material = _material_from_row(row)
             # StudioPiece valida también por su cuenta; traducir su ValueError
             # mantiene la promesa del docstring (todo fallo sale como
             # CsvImportError) y evita que un invariante añadido ahí en el
