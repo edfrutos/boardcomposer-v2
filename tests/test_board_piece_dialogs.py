@@ -40,6 +40,26 @@ def test_board_dialog_accepts_a_custom_material():
     assert material == "Melamina"
 
 
+def test_board_dialog_material_combo_lists_the_catalog():
+    _app()
+    dialog = BoardDialog(board_id="B1", materials=["Aglomerado", "Pino"])
+
+    assert [
+        dialog.material_edit.itemText(i) for i in range(dialog.material_edit.count())
+    ] == ["Aglomerado", "Pino"]
+
+
+def test_board_dialog_material_combo_still_accepts_free_text_not_in_the_catalog():
+    _app()
+    dialog = BoardDialog(
+        board_id="B1", material="Melamina", materials=["Aglomerado", "Pino"]
+    )
+
+    _, _, _, material, _ = dialog.values()
+
+    assert material == "Melamina"
+
+
 def test_board_dialog_accepts_a_custom_thickness():
     _app()
     dialog = BoardDialog(board_id="B1", thickness_mm=25.0)
@@ -88,6 +108,15 @@ def test_piece_dialog_accepts_a_custom_material():
     _, _, _, material, _ = dialog.values()
 
     assert material == "MDF"
+
+
+def test_piece_dialog_material_combo_lists_the_catalog():
+    _app()
+    dialog = PieceDialog(piece_id="p1", materials=["Aglomerado", "Pino"])
+
+    assert [
+        dialog.material_edit.itemText(i) for i in range(dialog.material_edit.count())
+    ] == ["Aglomerado", "Pino"]
 
 
 def test_piece_dialog_accepts_a_custom_thickness():

@@ -109,6 +109,71 @@ Observaciones:
 | IDE-0038 | `material`/`quantity` en el CSV del Core + restricción dura de material en Studio | 🟢 | P2 |
 | IDE-0039 | Inventario persistente de retales en Studio | 🟢 | P3 |
 | IDE-0040 | Menú contextual (clic derecho) en el lienzo: editar/eliminar pieza o tablero | 🟢 | P2 |
+| IDE-0041 | Biblioteca de materiales del taller (catálogo CSV importable/exportable) | 🟢 | P2 |
+
+---
+
+## IDE-0041 — Biblioteca de materiales del taller
+
+**Estado:** 🟢 Completada en `v0.3.23`. Primer bloque de la Fase 5 (Ecosistema)
+del Roadmap, elegido y acotado con el usuario el 13/08/2026 (`DEC-0020`) —
+la biblioteca de materiales no tenía ninguna definición previa en
+`DOC-999-Ideas.md`, a diferencia del marketplace público (candidatas ya
+listadas, pero con una decisión de producto pendiente) o de comunidad
+(igual de sin definir).
+
+**Decisiones de alcance, resueltas con el usuario:**
+
+1. Catálogo **del taller**, no por proyecto — persiste entre proyectos y
+   reinicios de Studio, mismo patrón SQLite que el inventario de retales
+   (`IDE-0039`), en un fichero propio (`materiales.db`).
+2. Campos: nombre, grosor, proveedor y precio (por tablero o por m²) — no
+   solo lo mínimo (nombre/grosor).
+3. Exportable/importable como CSV, para compartir el catálogo entre
+   instalaciones de Studio — no JSON, mismo formato que ya usan los otros
+   tres importadores de la app.
+
+**Alcance (decisiones de implementación, no confirmadas fila a fila con
+el usuario):**
+
+- `studio/project/materials_library.py`: capa pura sin Qt (mismo patrón
+  que `scrap_inventory.py`) — `add_material()`, `update_material()`,
+  `delete_material()`, `list_materials()`. A diferencia de un retal, es
+  dato de referencia sin ciclo de vida: eliminar es un `DELETE` real, no
+  un flag de "consumido". `add_materials_bulk()` inserta una lista
+  completa en una única transacción (usada por la importación CSV):
+  cualquier fila inválida o id repetido deshace la transacción entera.
+- `studio/project/materials_csv.py`: exporta/importa el catálogo,
+  columnas `id,name,thickness_mm,provider,price,price_unit`. Aplica la
+  lección de `DT-0026` de forma proactiva — columnas aceptadas también en
+  español y en mayúsculas (`nombre`, `grosor_mm`, `proveedor`, `precio`),
+  sin esperar a que alguien lo reporte como bug.
+- `studio/materials_service.py` (`MaterialsLibraryService`): envoltorio
+  Qt, mismo mecanismo `QStandardPaths.AppDataLocation` que
+  `ScrapInventoryService`. `MainWindow` recibe una instancia por
+  parámetro (`materials=None` construye la real), deliberadamente fuera
+  de `StudioServices` — recurso del taller, no estado de un proyecto.
+- `studio/dialogs/materials_dialogs.py`: `MaterialDialog` (alta/edición,
+  pura) y `MaterialsLibraryDialog` (tabla + Añadir/Editar/Eliminar/
+  Importar CSV/Exportar CSV) — esta última posee el servicio directamente
+  y persiste cada operación al momento, a diferencia del resto de
+  diálogos del proyecto: el catálogo no participa del undo/redo de ningún
+  proyecto, mismo criterio que un gestor de contactos/marcadores.
+- `BoardDialog`/`PieceDialog`: el campo "Material" pasa de `QLineEdit` a
+  `QComboBox` editable, con un parámetro `materials` opcional (nombres
+  del catálogo, sin duplicados) — sigue aceptando texto libre para un
+  material fuera del catálogo, así que un catálogo vacío no bloquea nada.
+- `MainWindow`: entrada nueva "Biblioteca de materiales…" en el menú
+  "Proyecto".
+- Documentación: `docs/studio.md` (nueva sección), `DOC-999-Ideas.md`
+  (marcar la biblioteca de materiales como promovida a `IDE-0041`).
+
+**Fuera de alcance:** cualquier efecto del catálogo sobre el solver —
+"material" sigue siendo lo que ya era desde `IDE-0038` (restricción dura
+en Studio, campo pasivo en el Core); el catálogo es solo una fuente de
+valores predefinidos para el campo que ya existía. Presupuesto
+automático de un proyecto a partir de los precios del catálogo, sin
+acotar.
 
 ---
 

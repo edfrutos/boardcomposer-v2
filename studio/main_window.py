@@ -39,6 +39,7 @@ from studio.dialogs import (
     ContainerGeneratorDialog,
     CsvImportPreviewDialog,
     KerfDialog,
+    MaterialsLibraryDialog,
     MoveToBoardDialog,
     PieceDialog,
     PreferencesDialog,
@@ -48,6 +49,7 @@ from studio._version import __version__ as STUDIO_VERSION
 from studio.containers import CONTAINER_TEMPLATES, ContainerTemplateError
 from studio.icons import build_icons
 from studio.inventory_service import ScrapInventoryService
+from studio.materials_service import MaterialsLibraryService
 from studio.prompt_input import PromptTextEdit
 from studio.theme import (
     ICON_COLOR,
@@ -165,7 +167,7 @@ def _generate_ids(
 class MainWindow(QMainWindow):
     """Main application window."""
 
-    def __init__(self, services, inventory=None):
+    def __init__(self, services, inventory=None, materials=None):
         super().__init__()
         # QSettings() needs an organization/application name to know where
         # to store its file — set here too (not just studio/app.py's entry
@@ -180,6 +182,11 @@ class MainWindow(QMainWindow):
         # to this running Studio instance, not shared project state — same
         # reasoning that keeps QSettings() out of StudioServices too.
         self.inventory = inventory if inventory is not None else ScrapInventoryService()
+        # Same reasoning as self.inventory — the materials catalog
+        # (IDE-0041) is workshop reference data, not project state.
+        self.materials = (
+            materials if materials is not None else MaterialsLibraryService()
+        )
         self.setWindowTitle("BoardComposer Studio")
         self.resize(1400, 900)
 
@@ -261,6 +268,11 @@ class MainWindow(QMainWindow):
         self._actions["use_scrap"] = QAction("Usar retal del inventario…", self)
         menus["Proyecto"].addAction(self._actions["use_scrap"])
         self._actions["use_scrap"].triggered.connect(self._use_scrap_from_inventory)
+        self._actions["materials_library"] = QAction("Biblioteca de materiales…", self)
+        menus["Proyecto"].addAction(self._actions["materials_library"])
+        self._actions["materials_library"].triggered.connect(
+            self._open_materials_library
+        )
 
         menus["Proyecto"].addSeparator()
         self._actions["add_piece"] = QAction("Añadir pieza…", self)
@@ -1628,7 +1640,9 @@ class MainWindow(QMainWindow):
             return
 
         existing_ids = frozenset(board.board_id for board in project.boards)
-        dialog = BoardDialog(self, existing_ids=existing_ids)
+        dialog = BoardDialog(
+            self, existing_ids=existing_ids, materials=self._material_names()
+        )
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
@@ -1731,6 +1745,21 @@ class MainWindow(QMainWindow):
             f"Retal '{scrap.scrap_id}' añadido como tablero '{board.board_id}'.", 3000
         )
 
+    def _open_materials_library(self):
+        # No project required — same reasoning as _add_scrap_to_inventory:
+        # the catalog (IDE-0041) outlives any single project.
+        dialog = MaterialsLibraryDialog(self, service=self.materials)
+        dialog.exec()
+
+    def _material_names(self) -> list[str]:
+        # Deduplicated, catalog order (name ASC, thickness ASC) already
+        # groups same-name entries together — dict.fromkeys() keeps that
+        # order while dropping repeats from multiple thicknesses of the
+        # same material.
+        return list(
+            dict.fromkeys(material.name for material in self.materials.list_materials())
+        )
+
     def _edit_board(self):
         project = self.services.projects.current_project
         active_board_id = self.workspace.active_board_id
@@ -1753,6 +1782,7 @@ class MainWindow(QMainWindow):
             material=old_board.material,
             thickness_mm=old_board.thickness_mm,
             id_editable=False,
+            materials=self._material_names(),
         )
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
@@ -1841,7 +1871,9 @@ class MainWindow(QMainWindow):
             return
 
         existing_ids = frozenset(piece.piece_id for piece in project.pieces)
-        dialog = PieceDialog(self, existing_ids=existing_ids)
+        dialog = PieceDialog(
+            self, existing_ids=existing_ids, materials=self._material_names()
+        )
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
 
@@ -1899,6 +1931,7 @@ class MainWindow(QMainWindow):
             material=old_piece.material,
             thickness_mm=old_piece.thickness_mm,
             id_editable=False,
+            materials=self._material_names(),
         )
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return

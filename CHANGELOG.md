@@ -1,5 +1,13 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.23 - 2026-08-13
+
+### Añadido
+
+- Biblioteca de materiales del taller (`IDE-0041`): catálogo reutilizable de materiales (nombre, grosor, proveedor, precio) que persiste entre proyectos y reinicios de Studio, mismo patrón que el inventario de retales (`IDE-0039`). Nueva entrada "Biblioteca de materiales…" en el menú "Proyecto" (alta/edición/baja en una tabla), exportable/importable como CSV para compartir el catálogo entre instalaciones de Studio — columnas aceptadas también en español y en mayúsculas, mismo criterio que `DT-0026`. El campo "Material" de los diálogos de tablero y pieza pasa de texto libre a un desplegable editable con los nombres del catálogo, sin dejar de aceptar texto libre para lo que no esté en él. Primer bloque construido de la Fase 5 (Ecosistema) del Roadmap — sin efecto en el solver, el catálogo solo alimenta un campo que ya existía.
+
+---
+
 ## 0.3.22 - 2026-08-12
 
 ### Arreglado

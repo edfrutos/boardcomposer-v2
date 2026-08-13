@@ -96,7 +96,7 @@ Objetivos:
 
 - Plugins. 🟢 (IDE-0008, Fases A–E completas: generadores, estrategias, importadores/exportadores y paneles de Studio registrables vía entry points de Python)
 - Marketplace. 🟡 (guía para desarrolladores de plugins completada — `IDE-0013`, `DEC-0011`, `docs/plugins.md`; visibilidad de plugins instalados completada — `IDE-0015`, `DEC-0013`, CLI `boardcomposer plugins` + API `GET /plugins`; marketplace público sigue sin acotar, `DOC-999-Ideas.md`)
-- Biblioteca de materiales. ⚪ Sin empezar.
+- Biblioteca de materiales. 🟢 Completado (`IDE-0041`, `DEC-0020`, catálogo del taller exportable/importable como CSV, `v0.3.23`).
 - Comunidad. ⚪ Sin empezar.
 
 ---

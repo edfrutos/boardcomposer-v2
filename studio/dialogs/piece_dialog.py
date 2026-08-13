@@ -1,6 +1,7 @@
 """Add/edit piece dialog (IDE-0013 Fase D)."""
 
 from PySide6.QtWidgets import (
+    QComboBox,
     QDialog,
     QDialogButtonBox,
     QDoubleSpinBox,
@@ -27,6 +28,7 @@ class PieceDialog(QDialog):
         thickness_mm: float = 19.0,
         id_editable: bool = True,
         existing_ids: frozenset[str] = frozenset(),
+        materials: list[str] | None = None,
     ):
         super().__init__(parent)
         self.setWindowTitle("Pieza")
@@ -50,7 +52,11 @@ class PieceDialog(QDialog):
         self.thickness_spin.setSuffix(" mm")
         self.thickness_spin.setValue(thickness_mm)
 
-        self.material_edit = QLineEdit(material)
+        # Editable combo (IDE-0041) — same reasoning as BoardDialog.
+        self.material_edit = QComboBox()
+        self.material_edit.setEditable(True)
+        self.material_edit.addItems(materials or [])
+        self.material_edit.setCurrentText(material)
 
         self.quantity_spin = QSpinBox()
         self.quantity_spin.setRange(1, MAX_QUANTITY)
@@ -100,7 +106,7 @@ class PieceDialog(QDialog):
             self.id_edit.text().strip(),
             self.length_spin.value(),
             self.width_spin.value(),
-            self.material_edit.text().strip() or "Demo",
+            self.material_edit.currentText().strip() or "Demo",
             self.thickness_spin.value(),
         )
 

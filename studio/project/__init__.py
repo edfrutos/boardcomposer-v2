@@ -2,6 +2,8 @@
 
 from studio.project.board_csv_import import BoardCsvImportError, load_boards_from_csv
 from studio.project.csv_import import CsvImportError, load_pieces_from_csv
+from studio.project.materials_csv import MaterialsCsvError
+from studio.project.materials_library import MaterialsLibraryError
 from studio.project.project_manager import ProjectManager
 from studio.project.project_io import (
     load_project_from_file,
@@ -12,6 +14,8 @@ from studio.project.scrap_inventory import ScrapInventoryError
 __all__ = [
     "BoardCsvImportError",
     "CsvImportError",
+    "MaterialsCsvError",
+    "MaterialsLibraryError",
     "ProjectManager",
     "ScrapInventoryError",
     "load_boards_from_csv",
