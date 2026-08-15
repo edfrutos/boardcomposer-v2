@@ -110,6 +110,49 @@ Observaciones:
 | IDE-0039 | Inventario persistente de retales en Studio | 🟢 | P3 |
 | IDE-0040 | Menú contextual (clic derecho) en el lienzo: editar/eliminar pieza o tablero | 🟢 | P2 |
 | IDE-0041 | Biblioteca de materiales del taller (catálogo CSV importable/exportable) | 🟢 | P2 |
+| IDE-0042 | Enlace de consulta entre la biblioteca de materiales y el inventario de retales | 🟢 | P3 |
+
+---
+
+## IDE-0042 — Enlace de consulta entre la biblioteca de materiales y el inventario de retales
+
+**Estado:** 🟢 Completada en `v0.3.24`. Pedido por el usuario el 14/08/2026, tras
+verificar `IDE-0041` con un catálogo real generado desde su CSV de
+retales: quería "detallar la medida de cada uno de los tableros" en el
+catálogo, con la expectativa de que mejorara el aprovechamiento y la
+colocación de piezas.
+
+**Decisiones de alcance, resueltas con el usuario:**
+
+1. "La medida" no es un tamaño estándar genérico por material — es
+   **vincular el catálogo con el inventario de retales real** (`IDE-0039`),
+   que ya tiene id+dimensiones+material+grosor por cada tablero físico
+   concreto.
+2. **Solo información de consulta** — descartado explícitamente cualquier
+   efecto en el solver o en el reparto automático
+   (`apply_best_fit_distribution()`); la intuición inicial del usuario de
+   que esto mejoraría la colocación automática no se implementa, solo la
+   parte de consulta.
+
+**Alcance:**
+
+- `studio/project/materials_scrap_link.py`: función pura `matching_scraps()`
+  — filtra una lista de `ScrapRecord` ya obtenida por nombre y grosor
+  exactos, mismo criterio sin comodín que el resto de comparaciones
+  material/grosor del proyecto.
+- `MaterialsLibraryDialog`: parámetro opcional `scrap_inventory`. Columna
+  nueva "Retales" (recuento de coincidencias; `-` sin inventario, para no
+  leerse como "cero" cuando es "desconocido") y botón "Ver retales…" que
+  abre `MatchingScrapsDialog` — tabla de solo lectura, sin selección que
+  hacer (distinto de "Usar retal del inventario…", que sí elige uno).
+- `MainWindow._open_materials_library()`: pasa `self.inventory` al abrir
+  el diálogo.
+- Documentación: `docs/studio.md` (nueva subsección bajo la biblioteca de
+  materiales).
+
+**Fuera de alcance:** cualquier efecto en el solver, en
+`apply_best_fit_distribution()` o en el flujo "Usar retal del
+inventario…" — descartado con el usuario en la misma sesión.
 
 ---
 

@@ -30,9 +30,11 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 
+from studio.inventory_service import ScrapInventoryService
 from studio.materials_service import MaterialsLibraryService
 from studio.project.materials_csv import MaterialsCsvError
 from studio.project.materials_library import MaterialsLibraryError
+from studio.project.materials_scrap_link import matching_scraps
 
 MAX_DIMENSION_MM = 100_000.0
 MAX_PRICE = 1_000_000.0
@@ -137,15 +139,71 @@ class MaterialDialog(QDialog):
         )
 
 
-_HEADERS = ["Id", "Nombre", "Grosor (mm)", "Proveedor", "Precio", "Unidad"]
+_HEADERS = [
+    "Id",
+    "Nombre",
+    "Grosor (mm)",
+    "Proveedor",
+    "Precio",
+    "Unidad",
+    "Retales",
+]
+
+_SCRAP_HEADERS = ["Id", "Largo (mm)", "Ancho (mm)", "Procedencia"]
+
+
+class MatchingScrapsDialog(QDialog):
+    """Read-only view of the scraps (IDE-0039) that match one catalog
+    material (IDE-0042) — no selection to make, just consult-and-close:
+    this link is informational only, it doesn't feed the solver or the
+    "usar retal" flow."""
+
+    def __init__(self, parent=None, *, material_label: str, scraps):
+        super().__init__(parent)
+        self.setWindowTitle(f"Retales de {material_label}")
+        self.resize(480, 320)
+
+        self.table = QTableWidget(len(scraps), len(_SCRAP_HEADERS))
+        self.table.setHorizontalHeaderLabels(_SCRAP_HEADERS)
+        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+        self.table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.table.verticalHeader().setVisible(False)
+        header = self.table.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        for column in (0, 3):
+            header.setSectionResizeMode(column, QHeaderView.ResizeMode.ResizeToContents)
+
+        for row, scrap in enumerate(scraps):
+            values = [
+                scrap.scrap_id,
+                f"{scrap.length_mm:g}",
+                f"{scrap.width_mm:g}",
+                scrap.origin,
+            ]
+            for column, value in enumerate(values):
+                self.table.setItem(row, column, QTableWidgetItem(value))
+
+        close_button = QPushButton("Cerrar")
+        close_button.clicked.connect(self.accept)
+
+        layout = QVBoxLayout(self)
+        layout.addWidget(self.table)
+        layout.addWidget(close_button)
 
 
 class MaterialsLibraryDialog(QDialog):
-    def __init__(self, parent=None, *, service: MaterialsLibraryService):
+    def __init__(
+        self,
+        parent=None,
+        *,
+        service: MaterialsLibraryService,
+        scrap_inventory: ScrapInventoryService | None = None,
+    ):
         super().__init__(parent)
         self.setWindowTitle("Biblioteca de materiales")
-        self.resize(720, 420)
+        self.resize(760, 420)
         self._service = service
+        self._scrap_inventory = scrap_inventory
 
         self.table = QTableWidget(0, len(_HEADERS))
         self.table.setHorizontalHeaderLabels(_HEADERS)
@@ -161,6 +219,7 @@ class MaterialsLibraryDialog(QDialog):
         self.add_button = QPushButton("Añadir…")
         self.edit_button = QPushButton("Editar…")
         self.delete_button = QPushButton("Eliminar")
+        self.view_scraps_button = QPushButton("Ver retales…")
         self.import_button = QPushButton("Importar CSV…")
         self.export_button = QPushButton("Exportar CSV…")
         self.close_button = QPushButton("Cerrar")
@@ -168,6 +227,7 @@ class MaterialsLibraryDialog(QDialog):
         self.add_button.clicked.connect(self._add_material)
         self.edit_button.clicked.connect(self._edit_material)
         self.delete_button.clicked.connect(self._delete_material)
+        self.view_scraps_button.clicked.connect(self._view_scraps)
         self.import_button.clicked.connect(self._import_csv)
         self.export_button.clicked.connect(self._export_csv)
         self.close_button.clicked.connect(self.accept)
@@ -176,6 +236,7 @@ class MaterialsLibraryDialog(QDialog):
         buttons_row.addWidget(self.add_button)
         buttons_row.addWidget(self.edit_button)
         buttons_row.addWidget(self.delete_button)
+        buttons_row.addWidget(self.view_scraps_button)
         buttons_row.addStretch()
         buttons_row.addWidget(self.import_button)
         buttons_row.addWidget(self.export_button)
@@ -197,7 +258,21 @@ class MaterialsLibraryDialog(QDialog):
         self.error_label.hide()
         materials = self._service.list_materials()
         self.table.setRowCount(len(materials))
+        # None means no inventory was wired in (e.g. a caller that only
+        # cares about the catalog) — "-" rather than "0", so it doesn't
+        # read as "you own no scraps of this material" when the real
+        # answer is "unknown".
+        scraps = (
+            self._scrap_inventory.list_available()
+            if self._scrap_inventory is not None
+            else None
+        )
         for row, material in enumerate(materials):
+            scrap_count = (
+                str(len(matching_scraps(scraps, material.name, material.thickness_mm)))
+                if scraps is not None
+                else "-"
+            )
             values = [
                 material.material_id,
                 material.name,
@@ -205,6 +280,7 @@ class MaterialsLibraryDialog(QDialog):
                 material.provider,
                 f"{material.price:.2f}",
                 PRICE_UNIT_LABELS.get(material.price_unit, material.price_unit),
+                scrap_count,
             ]
             for column, value in enumerate(values):
                 self.table.setItem(row, column, QTableWidgetItem(value))
@@ -289,6 +365,30 @@ class MaterialsLibraryDialog(QDialog):
             self.error_label.show()
             return
         self._reload()
+
+    def _view_scraps(self) -> None:
+        material = self._selected_material()
+        if material is None:
+            self.error_label.setText("Selecciona un material.")
+            self.error_label.show()
+            return
+
+        if self._scrap_inventory is None:
+            self.error_label.setText("El inventario de retales no está disponible.")
+            self.error_label.show()
+            return
+
+        scraps = matching_scraps(
+            self._scrap_inventory.list_available(),
+            material.name,
+            material.thickness_mm,
+        )
+        dialog = MatchingScrapsDialog(
+            self,
+            material_label=f"{material.name} ({material.thickness_mm:g} mm)",
+            scraps=scraps,
+        )
+        dialog.exec()
 
     def _import_csv(self) -> None:
         path, _ = QFileDialog.getOpenFileName(

@@ -1,5 +1,13 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.24 - 2026-08-14
+
+### Añadido
+
+- Enlace de consulta entre la biblioteca de materiales y el inventario de retales (`IDE-0042`): "Biblioteca de materiales…" suma una columna "Retales" con el número de retales disponibles que coinciden en nombre y grosor con cada material del catálogo, y un botón "Ver retales…" que lista sus dimensiones y procedencia. Solo información de consulta — no afecta al solver ni al reparto automático de piezas entre tableros.
+
+---
+
 ## 0.3.23 - 2026-08-13
 
 ### Añadido

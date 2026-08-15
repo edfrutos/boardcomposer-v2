@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QApplication
 
 from studio.dialogs import MaterialDialog, MaterialsLibraryDialog
+from studio.inventory_service import ScrapInventoryService
 from studio.materials_service import MaterialsLibraryService
 
 
@@ -132,3 +133,100 @@ def test_materials_library_dialog_delete_material_removes_it(tmp_path, monkeypat
 
     assert service.list_materials() == []
     assert dialog.table.rowCount() == 0
+
+
+def test_materials_library_dialog_scrap_column_shows_dash_without_inventory(tmp_path):
+    _app()
+    service = MaterialsLibraryService(db_path=tmp_path / "materiales.db")
+    service.add("AGL18", "Aglomerado", 18)
+
+    dialog = MaterialsLibraryDialog(service=service)
+
+    assert dialog.table.item(0, 6).text() == "-"
+
+
+def test_materials_library_dialog_scrap_column_counts_matching_scraps(tmp_path):
+    _app()
+    service = MaterialsLibraryService(db_path=tmp_path / "materiales.db")
+    service.add("AGL18", "Aglomerado", 18)
+    service.add("PINO25", "Pino", 25)
+    inventory = ScrapInventoryService(db_path=tmp_path / "retales.db")
+    inventory.add("R-001", 800, 400, 18, material="Aglomerado")
+    inventory.add("R-002", 500, 300, 18, material="Aglomerado")
+    inventory.add("R-003", 600, 300, 10, material="Aglomerado")  # distinto grosor
+
+    dialog = MaterialsLibraryDialog(service=service, scrap_inventory=inventory)
+
+    rows = {
+        dialog.table.item(row, 0).text(): dialog.table.item(row, 6).text()
+        for row in range(dialog.table.rowCount())
+    }
+    assert rows["AGL18"] == "2"
+    assert rows["PINO25"] == "0"
+
+
+def test_view_scraps_without_a_selection_shows_an_error(tmp_path):
+    _app()
+    service = MaterialsLibraryService(db_path=tmp_path / "materiales.db")
+    inventory = ScrapInventoryService(db_path=tmp_path / "retales.db")
+    dialog = MaterialsLibraryDialog(service=service, scrap_inventory=inventory)
+
+    dialog._view_scraps()
+
+    assert "Selecciona" in dialog.error_label.text()
+
+
+def test_view_scraps_without_an_inventory_shows_an_error(tmp_path):
+    _app()
+    service = MaterialsLibraryService(db_path=tmp_path / "materiales.db")
+    service.add("AGL18", "Aglomerado", 18)
+    dialog = MaterialsLibraryDialog(service=service)
+    dialog.table.selectRow(0)
+
+    dialog._view_scraps()
+
+    assert "inventario" in dialog.error_label.text()
+
+
+def test_view_scraps_opens_a_dialog_listing_matching_scraps(tmp_path, monkeypatch):
+    _app()
+    service = MaterialsLibraryService(db_path=tmp_path / "materiales.db")
+    service.add("AGL18", "Aglomerado", 18)
+    inventory = ScrapInventoryService(db_path=tmp_path / "retales.db")
+    inventory.add("R-001", 800, 400, 18, material="Aglomerado")
+    dialog = MaterialsLibraryDialog(service=service, scrap_inventory=inventory)
+    dialog.table.selectRow(0)
+
+    captured = {}
+
+    class _FakeMatchingScrapsDialog:
+        def __init__(self, *args, **kwargs):
+            captured["material_label"] = kwargs.get("material_label")
+            captured["scraps"] = kwargs.get("scraps")
+
+        def exec(self):
+            captured["executed"] = True
+
+    monkeypatch.setattr(
+        "studio.dialogs.materials_dialogs.MatchingScrapsDialog",
+        _FakeMatchingScrapsDialog,
+    )
+
+    dialog._view_scraps()
+
+    assert captured["executed"] is True
+    assert captured["material_label"] == "Aglomerado (18 mm)"
+    assert [s.scrap_id for s in captured["scraps"]] == ["R-001"]
+
+
+def test_matching_scraps_dialog_lists_the_given_scraps():
+    _app()
+    from studio.dialogs import MatchingScrapsDialog
+    from studio.project.scrap_inventory import ScrapRecord
+
+    scraps = [ScrapRecord("R-001", 800, 400, 18, "Aglomerado", "Mueble X", "2026")]
+
+    dialog = MatchingScrapsDialog(material_label="Aglomerado (18 mm)", scraps=scraps)
+
+    assert dialog.table.rowCount() == 1
+    assert dialog.table.item(0, 0).text() == "R-001"

@@ -149,3 +149,12 @@ Con `v0.3.22` cerrado y `DT-0026` confirmado, el usuario pidió empezar la Fase 
 - **El campo "Material" en `BoardDialog`/`PieceDialog` pasa de texto libre a un desplegable editable** con los nombres del catálogo — sigue aceptando cualquier texto no listado, para que un catálogo vacío (instalación nueva) no bloquee crear tableros o piezas.
 
 1215 tests en verde (90 nuevos sobre `v0.3.22`).
+
+## 2026-08-14 - Release v0.3.24
+
+El usuario probó `v0.3.23` con un CSV real de retales de garaje y encontró dos cosas en la misma sesión:
+
+- **Confusión entre dos importadores CSV distintos, no un bug**: "la biblioteca de materiales no me coge los CSV, dice que faltan columnas" — el fichero era `BCS-v2_retales_garaje.csv` (columnas `id,length_mm,width_mm,thickness_mm,cantidad,material`), formato de **importar tableros**, no de la biblioteca de materiales (que exige `id,name,thickness_mm`). No hacía falta tocar código — generar un CSV nuevo con una fila por combinación única de material+grosor (9, luego 8 tras fusionar un typo real del usuario, `Crontachapado`/`Contrachapado`) resolvió la confusión. Verificado ejecutando el mismo camino de código que usa el diálogo (`MaterialsLibraryService.import_csv()`) contra una base de datos aislada, ya que este entorno no puede lanzar la Studio real con ventana — corre en la Mac del usuario, no en el sandbox de desarrollo.
+- **Enlace de consulta con el inventario de retales** (`IDE-0042`): el usuario pidió que el catálogo detallara "la medida de cada tablero", esperando que mejorara el aprovechamiento y la colocación automática. Acotado con el usuario antes de programar (mismo patrón que `IDE-0041`): no es un tamaño estándar por material, es vincular el catálogo con el inventario de retales real (`IDE-0039`) — y explícitamente **solo información de consulta**, sin tocar el solver ni `apply_best_fit_distribution()`, descartando la expectativa inicial del usuario de que esto afectara al reparto automático. Columna "Retales" (recuento) y botón "Ver retales…" (dimensiones, procedencia) nuevos en `MaterialsLibraryDialog`.
+
+1136 tests en verde (11 nuevos sobre `v0.3.23`).

@@ -4,6 +4,7 @@ from studio.project.board_csv_import import BoardCsvImportError, load_boards_fro
 from studio.project.csv_import import CsvImportError, load_pieces_from_csv
 from studio.project.materials_csv import MaterialsCsvError
 from studio.project.materials_library import MaterialsLibraryError
+from studio.project.materials_scrap_link import matching_scraps
 from studio.project.project_manager import ProjectManager
 from studio.project.project_io import (
     load_project_from_file,
@@ -21,5 +22,6 @@ __all__ = [
     "load_boards_from_csv",
     "load_pieces_from_csv",
     "load_project_from_file",
+    "matching_scraps",
     "save_project_to_file",
 ]

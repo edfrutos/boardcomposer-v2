@@ -194,6 +194,14 @@ Una entrada nueva en el menú "Proyecto": "Biblioteca de materiales…" abre `Ma
 
 **Fuera de alcance:** el catálogo no afecta al solver ni convierte "material" en algo más que lo que ya era (restricción dura en Studio desde `IDE-0038`, campo pasivo en el Core) — es una fuente de valores predefinidos para el campo que ya existía, no un cambio de comportamiento. Presupuesto automático de un proyecto a partir de los precios del catálogo sigue sin acotar.
 
+### Enlace con el inventario de retales — `IDE-0042`
+
+Pedido por el usuario tras verificar `IDE-0041` en real: quería que el catálogo mostrara "la medida de cada uno de los tableros", acotado con el usuario a **vincular el catálogo con el inventario de retales real** (`IDE-0039`), no a un tamaño estándar genérico por material — y **solo como información de consulta**, sin efecto en el solver ni en el reparto automático (`apply_best_fit_distribution()` sigue igual).
+
+`studio/project/materials_scrap_link.py` (función pura, testeada en `tests/test_materials_scrap_link.py`): `matching_scraps(scraps, material_name, thickness_mm)` filtra una lista de `ScrapRecord` ya obtenida por nombre y grosor exactos — mismo criterio sin comodín que el resto de comparaciones material/grosor del proyecto (`IDE-0038`).
+
+`MaterialsLibraryDialog` recibe un `scrap_inventory: ScrapInventoryService | None` opcional. Con él presente, la tabla suma una columna "Retales" con el recuento de retales disponibles que coinciden en nombre y grosor (`None`/sin inventario se muestra como `-`, no como `0`, para no leerse como "no tienes ninguno" cuando en realidad es "no se sabe"). Un botón nuevo "Ver retales…" abre `MatchingScrapsDialog` — tabla de solo lectura (id, largo, ancho, procedencia) de los retales que coinciden con el material seleccionado, sin selección que hacer: es para consultar, no para elegir uno (eso ya lo cubre "Usar retal del inventario…" del menú "Proyecto", sin relación con este diálogo). `MainWindow._open_materials_library()` pasa `self.inventory` al abrir el diálogo.
+
 ## Lienzo — etiquetas
 
 `create_board_item()` (`studio/workspace/board_item.py`) dibuja el rectángulo del tablero y añade su `board_id` como `QGraphicsSimpleTextItem` **fuera** de los límites del tablero, para no solaparse con una pieza colocada cerca del origen. Las piezas se etiquetan a su vez con su `piece_id` (`create_piece_item()`): con varios tableros, sin la etiqueta del tablero la única forma de saber cuál se estaba mirando era el Explorer o el Inspector.

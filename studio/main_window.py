@@ -1747,8 +1747,14 @@ class MainWindow(QMainWindow):
 
     def _open_materials_library(self):
         # No project required — same reasoning as _add_scrap_to_inventory:
-        # the catalog (IDE-0041) outlives any single project.
-        dialog = MaterialsLibraryDialog(self, service=self.materials)
+        # the catalog (IDE-0041) outlives any single project. Passing
+        # self.inventory (IDE-0042) lets the dialog show, per catalog
+        # material, how many scraps already on hand match it — informational
+        # only, wired here rather than requested with the user's decision:
+        # neither the solver nor the best-fit distribution consult it.
+        dialog = MaterialsLibraryDialog(
+            self, service=self.materials, scrap_inventory=self.inventory
+        )
         dialog.exec()
 
     def _material_names(self) -> list[str]:

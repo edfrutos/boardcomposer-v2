@@ -45,6 +45,23 @@ def test_open_materials_library_opens_the_dialog(window, monkeypatch):
     assert fake.executed is True
 
 
+def test_open_materials_library_passes_the_scrap_inventory(window, monkeypatch):
+    captured = {}
+
+    class _CapturingDialog:
+        def __init__(self, *args, **kwargs):
+            captured.update(kwargs)
+
+        def exec(self):
+            return QDialog.DialogCode.Accepted
+
+    monkeypatch.setattr("studio.main_window.MaterialsLibraryDialog", _CapturingDialog)
+
+    window._open_materials_library()
+
+    assert captured["scrap_inventory"] is window.inventory
+
+
 def test_add_board_dialog_receives_the_catalog_names(window, monkeypatch):
     window.materials.add("AGL18", "Aglomerado", 18)
     captured = {}
