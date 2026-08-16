@@ -83,6 +83,22 @@ def test_build_stylesheet_themes_the_tab_bar_for_tabified_docks():
     assert DARK.text_muted in dark
 
 
+def test_build_stylesheet_explorer_selection_is_a_plain_accent_not_a_gradient():
+    # Regression: QTreeWidget::item:selected reused the toolbar's 3-stop
+    # accent gradient (blue/teal/amber) as its background — painted into
+    # the narrow branch/icon column of a selected board or piece row in
+    # the Explorer, it read as a stray patch of rainbow color rather than
+    # a normal selection highlight.
+    for scheme, palette in (("light", LIGHT), ("dark", DARK)):
+        stylesheet = build_stylesheet(scheme)
+        start = stylesheet.index("QTreeWidget::item:selected {")
+        end = stylesheet.index("}", start)
+        rule = stylesheet[start:end]
+
+        assert "qlineargradient" not in rule
+        assert palette.accent in rule
+
+
 def test_apply_elevation_attaches_a_drop_shadow(app):
     widget = QLabel()
 

@@ -259,7 +259,7 @@ def build_stylesheet(scheme: str) -> str:
         border-radius: 6px;
     }}
     QTreeWidget::item:selected {{
-        background: {gradient};
+        background: {p.accent};
         color: {p.accent_text};
     }}
     QTextEdit {{
