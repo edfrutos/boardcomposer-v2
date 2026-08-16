@@ -49,6 +49,28 @@ def test_reports_an_update_when_the_latest_release_is_newer():
     assert result.release_url == "https://example.com/v0.3.12"
 
 
+def test_reports_the_dmg_url_when_the_gist_carries_one():
+    payload = {
+        "version": "v0.3.12",
+        "release_url": "https://example.com/v0.3.12",
+        "dmg_url": "https://example.com/BoardComposerStudio-macos.dmg",
+    }
+    with patch("urllib.request.urlopen", side_effect=_fake_urlopen(payload)):
+        result = check_for_update("0.3.11")
+
+    assert result.dmg_url == "https://example.com/BoardComposerStudio-macos.dmg"
+
+
+def test_dmg_url_is_none_when_the_gist_does_not_carry_one():
+    # Older Gist payloads (before DT-0028) only had version/release_url —
+    # the field has to be optional so an out-of-date Gist doesn't crash.
+    payload = {"version": "v0.3.12", "release_url": "https://example.com/v0.3.12"}
+    with patch("urllib.request.urlopen", side_effect=_fake_urlopen(payload)):
+        result = check_for_update("0.3.11")
+
+    assert result.dmg_url is None
+
+
 def test_reports_no_update_when_already_on_the_latest_release():
     payload = {"version": "v0.3.11", "release_url": "https://example.com/v0.3.11"}
     with patch("urllib.request.urlopen", side_effect=_fake_urlopen(payload)):

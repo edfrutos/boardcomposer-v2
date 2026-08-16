@@ -4,7 +4,7 @@
 
 **Código:** DOC-999
 **Estado:** En revisión
-**Última revisión:** 03/08/2026
+**Última revisión:** 16/08/2026
 
 ---
 
@@ -62,6 +62,23 @@ Idea planteada por el usuario el 03/08/2026, todavía sin acotar: aprovechar res
 3. Encaja de forma natural con el sistema de plugins ya existente (`IDE-0008`) como grupo de entry point nuevo (p. ej. `boardcomposer.container_templates`) en vez de vivir en el Core — mantiene el Core sin conocimiento de "qué es un cajón", igual que ya hace con generadores/estrategias.
 
 **Consecución.** Acotada con el usuario el 03/08/2026: caja simple, unión a tope, sin divisores, como diálogo en Studio (no plugin, sin casos de uso externos todavía) — dejando el registro de tipos abierto para ampliar después sin rediseñar el patrón. **Promovida a `IDE-0028`** (`docs/masterplan/DOC-004-Backlog.md`).
+
+---
+
+## Auto-actualización de BoardComposer Studio
+
+Preguntado por el usuario el 14/08/2026: ¿"Buscar actualizaciones…" (`IDE-0032`) instala la actualización automáticamente? No — nunca lo ha hecho, por diseño: `studio/update_check.py::check_for_update()` solo compara la versión instalada contra la publicada en un Gist público (`DT-0025`) y `MainWindow._check_for_updates()` muestra un `QMessageBox` con un enlace a la página de la release en GitHub. Descargar el `.dmg` y sustituir la app sigue siendo manual, siempre lo fue.
+
+**Por qué no se construyó ya (razones reales, no solo falta de tiempo):**
+
+1. Un `.app` de macOS que se reemplaza a sí mismo tiene que seguir pasando Gatekeeper después de actualizarse — la firma y notarización (`DEC-0017`, `docs/masterplan/DOC-006-DeudaTecnica.md`) cubren hoy el `.dmg` que se descarga una vez, no un binario que se sobrescribe en caliente. Un mecanismo de auto-actualización mal hecho puede dejar la app sin firma válida tras el primer update.
+2. El repositorio es privado (`DT-0025`): el propio "Buscar actualizaciones" tuvo que dejar de usar la API de Releases de GitHub porque devuelve `404` sin autenticación. Descargar el asset real (el `.dmg`, no solo el número de versión) exige credenciales — el mismo problema de fondo que llevó al Gist público como solución mínima para lo que sí se construyó.
+3. Nadie lo ha pedido hasta ahora — sin caso de uso real detrás, cualquier alcance sería una suposición.
+
+**Candidatas, de menor a mayor alcance:**
+
+- **Abrir el `.dmg` descargado automáticamente** tras avisar de que hay actualización — reduce un paso (clic en el enlace → descarga → abrir), pero sigue exigiendo que el usuario arrastre la app a Aplicaciones a mano. **Acotada con el usuario el 16/08/2026 y promovida a `IDE-0043`** (`DEC-0021`, `docs/masterplan/DOC-004-Backlog.md`) — la duda sobre acceso sin auth a los assets de una release se resolvió negativa para el repo privado (`404`, igual que `DT-0025`), así que el `.dmg` pasó a publicarse también en un segundo repo público sin código (`edfrutos/boardcomposer-releases`).
+- **Descarga silenciosa + instalación con reinicio de la app** (patrón Sparkle, el framework estándar de auto-actualización en macOS): la app se sustituye a sí misma y se reinicia en la versión nueva. Mayor alcance con diferencia — requeriría integrar Sparkle (o un mecanismo equivalente) en el empaquetado de Nuitka, firmar los updates con una clave de actualización separada de la firma de Apple. Sin promover — sin caso de uso más allá del ya cubierto por `IDE-0043`.
 
 ---
 

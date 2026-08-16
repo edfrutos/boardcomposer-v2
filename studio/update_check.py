@@ -1,10 +1,9 @@
 """Checks for a newer BoardComposer Studio release (IDE-0032).
 
 Qt-free on purpose, same split as studio/panels/: this only figures out
-*whether* an update exists, MainWindow decides how to show it. Never
-downloads or installs anything — just points at the release page and lets
-the user take it from there, so this doesn't need to get into
-signing/notarization territory for a self-updater.
+*whether* an update exists, MainWindow decides how to show it (and,
+since the download itself is a separate concern, studio/update_installer.py
+decides how to fetch the .dmg this points at).
 
 Points at a public Gist (`version.json`), not the GitHub Releases API
 (DT-0025): the repo itself is private, so an unauthenticated request to
@@ -12,10 +11,15 @@ Points at a public Gist (`version.json`), not the GitHub Releases API
 403 for a private resource, specifically so an outsider can't even tell
 it exists. Embedding a token in a binary anyone can download and
 disassemble isn't an acceptable fix, so instead a single small public
-file carries just the version number and the release page's URL —
-nothing about the private repo's contents. The gist's own history stays
-as a changelog of past "latest version" values, which is fine to be
-public even though the code behind it isn't.
+file carries the version number, the release page's URL, and (DT-0028)
+the direct download URL of the .dmg — nothing about the private repo's
+contents. `dmg_url` points at a *second*, equally public repo
+(edfrutos/boardcomposer-releases) that holds nothing but the binaries:
+release assets of a private repo require authentication to download
+(same 404-for-privacy behavior as the Releases API above), so the .dmg
+itself has to live somewhere public too, separate from the source. The
+gist's own history stays as a changelog of past "latest version"
+values, which is fine to be public even though the code behind it isn't.
 """
 
 from __future__ import annotations
@@ -51,6 +55,7 @@ class UpdateCheckResult:
     current_version: str
     latest_version: str | None = None
     release_url: str | None = None
+    dmg_url: str | None = None
     error: str | None = None
 
 
@@ -107,4 +112,5 @@ def check_for_update(
         current_version=current_version,
         latest_version=latest_version,
         release_url=payload.get("release_url"),
+        dmg_url=payload.get("dmg_url"),
     )

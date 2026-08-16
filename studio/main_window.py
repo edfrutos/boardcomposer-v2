@@ -3,6 +3,7 @@
 import dataclasses
 import os
 import pathlib
+import subprocess
 import sys
 import uuid
 
@@ -21,6 +22,7 @@ from PySide6.QtWidgets import (
     QMenu,
     QMenuBar,
     QMessageBox,
+    QProgressDialog,
     QStatusBar,
     QTabWidget,
     QTextEdit,
@@ -109,7 +111,8 @@ from studio.commands import (
     SetKerfCommand,
     UnplacePieceCommand,
 )
-from studio.update_check import check_for_update
+from studio.update_check import UpdateCheckResult, check_for_update
+from studio.update_installer import DownloadError, download_dmg, open_in_finder
 
 RESERVED_PANEL_NAMES = {"Explorer", "Inspector", "Timeline", "Comparador", "Asistente"}
 
@@ -434,7 +437,15 @@ class MainWindow(QMainWindow):
             )
             return
 
-        if result.update_available:
+        if not result.update_available:
+            QMessageBox.information(
+                self,
+                "Buscar actualizaciones",
+                f"Ya tienes la última versión ({result.current_version}).",
+            )
+            return
+
+        if not result.dmg_url:
             QMessageBox.information(
                 self,
                 "Buscar actualizaciones",
@@ -443,11 +454,65 @@ class MainWindow(QMainWindow):
             )
             return
 
-        QMessageBox.information(
+        self._offer_to_download_update(result)
+
+    def _offer_to_download_update(self, result: UpdateCheckResult):
+        choice = QMessageBox.question(
             self,
             "Buscar actualizaciones",
-            f"Ya tienes la última versión ({result.current_version}).",
+            f"Hay una versión nueva disponible: {result.latest_version} "
+            f"(tienes {result.current_version}).\n\n"
+            "¿Descargar la actualización ahora? Al terminar se abrirá el "
+            "instalador — arrastrar la app a Aplicaciones sigue siendo un "
+            "paso manual.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.Yes,
         )
+        if choice != QMessageBox.StandardButton.Yes:
+            return
+
+        progress = QProgressDialog("Descargando actualización…", "Cancelar", 0, 0, self)
+        progress.setWindowModality(Qt.WindowModality.WindowModal)
+        progress.setMinimumDuration(0)
+        progress.setAutoClose(False)
+        progress.show()
+
+        cancelled = False
+
+        def _cancel():
+            nonlocal cancelled
+            cancelled = True
+
+        progress.canceled.connect(_cancel)
+
+        def _on_progress(bytes_read: int, total_bytes: int):
+            progress.setMaximum(total_bytes if total_bytes else 0)
+            progress.setValue(bytes_read)
+            QApplication.processEvents()
+
+        try:
+            dmg_path = download_dmg(
+                result.dmg_url,
+                pathlib.Path.home() / "Downloads",
+                progress_callback=_on_progress,
+                should_cancel=lambda: cancelled,
+            )
+        except DownloadError as error:
+            progress.close()
+            QMessageBox.warning(self, "Buscar actualizaciones", str(error))
+            return
+
+        progress.close()
+
+        try:
+            open_in_finder(dmg_path)
+        except subprocess.CalledProcessError as error:
+            QMessageBox.warning(
+                self,
+                "Buscar actualizaciones",
+                f"La actualización se descargó en {dmg_path}, pero no se "
+                f"pudo abrir automáticamente.\n\n{error}",
+            )
 
     def _open_preferences(self):
         settings = QSettings()

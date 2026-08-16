@@ -130,3 +130,37 @@ jobs:
             gh release create "${{ github.ref_name }}" "${assets[@]}" \
               --repo "${{ github.repository }}" --title "${{ github.ref_name }}" --generate-notes
           fi
+
+      # boardcomposer-v2 is private, so its own release assets 404 for an
+      # unauthenticated request (DT-0025) — "Buscar actualizaciones" (IDE-0032)
+      # can point at the version, but the .dmg itself has to live somewhere
+      # public too. edfrutos/boardcomposer-releases holds nothing but
+      # binaries, no source, so this doesn't expose anything the private
+      # repo doesn't already choose to publish as a signed .dmg (DT-0028).
+      - name: Publish .dmg to the public releases repo
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::notice::Sin RELEASES_REPO_TOKEN: el .dmg no se publica en boardcomposer-releases, solo en este repo privado."
+            exit 0
+          fi
+
+          if gh release view "${{ github.ref_name }}" --repo edfrutos/boardcomposer-releases >/dev/null 2>&1; then
+            gh release upload "${{ github.ref_name }}" studio/dist/BoardComposerStudio-macos.dmg \
+              --repo edfrutos/boardcomposer-releases --clobber
+          else
+            gh release create "${{ github.ref_name }}" studio/dist/BoardComposerStudio-macos.dmg \
+              --repo edfrutos/boardcomposer-releases --title "${{ github.ref_name }}" --generate-notes
+          fi
+
+      # Closes DT-0028: the Gist studio/update_check.py reads used to be a
+      # manual step in the release checklist, and got forgotten for two
+      # releases in a row (v0.3.23, v0.3.24) with no error to notice it by.
+      - name: Update the public version Gist
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_REPO_TOKEN }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python3 scripts/update_version_gist.py

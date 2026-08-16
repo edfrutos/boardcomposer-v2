@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 08/08/2026
+**Última revisión:** 16/08/2026
 
 ---
 
@@ -111,6 +111,72 @@ Observaciones:
 | IDE-0040 | Menú contextual (clic derecho) en el lienzo: editar/eliminar pieza o tablero | 🟢 | P2 |
 | IDE-0041 | Biblioteca de materiales del taller (catálogo CSV importable/exportable) | 🟢 | P2 |
 | IDE-0042 | Enlace de consulta entre la biblioteca de materiales y el inventario de retales | 🟢 | P3 |
+| IDE-0043 | Descargar y abrir el `.dmg` de actualización desde "Buscar actualizaciones" | 🟢 | P2 |
+
+---
+
+## IDE-0043 — Descargar y abrir el `.dmg` de actualización desde "Buscar actualizaciones"
+
+**Estado:** 🟢 Completada, pendiente de la próxima release (`v0.3.24` sigue
+siendo la última publicada). Pedido por el usuario el 16/08/2026: tras
+confirmar que `v0.3.24` estaba disponible (`DT-0028`), esperaba que
+"Buscar actualizaciones" descargara el `.dmg` y, con su autorización,
+lo autoinstalara — no era lo que había, nunca lo fue (`DOC-999-Ideas.md`,
+"Auto-actualización de BoardComposer Studio").
+
+**Decisiones de alcance, resueltas con el usuario:**
+
+1. De las dos candidatas de `DOC-999-Ideas.md`, se construye la de menor
+   alcance: **descargar el `.dmg` y abrirlo** (Finder monta la imagen,
+   como un doble clic), no la instalación completa estilo Sparkle — la
+   app sigue sin sustituirse a sí misma ni reiniciarse sola; arrastrar a
+   Aplicaciones sigue siendo manual. Ver `DEC-0021`.
+2. Bloqueo real encontrado al acotar: los assets de una release de un
+   repo **privado** exigen autenticación para descargarse (`404`
+   sin ella, mismo patrón que `DT-0025` para la API de Releases) — el
+   Gist público resuelve *saber* la versión, pero no sirve para
+   distribuir el binario en sí. Resuelto creando un segundo repo,
+   público y sin código, **`edfrutos/boardcomposer-releases`**, que solo
+   aloja los `.dmg` de cada release — el repo privado (con
+   `billing.py`/`stripe_billing.py`) no se toca. Ver `DEC-0021`.
+
+**Alcance:**
+
+- `studio/update_installer.py` (nuevo, sin Qt, mismo patrón de separación
+  que `update_check.py`): `download_dmg()` — descarga a un fichero
+  `.part` con progreso por `progress_callback` y cancelación cooperativa
+  vía `should_cancel`, renombra al terminar; `open_in_finder()` — `open`
+  sobre el `.dmg` descargado.
+- `studio/update_check.py`: `UpdateCheckResult` gana el campo opcional
+  `dmg_url`, leído del Gist. Si el Gist no lo trae (payload antiguo),
+  `dmg_url` es `None` y el flujo cae al comportamiento previo (enlace a
+  la página de release, sin descarga).
+- `studio/main_window.py::_check_for_updates()`: si hay `dmg_url`, pide
+  confirmación (`QMessageBox.question`) antes de nada; si el usuario
+  acepta, `QProgressDialog` (cancelable) muestra el progreso mientras la
+  descarga corre en el hilo de UI con `QApplication.processEvents()` en
+  cada trozo — mismo patrón síncrono que ya usa el Asistente IA, sin
+  introducir `QThread` nuevo en la base de código. Al terminar, abre el
+  `.dmg`; un fallo de descarga o de apertura muestra `QMessageBox.warning`
+  en vez de romper.
+- `.github/workflows/package-studio.yml`: dos pasos nuevos tras publicar
+  el `.dmg` en el repo privado — lo sube también a
+  `edfrutos/boardcomposer-releases` (mismo tag) y actualiza el Gist
+  (`scripts/update_version_gist.py`) con `version`/`release_url`/
+  `dmg_url`, usando el secret `RELEASES_REPO_TOKEN` (fine-grained,
+  alcance mínimo: solo escritura sobre `boardcomposer-releases` +
+  Gists). Cierra `DT-0028` de raíz — el paso manual que se olvidó dos
+  releases seguidas deja de existir.
+- Mitigación aplicada a mano el mismo día para `v0.3.24` (no esperar a
+  `v0.3.25` para que el usuario pudiera probarlo): `.dmg` subido al
+  repo público y Gist actualizado con `dmg_url`, verificado con
+  `check_for_update("0.3.23")` devolviendo `dmg_url` real y con la
+  descarga pública comprobada sin autenticación (`302` a una URL firmada
+  de S3).
+
+**Fuera de alcance:** instalación completamente automática (patrón
+Sparkle: la app se sustituye a sí misma y se reinicia sola) — mayor
+alcance con diferencia, sigue sin acotar en `DOC-999-Ideas.md`.
 
 ---
 
