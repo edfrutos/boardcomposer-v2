@@ -53,3 +53,8 @@ studio/deployment/
 
 # BoardComposer Studio project files: user data, not source code.
 *.bcstudio.json
+
+# CSVs the user drops in studio/ to test import (retales, catálogo de
+# materiales, etc.) — personal data, not sample/source data (that lives
+# in data/samples/).
+studio/*.csv
