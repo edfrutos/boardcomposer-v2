@@ -104,7 +104,9 @@ def test_declining_the_prompt_never_calls_download(window, monkeypatch):
     assert download_calls == []
 
 
-def test_confirming_the_prompt_downloads_and_opens_the_dmg(window, monkeypatch, tmp_path):
+def test_confirming_the_prompt_downloads_and_opens_the_dmg(
+    window, monkeypatch, tmp_path
+):
     monkeypatch.setattr(
         "studio.main_window.check_for_update",
         lambda current_version: _update_result_with_dmg(),  # noqa: ARG005
@@ -119,7 +121,9 @@ def test_confirming_the_prompt_downloads_and_opens_the_dmg(window, monkeypatch, 
     dmg_path = tmp_path / "BoardComposerStudio-macos.dmg"
     download_calls = []
 
-    def _fake_download_dmg(url, dest_dir, *, progress_callback=None, should_cancel=None):
+    def _fake_download_dmg(
+        url, dest_dir, *, progress_callback=None, should_cancel=None
+    ):
         download_calls.append((url, dest_dir))
         if progress_callback is not None:
             progress_callback(100, 100)
@@ -134,7 +138,10 @@ def test_confirming_the_prompt_downloads_and_opens_the_dmg(window, monkeypatch, 
     window._check_for_updates()
 
     assert len(download_calls) == 1
-    assert download_calls[0][0] == "https://example.com/releases/BoardComposerStudio-macos.dmg"
+    assert (
+        download_calls[0][0]
+        == "https://example.com/releases/BoardComposerStudio-macos.dmg"
+    )
     assert open_calls == [dmg_path]
 
 
@@ -180,9 +187,7 @@ def test_open_failure_after_a_successful_download_shows_a_warning(
     monkeypatch.setattr(QProgressDialog, "close", lambda self: None)
 
     dmg_path = tmp_path / "BoardComposerStudio-macos.dmg"
-    monkeypatch.setattr(
-        "studio.main_window.download_dmg", lambda *a, **k: dmg_path
-    )
+    monkeypatch.setattr("studio.main_window.download_dmg", lambda *a, **k: dmg_path)
 
     def _raise(path):  # noqa: ARG001
         raise subprocess.CalledProcessError(1, ["open"])
