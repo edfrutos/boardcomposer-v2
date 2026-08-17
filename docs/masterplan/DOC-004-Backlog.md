@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 16/08/2026
+**Última revisión:** 17/08/2026
 
 ---
 
@@ -117,12 +117,16 @@ Observaciones:
 
 ## IDE-0043 — Descargar y abrir el `.dmg` de actualización desde "Buscar actualizaciones"
 
-**Estado:** 🟢 Completada, pendiente de la próxima release (`v0.3.24` sigue
-siendo la última publicada). Pedido por el usuario el 16/08/2026: tras
+**Estado:** 🟢 Completada en `v0.3.25`. Pedido por el usuario el 16/08/2026: tras
 confirmar que `v0.3.24` estaba disponible (`DT-0028`), esperaba que
 "Buscar actualizaciones" descargara el `.dmg` y, con su autorización,
 lo autoinstalara — no era lo que había, nunca lo fue (`DOC-999-Ideas.md`,
 "Auto-actualización de BoardComposer Studio").
+
+**Confirmado (17/08/2026):** el usuario instaló `v0.3.25` a mano (última vez) y
+confirmó que el flujo funciona en real — sin más detalle porque, una vez en la
+última versión, "Buscar actualizaciones" ya no tiene una versión más nueva
+contra la que probar la descarga.
 
 **Decisiones de alcance, resueltas con el usuario:**
 
