@@ -1,5 +1,21 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.25 - 2026-08-17
+
+### Añadido
+
+- "Buscar actualizaciones" descarga y abre el `.dmg` de la nueva versión con tu autorización (`IDE-0043`): antes solo mostraba un enlace a la página de la release. Ahora, al detectar una versión nueva, pide confirmación, descarga el `.dmg` con una barra de progreso cancelable y lo abre en Finder al terminar — arrastrar la app a Aplicaciones sigue siendo manual. El `.dmg` se publica también en el repo público `edfrutos/boardcomposer-releases` (sin código, solo binarios) para que la descarga funcione sin autenticación desde un repo privado.
+
+### Arreglado
+
+- La selección de un elemento en el Explorer (tablero o pieza) usaba el degradado de 3 colores de la toolbar como fondo, en vez de un color de acento plano — se veía como una mancha de color fuera de lugar en la columna estrecha de rama/icono.
+
+### Interno
+
+- `package-studio.yml` publica el `.dmg` de cada release también en `boardcomposer-releases` y actualiza automáticamente el Gist público de versión (`scripts/update_version_gist.py`) — cierra `DT-0028`, el paso manual que se había olvidado dos releases seguidas.
+
+---
+
 ## 0.3.24 - 2026-08-14
 
 ### Añadido
