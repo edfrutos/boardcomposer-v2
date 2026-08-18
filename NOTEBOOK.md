@@ -173,3 +173,13 @@ Construido como `IDE-0043`: `studio/update_installer.py` (nuevo, sin Qt, mismo p
 Verificado en vivo el mismo día, sin esperar a que este release lo empaquetara: `.dmg` de `v0.3.24` subido a mano al repo público con el token real, Gist actualizado, y `check_for_update("0.3.23")` devolviendo el `dmg_url` real con descarga pública confirmada sin autenticación (`302` a una URL firmada de S3).
 
 1149 tests en verde (13 nuevos sobre `v0.3.24`).
+
+## 2026-08-18 - Release v0.3.26
+
+El usuario probó `v0.3.25` en real y confirmó que el flujo de auto-actualización funciona (sin más detalle posible: una vez en la última versión, no hay contra qué probar la descarga). Con eso cerrado, preguntó abiertamente qué más podría dejar la aplicación con "servicios más potentes" — no un bug ni una petición concreta, una invitación a proponer.
+
+De las dos candidatas propuestas (presupuesto automático desde la biblioteca de materiales, o priorización de retales en el solver), el usuario eligió retomar la segunda — la que `DEC-0019` (03/08/2026) había dejado deliberadamente sin acotar como "posible ampliación futura, si el uso real lo pide". Acotado con el usuario antes de programar, mismo patrón que el resto del proyecto: descartó que el solver decida solo qué retal usar (`DEC-0022`) — prefiere seguir eligiendo él, pero en el momento justo, no en un menú aparte del que hay que acordarse.
+
+Construido como `IDE-0044`: "Usar retal del inventario…" desaparece como entrada de menú independiente; su selector (`UseScrapDialog`) gana un botón "Tablero nuevo…" y pasa a abrirse **desde** "Añadir tablero…" cuando el inventario tiene algo disponible — un único diálogo, no un selector previo seguido de otro. `MainWindow._add_board()` pasa de "abrir BoardDialog" a orquestador: con inventario vacío no cambia nada; con inventario disponible, distingue tres salidas del diálogo (retal elegido → `_apply_scrap_as_board()`, nueva; "Tablero nuevo…" pulsado → cae al `BoardDialog` de siempre, ahora `_add_new_board()`; cancelado → no hace nada). Sin tocar `LayoutService` ni el solver en absoluto — la decisión sigue siendo 100% manual, solo mejor situada.
+
+1153 tests en verde (4 nuevos sobre `v0.3.25`).

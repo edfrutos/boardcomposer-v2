@@ -1,5 +1,13 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.26 - 2026-08-18
+
+### Añadido
+
+- "Añadir tablero…" ofrece ahora los retales disponibles del inventario como alternativa a un tablero nuevo (`IDE-0044`): si hay alguno, se muestran todos (sin filtrar por material) en el mismo diálogo, con un botón "Tablero nuevo…" para seguir el camino de siempre. Sustituye a la entrada de menú separada "Usar retal del inventario…", que desaparece. Elección explícita del usuario en cada caso — el solver no prioriza el inventario por su cuenta.
+
+---
+
 ## 0.3.25 - 2026-08-17
 
 ### Añadido
