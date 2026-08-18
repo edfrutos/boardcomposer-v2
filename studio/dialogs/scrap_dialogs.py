@@ -100,9 +100,14 @@ _HEADERS = ["Id", "Largo (mm)", "Ancho (mm)", "Grosor (mm)", "Material", "Proced
 class UseScrapDialog(QDialog):
     def __init__(self, parent=None, *, scraps: list[ScrapRecord]):
         super().__init__(parent)
-        self.setWindowTitle("Usar retal del inventario")
+        self.setWindowTitle("Añadir tablero")
         self.resize(640, 360)
         self._scraps = scraps
+        # Set by the "Tablero nuevo…" button (IDE-0044): the dialog still
+        # rejects in that case (nothing was selected), but the caller needs
+        # to tell "cancelled outright" apart from "wants BoardDialog
+        # instead" — a plain attribute is simpler than a custom result code.
+        self.new_board_requested = False
 
         self.table = QTableWidget(len(scraps), len(_HEADERS))
         self.table.setHorizontalHeaderLabels(_HEADERS)
@@ -143,6 +148,10 @@ class UseScrapDialog(QDialog):
         )
         buttons.accepted.connect(self._try_accept)
         buttons.rejected.connect(self.reject)
+        new_board_button = buttons.addButton(
+            "Tablero nuevo…", QDialogButtonBox.ButtonRole.ActionRole
+        )
+        new_board_button.clicked.connect(self._request_new_board)
 
         layout = QVBoxLayout(self)
         layout.addWidget(self.table)
@@ -156,6 +165,10 @@ class UseScrapDialog(QDialog):
             return
 
         self.accept()
+
+    def _request_new_board(self) -> None:
+        self.new_board_requested = True
+        self.reject()
 
     def selected_scrap(self) -> ScrapRecord:
         return self._scraps[self.table.currentRow()]

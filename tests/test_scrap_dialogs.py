@@ -70,3 +70,22 @@ def test_use_scrap_dialog_with_no_scraps_rejects_accept():
 
     assert dialog.result() == 0
     assert "Selecciona" in dialog.error_label.text()
+
+
+def test_use_scrap_dialog_defaults_to_no_new_board_requested():
+    _app()
+    scraps = [ScrapRecord("R-001", 800, 400, 19, "Roble", "Mueble X", "2026-08-09")]
+    dialog = UseScrapDialog(scraps=scraps)
+
+    assert dialog.new_board_requested is False
+
+
+def test_use_scrap_dialog_new_board_button_rejects_and_sets_the_flag():
+    _app()
+    scraps = [ScrapRecord("R-001", 800, 400, 19, "Roble", "Mueble X", "2026-08-09")]
+    dialog = UseScrapDialog(scraps=scraps)
+
+    dialog._request_new_board()
+
+    assert dialog.new_board_requested is True
+    assert dialog.result() == 0

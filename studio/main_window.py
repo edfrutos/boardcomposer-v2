@@ -268,9 +268,6 @@ class MainWindow(QMainWindow):
         self._actions["add_scrap"] = QAction("Añadir retal al inventario…", self)
         menus["Proyecto"].addAction(self._actions["add_scrap"])
         self._actions["add_scrap"].triggered.connect(self._add_scrap_to_inventory)
-        self._actions["use_scrap"] = QAction("Usar retal del inventario…", self)
-        menus["Proyecto"].addAction(self._actions["use_scrap"])
-        self._actions["use_scrap"].triggered.connect(self._use_scrap_from_inventory)
         self._actions["materials_library"] = QAction("Biblioteca de materiales…", self)
         menus["Proyecto"].addAction(self._actions["materials_library"])
         self._actions["materials_library"].triggered.connect(
@@ -1700,6 +1697,62 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(f"Tablero '{board.board_id}' eliminado.", 3000)
 
     def _add_board(self):
+        # Entry point for "Añadir tablero…" (IDE-0044): if the scrap
+        # inventory has anything available, offer it as an alternative to a
+        # new board before falling through to the plain BoardDialog flow —
+        # one dialog, not a chooser-then-dialog double prompt. UseScrapDialog
+        # tri-states: accepted (a scrap was picked), rejected with
+        # new_board_requested (its own "Tablero nuevo…" button), or rejected
+        # outright (Cancel) — the last case ends the whole action here.
+        project = self.services.projects.current_project
+        if project is None:
+            return
+
+        scraps = self.inventory.list_available()
+        if scraps:
+            dialog = UseScrapDialog(self, scraps=scraps)
+            if dialog.exec() == QDialog.DialogCode.Accepted:
+                self._apply_scrap_as_board(dialog.selected_scrap())
+                return
+            if not dialog.new_board_requested:
+                return
+
+        self._add_new_board()
+
+    def _apply_scrap_as_board(self, scrap):
+        project = self.services.projects.current_project
+        if any(board.board_id == scrap.scrap_id for board in project.boards):
+            self.statusBar().showMessage(
+                f"Ya existe un tablero con id '{scrap.scrap_id}' en este proyecto.",
+                5000,
+            )
+            return
+
+        board = StudioBoard(
+            scrap.scrap_id,
+            scrap.length_mm,
+            scrap.width_mm,
+            scrap.material,
+            scrap.thickness_mm,
+        )
+        command = AddBoardCommand(self.services, board)
+        self._execute(command)
+        self.services.projects.mark_modified()
+        # Consumed outside the undo history on purpose (IDE-0039): the
+        # inventory is a workshop resource shared across unrelated
+        # projects, not project state — undoing the board add does not put
+        # the scrap back.
+        self.inventory.consume(scrap.scrap_id)
+
+        self.workspace.set_active_board(board.board_id)
+        self._reload_explorer()
+        self._update_window_title()
+        self._update_undo_redo()
+        self.statusBar().showMessage(
+            f"Retal '{scrap.scrap_id}' añadido como tablero '{board.board_id}'.", 3000
+        )
+
+    def _add_new_board(self):
         project = self.services.projects.current_project
         if project is None:
             return
@@ -1762,53 +1815,6 @@ class MainWindow(QMainWindow):
             return
 
         self.statusBar().showMessage(f"Retal '{scrap_id}' añadido al inventario.", 3000)
-
-    def _use_scrap_from_inventory(self):
-        project = self.services.projects.current_project
-        if project is None:
-            self.statusBar().showMessage("Añade primero un proyecto.", 5000)
-            return
-
-        scraps = self.inventory.list_available()
-        if not scraps:
-            self.statusBar().showMessage("El inventario de retales está vacío.", 5000)
-            return
-
-        dialog = UseScrapDialog(self, scraps=scraps)
-        if dialog.exec() != QDialog.DialogCode.Accepted:
-            return
-
-        scrap = dialog.selected_scrap()
-        if any(board.board_id == scrap.scrap_id for board in project.boards):
-            self.statusBar().showMessage(
-                f"Ya existe un tablero con id '{scrap.scrap_id}' en este proyecto.",
-                5000,
-            )
-            return
-
-        board = StudioBoard(
-            scrap.scrap_id,
-            scrap.length_mm,
-            scrap.width_mm,
-            scrap.material,
-            scrap.thickness_mm,
-        )
-        command = AddBoardCommand(self.services, board)
-        self._execute(command)
-        self.services.projects.mark_modified()
-        # Consumed outside the undo history on purpose (IDE-0039): the
-        # inventory is a workshop resource shared across unrelated
-        # projects, not project state — undoing the board add does not put
-        # the scrap back.
-        self.inventory.consume(scrap.scrap_id)
-
-        self.workspace.set_active_board(board.board_id)
-        self._reload_explorer()
-        self._update_window_title()
-        self._update_undo_redo()
-        self.statusBar().showMessage(
-            f"Retal '{scrap.scrap_id}' añadido como tablero '{board.board_id}'.", 3000
-        )
 
     def _open_materials_library(self):
         # No project required — same reasoning as _add_scrap_to_inventory:

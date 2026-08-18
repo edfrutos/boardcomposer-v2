@@ -112,6 +112,68 @@ Observaciones:
 | IDE-0041 | Biblioteca de materiales del taller (catálogo CSV importable/exportable) | 🟢 | P2 |
 | IDE-0042 | Enlace de consulta entre la biblioteca de materiales y el inventario de retales | 🟢 | P3 |
 | IDE-0043 | Descargar y abrir el `.dmg` de actualización desde "Buscar actualizaciones" | 🟢 | P2 |
+| IDE-0044 | Elegir un retal del inventario al añadir tablero, en vez de tablero nuevo | 🟢 | P3 |
+
+---
+
+## IDE-0044 — Elegir un retal del inventario al añadir tablero, en vez de tablero nuevo
+
+**Estado:** 🟢 Completada. Pedido por el usuario el 17/08/2026, a raíz de una
+pregunta abierta ("¿algo nuevo que pudiéramos implementar para dejar la
+aplicación con servicios más potentes?") que llevó a retomar la
+priorización de retales que `DEC-0019` había dejado deliberadamente sin
+acotar (Candidata 1 de `DOC-999-Ideas.md`, punto 3: "prioridad de
+asignación").
+
+**Decisiones de alcance, resueltas con el usuario (`DEC-0022`):**
+
+1. **Elección del usuario, no automatismo del solver** — descartado que
+   el solver prefiera agotar el inventario de retales por su cuenta; el
+   usuario prefiere seguir decidiendo él, pero en el momento justo, no
+   teniendo que acordarse de un menú aparte sin relación visible con
+   "Añadir tablero…".
+2. **Punto de disparo: al añadir tablero manualmente**, no al resolver.
+   Se descartó la alternativa de engancharlo a "Resolver"/reparto
+   automático — hubiera exigido que `LayoutService` conociera el
+   inventario, que hoy no toca en absoluto (toda la orquestación de
+   tableros vive en Studio, pura Python, sin este acoplamiento).
+3. **Sin filtrar por material** — se muestran todos los retales
+   disponibles, igual que ya hacía "Usar retal del inventario…": filtrar
+   antes de que el usuario diga qué tablero quiere podría ocultar un
+   retal válido (p. ej. el primer tablero de un proyecto nuevo, que aún
+   no usa ningún material).
+4. **Un único punto de entrada**, no dos separados: "Usar retal del
+   inventario…" desaparece del menú "Proyecto"; su flujo pasa a vivir
+   dentro de "Añadir tablero…".
+
+**Alcance:**
+
+- `studio/dialogs/scrap_dialogs.py` (`UseScrapDialog`): botón nuevo,
+  "Tablero nuevo…" (`QDialogButtonBox.ButtonRole.ActionRole`), que
+  cierra el diálogo (`reject()`) marcando un atributo nuevo,
+  `new_board_requested`, en vez de un código de resultado custom —
+  más simple de leer para quien llama y de simular en tests.
+- `studio/main_window.py`: `_add_board()` pasa a ser el orquestador —
+  si `self.inventory.list_available()` no está vacío, abre
+  `UseScrapDialog` y distingue tres salidas (aceptado →
+  `_apply_scrap_as_board()`, nueva; `new_board_requested` →
+  `_add_new_board()`, el cuerpo de la antigua `_add_board()` sin más
+  cambio que el nombre; cancelado sin más → no hace nada). Con el
+  inventario vacío, va directo a `_add_new_board()` — cero cambio de
+  comportamiento para quien no usa retales. El antiguo
+  `_use_scrap_from_inventory()` desaparece — su lógica de "aceptado"
+  pasa a `_apply_scrap_as_board()` (misma consumición fuera del undo
+  que ya documentaba `IDE-0039`); sus guardas de "sin proyecto"/
+  "inventario vacío" ya las cubre `_add_board()` antes de llegar aquí.
+- Acción de menú "Usar retal del inventario…" eliminada; "Añadir
+  tablero…" (`Ctrl+Alt+B`) queda como único punto de entrada.
+- Documentación: `docs/studio.md` (sección de inventario de retales
+  actualizada, referencia cruzada en la sección de biblioteca de
+  materiales que aún mencionaba el menú antiguo).
+
+**Fuera de alcance:** priorización automática del solver (descartada,
+punto 1); filtrado de retales por material del proyecto (descartado,
+punto 3); cualquier cambio en `LayoutService`/`apply_best_fit_distribution()`.
 
 ---
 
