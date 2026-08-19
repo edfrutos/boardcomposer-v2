@@ -4,7 +4,7 @@
 
 **Código:** DOC-999
 **Estado:** En revisión
-**Última revisión:** 17/08/2026
+**Última revisión:** 18/08/2026
 
 ---
 
@@ -78,7 +78,7 @@ Preguntado por el usuario el 14/08/2026: ¿"Buscar actualizaciones…" (`IDE-003
 **Candidatas, de menor a mayor alcance:**
 
 - **Abrir el `.dmg` descargado automáticamente** tras avisar de que hay actualización — reduce un paso (clic en el enlace → descarga → abrir), pero sigue exigiendo que el usuario arrastre la app a Aplicaciones a mano. **Acotada con el usuario el 16/08/2026 y promovida a `IDE-0043`** (`DEC-0021`, `docs/masterplan/DOC-004-Backlog.md`) — la duda sobre acceso sin auth a los assets de una release se resolvió negativa para el repo privado (`404`, igual que `DT-0025`), así que el `.dmg` pasó a publicarse también en un segundo repo público sin código (`edfrutos/boardcomposer-releases`).
-- **Descarga silenciosa + instalación con reinicio de la app** (patrón Sparkle, el framework estándar de auto-actualización en macOS): la app se sustituye a sí misma y se reinicia en la versión nueva. Mayor alcance con diferencia — requeriría integrar Sparkle (o un mecanismo equivalente) en el empaquetado de Nuitka, firmar los updates con una clave de actualización separada de la firma de Apple. Sin promover — sin caso de uso más allá del ya cubierto por `IDE-0043`.
+- **Descarga silenciosa + instalación con reinicio de la app** (patrón Sparkle, el framework estándar de auto-actualización en macOS): la app se sustituye a sí misma y se reinicia en la versión nueva. Retomada el 18/08/2026 tras sentir en real la fricción de tener que cerrar la app a mano para completar `IDE-0043` — pero Sparkle en sí (el framework, pensado para bundles de Xcode) se descartó por poco realista sobre un `.app` de Nuitka: habría exigido firmar componentes de terceros dentro del bundle, la misma categoría de fragilidad que ya dio tres bugs reales la primera vez que se firmó contra un certificado real (`DT-0011`). **Promovida a `IDE-0045`** (`DEC-0023`, `docs/masterplan/DOC-004-Backlog.md`) como un actualizador propio equivalente en resultado (cierra, sustituye, reabre sin arrastrar nada) pero sin el framework: reutiliza el `.dmg` ya firmado y notarizado que el CI produce, sin clave de firma nueva.
 
 ---
 

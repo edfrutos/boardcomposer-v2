@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 17/08/2026
+**Última revisión:** 18/08/2026
 
 ---
 
@@ -113,6 +113,73 @@ Observaciones:
 | IDE-0042 | Enlace de consulta entre la biblioteca de materiales y el inventario de retales | 🟢 | P3 |
 | IDE-0043 | Descargar y abrir el `.dmg` de actualización desde "Buscar actualizaciones" | 🟢 | P2 |
 | IDE-0044 | Elegir un retal del inventario al añadir tablero, en vez de tablero nuevo | 🟢 | P3 |
+| IDE-0045 | Auto-actualización: sustituir el .app y relanzar, sin arrastrar nada a mano | 🟢 | P2 |
+
+---
+
+## IDE-0045 — Auto-actualización: sustituir el `.app` y relanzar, sin arrastrar nada a mano
+
+**Estado:** 🟢 Completada, pendiente de la próxima release (`v0.3.26` sigue
+siendo la última publicada). Pedido por el usuario el 18/08/2026 tras
+probar `IDE-0043` en real: "Buscar actualizaciones" ya descargaba y
+abría el `.dmg`, pero seguía exigiendo cerrar la app a mano y arrastrar
+el icono a Aplicaciones — la fricción real hizo que el usuario pidiera
+retomar la candidata de mayor alcance que `DEC-0021` había dejado
+descartada por ahora.
+
+**Decisiones de alcance, resueltas con el usuario (`DEC-0023`):**
+
+1. **Sparkle de verdad, descartado** — el framework está pensado para
+   bundles de Xcode; empotrarlo en un `.app` de Nuitka exigiría firmar
+   componentes de terceros dentro del bundle, la misma categoría de
+   fragilidad que ya dio tres bugs reales la primera vez que se firmó
+   contra un certificado real (`DT-0011`). Se construye en su lugar un
+   actualizador propio que consigue el mismo resultado (cerrar,
+   sustituir, reabrir) sin el framework — y sin clave de firma de
+   actualizaciones nueva: el `.dmg` que instala ya está firmado y
+   notarizado por el CI (`IDE-0043`).
+2. **"Copia directa, sin respaldo"** — no se conserva un `.app.bak` para
+   que el usuario pueda volver atrás a mano tras completar la
+   instalación. (La implementación sí hace un rename atómico intermedio
+   dentro del mismo directorio para no dejar nunca la ruta sin ningún
+   `.app` válido si algo falla a mitad — no es el "respaldo" que se
+   descartó, que era conservarlo *después* de completar con éxito.)
+3. **Se instala donde ya esté**, no siempre en `/Applications` — respeta
+   la ubicación real del `.app` en ejecución, sin asumir privilegios que
+   el usuario no tenga ya sobre esa carpeta.
+
+**Alcance:**
+
+- `studio/self_update.py` (nuevo, sin Qt, mismo patrón de separación que
+  `update_check.py`/`update_installer.py`): `running_app_bundle_path()`
+  detecta si se está ejecutando desde un `.app` empaquetado (vía
+  `sys.executable`) — fuera de un bundle (fuente, tests) devuelve
+  `None` y el flujo cae intacto al de `IDE-0043`. `install_update()`
+  monta el `.dmg` (`hdiutil`), copia el `.app` con `ditto` (preserva
+  atributos extendidos de los que depende la firma, a diferencia de
+  `cp -R`/`shutil.copytree`), comprueba la versión copiada contra la
+  esperada, y sustituye con dos renames atómicos dentro del mismo
+  directorio (nunca dos operaciones que puedan dejar la ruta sin ningún
+  `.app`). `relaunch()` abre el `.app` nuevo como proceso independiente
+  (`start_new_session=True`) antes de que el actual termine.
+- `studio/main_window.py`: `closeEvent()` se refactoriza — su lógica de
+  "¿hay cambios sin guardar?" pasa a `_maybe_save_and_confirm_close()`,
+  reutilizada también por `_offer_to_download_update()`. Con
+  `running_app_bundle_path()` disponible, el diálogo de confirmación
+  avisa de que la app se cerrará; tras descargar el `.dmg`, comprueba
+  que se puede cerrar con seguridad (mismo criterio que cerrar la
+  ventana a mano) **antes** de tocar cualquier fichero, instala, y solo
+  entonces relanza y llama a `QApplication.quit()`. Un fallo en
+  `install_update()` no deja el proceso a medias: se avisa y cae de
+  vuelta al `.dmg` ya descargado, abierto a mano (`open_in_finder()`,
+  el mismo camino de `IDE-0043`).
+- Documentación: `docs/studio.md`, `DOC-999-Ideas.md` (candidata
+  promovida).
+
+**Fuera de alcance:** elevación de privilegios para instalar en una
+ruta protegida (si `install_update()` no tiene permiso de escritura,
+avisa y cae al `.dmg` manual, no pide `sudo`); Windows/Linux (Nuitka
+solo empaqueta macOS/arm64, `DT-0011`).
 
 ---
 

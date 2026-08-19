@@ -111,6 +111,12 @@ from studio.commands import (
     SetKerfCommand,
     UnplacePieceCommand,
 )
+from studio.self_update import (
+    SelfUpdateError,
+    install_update,
+    relaunch,
+    running_app_bundle_path,
+)
 from studio.update_check import UpdateCheckResult, check_for_update
 from studio.update_installer import DownloadError, download_dmg, open_in_finder
 
@@ -454,14 +460,32 @@ class MainWindow(QMainWindow):
         self._offer_to_download_update(result)
 
     def _offer_to_download_update(self, result: UpdateCheckResult):
+        # IDE-0045: self-update (replace the running bundle, relaunch) only
+        # makes sense when there IS a running app bundle to replace — from
+        # source/tests, running_app_bundle_path() is None and this falls
+        # back to IDE-0043's original "download and open" flow, unchanged.
+        bundle_path = running_app_bundle_path()
+        if bundle_path is not None:
+            prompt = (
+                f"Hay una versión nueva disponible: {result.latest_version} "
+                f"(tienes {result.current_version}).\n\n"
+                "¿Actualizar ahora? La app se cerrará y se reiniciará sola "
+                "en la versión nueva — si tienes cambios sin guardar, se "
+                "te preguntará primero."
+            )
+        else:
+            prompt = (
+                f"Hay una versión nueva disponible: {result.latest_version} "
+                f"(tienes {result.current_version}).\n\n"
+                "¿Descargar la actualización ahora? Al terminar se abrirá "
+                "el instalador — arrastrar la app a Aplicaciones sigue "
+                "siendo un paso manual."
+            )
+
         choice = QMessageBox.question(
             self,
             "Buscar actualizaciones",
-            f"Hay una versión nueva disponible: {result.latest_version} "
-            f"(tienes {result.current_version}).\n\n"
-            "¿Descargar la actualización ahora? Al terminar se abrirá el "
-            "instalador — arrastrar la app a Aplicaciones sigue siendo un "
-            "paso manual.",
+            prompt,
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.Yes,
         )
@@ -499,17 +523,56 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Buscar actualizaciones", str(error))
             return
 
-        progress.close()
+        if bundle_path is None:
+            progress.close()
+            try:
+                open_in_finder(dmg_path)
+            except subprocess.CalledProcessError as error:
+                QMessageBox.warning(
+                    self,
+                    "Buscar actualizaciones",
+                    f"La actualización se descargó en {dmg_path}, pero no "
+                    f"se pudo abrir automáticamente.\n\n{error}",
+                )
+            return
+
+        # Checked here, not before the download: no point interrupting the
+        # user's work for an update they might cancel or that might fail
+        # to download anyway. This is the same gate closeEvent uses —
+        # replacing the bundle out from under an app with unsaved work
+        # would be a data-loss bug, not just bad UX.
+        if not self._maybe_save_and_confirm_close():
+            progress.close()
+            return
+
+        progress.setLabelText("Instalando actualización…")
+        progress.setCancelButton(None)
+        progress.setMaximum(0)
+        QApplication.processEvents()
 
         try:
-            open_in_finder(dmg_path)
-        except subprocess.CalledProcessError as error:
+            new_bundle = install_update(
+                dmg_path,
+                current_bundle=bundle_path,
+                expected_version=result.latest_version,
+            )
+        except SelfUpdateError as error:
+            progress.close()
             QMessageBox.warning(
                 self,
                 "Buscar actualizaciones",
-                f"La actualización se descargó en {dmg_path}, pero no se "
-                f"pudo abrir automáticamente.\n\n{error}",
+                f"No se pudo instalar la actualización automáticamente.\n\n"
+                f"{error}\n\nSe abrirá el instalador para hacerlo a mano.",
             )
+            try:
+                open_in_finder(dmg_path)
+            except subprocess.CalledProcessError:
+                pass
+            return
+
+        progress.close()
+        relaunch(new_bundle)
+        QApplication.quit()
 
     def _open_preferences(self):
         settings = QSettings()
@@ -1426,9 +1489,19 @@ class MainWindow(QMainWindow):
         self._log_activity(f"Proyecto guardado: {project.name}", category="proyecto")
 
     def closeEvent(self, event: QCloseEvent) -> None:
-        if not self.services.projects.is_modified:
+        if self._maybe_save_and_confirm_close():
             event.accept()
-            return
+        else:
+            event.ignore()
+
+    def _maybe_save_and_confirm_close(self) -> bool:
+        # Shared by closeEvent and the self-update flow (IDE-0045): both
+        # need to know "is it safe to quit right now" before doing
+        # anything that can't be undone — closeEvent before actually
+        # closing the window, self-update before replacing the running
+        # app's files on disk.
+        if not self.services.projects.is_modified:
+            return True
 
         project = self.services.projects.current_project
         name = project.name if project is not None else "el proyecto"
@@ -1444,17 +1517,15 @@ class MainWindow(QMainWindow):
         )
 
         if choice == QMessageBox.StandardButton.Cancel:
-            event.ignore()
-            return
+            return False
 
         if choice == QMessageBox.StandardButton.Save:
             self._save_project()
             if self.services.projects.is_modified:
                 # El usuario canceló el diálogo de guardado, o falló: no cerramos.
-                event.ignore()
-                return
+                return False
 
-        event.accept()
+        return True
 
     def refresh_inspector_for_piece(self, piece_id: str):
         """Refresh inspector panel for the selected piece."""
