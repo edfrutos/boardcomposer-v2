@@ -1,5 +1,11 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.32 - 2026-08-20
+
+Sin cambios de producto. `v0.3.31` rompió el `package-studio.yml` entero: `AGENT_TOOLSDIRECTORY: ${{ runner.temp }}/toolcache` en el `env:` de nivel de job usa el contexto `runner`, que solo es válido dentro de `steps` — el workflow ni llegaba a parsear (cero jobs, el propio "Package Studio" se mostraba como el nombre del fichero). Movido al `env:` del paso `actions/setup-python@v5` en concreto, donde `runner` sí es válido.
+
+---
+
 ## 0.3.31 - 2026-08-20
 
 Sin cambios de producto. Primera ejecución real en el runner autoalojado (`v0.3.30`) falló en `actions/setup-python@v5`: intenta instalar en `/Users/runner` (el usuario de los runners de GitHub), y en este Mac el usuario es otro — `mkdir` fallaba por permisos. Fijado apuntando el toolcache a un directorio propio del runner (`AGENT_TOOLSDIRECTORY`), siempre escribible sea cual sea la cuenta.
