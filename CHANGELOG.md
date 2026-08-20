@@ -1,5 +1,13 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.29 - 2026-08-20
+
+### Arreglado
+
+- `DT-0029`: en la primera prueba real de `IDE-0045`, la app se cerraba y se sustituía a sí misma, pero no se reabría — `relaunch()` pedía abrir la nueva versión mientras el proceso viejo todavía seguía vivo, y macOS podía interpretarlo como "ya está en marcha" y no arrancar nada. Ahora espera a que el proceso anterior termine de verdad antes de relanzar.
+
+---
+
 ## 0.3.28 - 2026-08-20
 
 Release de prueba, sin cambios de producto: solo sube el número de versión para que `v0.3.27` tenga algo que detectar y probar el flujo de auto-actualización en sitio (`IDE-0045`) en real por primera vez.

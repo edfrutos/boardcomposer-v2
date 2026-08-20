@@ -200,3 +200,13 @@ Construido como `IDE-0045`: `studio/self_update.py` monta el `.dmg` (`hdiutil`),
 ## 2026-08-20 - Release v0.3.28
 
 El usuario instaló `v0.3.27` (primera con `IDE-0045`) y pidió probar el auto-update de verdad. Sin nada más pendiente en el backlog en ese momento, esta release es solo el número de versión subido — la única forma de darle a `v0.3.27` algo que detectar y ejercitar el flujo completo en real: descarga, comprobación de cambios sin guardar, sustitución del `.app` en marcha y relanzado, todo sin cerrar nada a mano.
+
+## 2026-08-20 - Release v0.3.29
+
+Primera prueba real de `IDE-0045` (`v0.3.27` → `v0.3.28`), y salió a medias: la app descargó la actualización, se cerró y se sustituyó a sí misma — pero no volvió a abrirse. Dos preguntas de seguimiento acotaron el fallo antes de tocar nada: la sustitución del `.app` sí se había completado ("se instaló"), así que el problema estaba solo en `relaunch()`, no en `install_update()`.
+
+Causa (`DT-0029`): `relaunch()` llamaba a `open <ruta>` **antes** de `QApplication.quit()` — con el proceso viejo todavía vivo en ese mismo `bundle path`, Launch Services de macOS puede tratar la petición como "esta app ya está en marcha" (activar la instancia casi muerta, o no hacer nada) en vez de arrancar una nueva. Exactamente el problema que Sparkle resuelve con un proceso auxiliar separado que espera a que el padre termine de verdad antes de relanzar — este proyecto no tiene ese auxiliar (`IDE-0045` lo descartó por la fragilidad de firmar componentes de terceros en el bundle), así que hizo falta el mismo tipo de espera, pero minimalista: `relaunch()` gana `wait_for_pid`, que en vez de llamar a `open` directamente lanza un `/bin/sh -c` desacoplado sondeando `kill -0 <pid>` hasta que el proceso indicado desaparece de verdad, y solo entonces `open -n` (fuerza una instancia nueva, por si Launch Services sigue confundido sobre un bundle identifier recién liberado). `MainWindow` le pasa `os.getpid()`.
+
+Pendiente de confirmar contra esta release, mismo patrón que `DT-0023`/`DT-0024`/`DT-0027`: un fallo que solo se ve en real, corregido con la mejor hipótesis disponible, a la espera de que el usuario lo pruebe.
+
+1166 tests en verde (1 nuevo sobre `v0.3.27`).
