@@ -1,5 +1,11 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.33 - 2026-08-20
+
+Sin cambios de producto. `actions/setup-python@v5` no funciona de fiar en un runner autoalojado de macOS: sus binarios de Python están compilados con rutas fijas a `/Users/runner/hostedtoolcache`, sin override real posible. Sustituido por un paso que usa el `python3.13` ya instalado en el Mac y crea un venv aislado por ejecución — nada de tocar el Python del sistema, sin depender de un mecanismo pensado para VMs efímeras.
+
+---
+
 ## 0.3.32 - 2026-08-20
 
 Sin cambios de producto. `v0.3.31` rompió el `package-studio.yml` entero: `AGENT_TOOLSDIRECTORY: ${{ runner.temp }}/toolcache` en el `env:` de nivel de job usa el contexto `runner`, que solo es válido dentro de `steps` — el workflow ni llegaba a parsear (cero jobs, el propio "Package Studio" se mostraba como el nombre del fichero). Movido al `env:` del paso `actions/setup-python@v5` en concreto, donde `runner` sí es válido.

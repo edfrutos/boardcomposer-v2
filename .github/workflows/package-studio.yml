@@ -28,19 +28,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        env:
-          # actions/setup-python defaults its install dir to /Users/runner
-          # (the account name on GitHub-hosted macOS runners) — on this
-          # self-hosted one the account is the user's own, so that mkdir
-          # fails with Permission denied. runner.temp is always writable
-          # by whoever the runner actually runs as, hosted or not. The
-          # `runner` context this reads from is only valid at step level,
-          # not in the job's `env:` block above — putting it there broke
-          # the whole workflow's YAML parsing (DT-0031).
-          AGENT_TOOLSDIRECTORY: ${{ runner.temp }}/toolcache
-        with:
-          python-version: "3.13"
+      - name: Set up Python virtual environment
+        run: |
+          # Not actions/setup-python@v5 (DT-0031/DT-0032): its macOS
+          # Python archives are non-relocatable, hardcoded to install
+          # into /Users/runner/hostedtoolcache — no override env var
+          # (AGENT_TOOLSDIRECTORY, RUNNER_TOOL_CACHE) actually works
+          # around that on a real self-hosted Mac, confirmed against
+          # actions/setup-python#792 and #974. A self-hosted runner is
+          # expected to already have its prerequisites installed, unlike
+          # an ephemeral GitHub-hosted one — so this uses whatever
+          # python3.13 is already on this Mac and builds an isolated venv
+          # per run under $RUNNER_TEMP, instead of fighting a tool built
+          # for provisioning fresh VMs. Keeps the machine's own Python
+          # untouched and avoids dependency drift between releases.
+          if ! command -v python3.13 >/dev/null 2>&1; then
+            echo "::error::python3.13 no está instalado en este Mac. Instálalo (p. ej. 'brew install python@3.13') y vuelve a lanzar la release." >&2
+            exit 1
+          fi
+          python3.13 -m venv "$RUNNER_TEMP/venv"
+          echo "$RUNNER_TEMP/venv/bin" >> "$GITHUB_PATH"
 
       - name: Install dependencies
         run: |
