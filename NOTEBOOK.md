@@ -196,3 +196,7 @@ Acotado con el usuario antes de programar (`DEC-0023`), dos decisiones reales:
 Construido como `IDE-0045`: `studio/self_update.py` monta el `.dmg` (`hdiutil`), copia el `.app` con `ditto` (preserva los atributos extendidos de los que depende la firma — `shutil.copytree` no), valida `CFBundleShortVersionString` contra la versión esperada, y sustituye con dos renames atómicos. Instala siempre en la ruta desde la que se ejecuta hoy, nunca fuerza `/Applications` — respeta dónde la tenga cada usuario sin pedir privilegios que no tenga ya. `closeEvent()` se refactorizó para exponer `_maybe_save_and_confirm_close()`, reutilizada por el nuevo flujo: sustituir la app con un proyecto sin guardar sería pérdida de datos real, no solo mala UX, así que la misma comprobación que ya protegía el cierre de la ventana protege ahora la actualización. Fuera de un `.app` empaquetado (fuente, tests), el flujo cae intacto al de `IDE-0043` — nadie que corra desde código pierde nada.
 
 1165 tests en verde (12 nuevos sobre `v0.3.26`).
+
+## 2026-08-20 - Release v0.3.28
+
+El usuario instaló `v0.3.27` (primera con `IDE-0045`) y pidió probar el auto-update de verdad. Sin nada más pendiente en el backlog en ese momento, esta release es solo el número de versión subido — la única forma de darle a `v0.3.27` algo que detectar y ejercitar el flujo completo en real: descarga, comprobación de cambios sin guardar, sustitución del `.app` en marcha y relanzado, todo sin cerrar nada a mano.

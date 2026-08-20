@@ -1,5 +1,11 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.28 - 2026-08-20
+
+Release de prueba, sin cambios de producto: solo sube el número de versión para que `v0.3.27` tenga algo que detectar y probar el flujo de auto-actualización en sitio (`IDE-0045`) en real por primera vez.
+
+---
+
 ## 0.3.27 - 2026-08-20
 
 ### Añadido
