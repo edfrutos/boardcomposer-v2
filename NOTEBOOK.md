@@ -210,3 +210,13 @@ Causa (`DT-0029`): `relaunch()` llamaba a `open <ruta>` **antes** de `QApplicati
 Pendiente de confirmar contra esta release, mismo patrón que `DT-0023`/`DT-0024`/`DT-0027`: un fallo que solo se ve en real, corregido con la mejor hipótesis disponible, a la espera de que el usuario lo pruebe.
 
 1166 tests en verde (1 nuevo sobre `v0.3.27`).
+
+## 2026-08-20 - Release v0.3.30
+
+El tag `v0.3.29` nunca llegó a construirse: el job ni arrancó, "recent account payments have failed or your spending limit needs to be increased" — límite de gasto de GitHub Actions agotado. Runners de macOS en un repo privado cuestan ~10x un minuto de Linux, y con builds de ~60-70 min y varias releases en dos días (una de ellas solo para probar, sin cambio de código), el gasto se disparó rápido.
+
+Tres salidas sobre la mesa: hacer el repo público (Actions gratis e ilimitadas, pero expone `billing.py`/`stripe_billing.py` — justo lo que `DT-0025` decidió no hacer), subir el límite de gasto (sigue constando, no arregla nada de fondo), o un runner autoalojado en el propio Mac del usuario (gratis, repo sigue privado, usa hardware que de todas formas está encendido para instalar cada build a mano). El usuario eligió la tercera.
+
+`package-studio.yml` pasa de `runs-on: macos-latest` a `runs-on: [self-hosted, macOS]`. Un detalle que solo importa en un runner persistente, nunca en uno efímero de GitHub: el paso de firma cambiaba el keychain **por defecto** del sistema y nunca lo restauraba — en una VM que se destruye tras el job da igual, pero en el Mac real del usuario, reutilizado release tras release, iría dejando el keychain por defecto apuntando a una ruta de build y acumulando ficheros sueltos. Arreglado: el keychain temporal pasa a tener un nombre único por ejecución (`$GITHUB_RUN_ID`), y un paso nuevo con `if: always()` restaura el keychain por defecto original y borra el temporal — incluso si el job falla a mitad.
+
+Sin cambios de producto — esta release es solo para que el tag correspondiente lleve ya el workflow corregido; `v0.3.29` (el arreglo real, `DT-0029`) sigue pendiente de confirmar contra un build de verdad, ahora sí posible.

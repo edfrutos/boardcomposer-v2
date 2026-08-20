@@ -1,5 +1,11 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.30 - 2026-08-20
+
+Sin cambios de producto. `package-studio.yml` pasa de `macos-latest` (GitHub-hosted, de pago en un repo privado) a un runner autoalojado en el Mac del usuario, tras agotar el límite de gasto de Actions — el repo sigue privado, sin exponer `billing.py`/`stripe_billing.py`. Añadida también limpieza del keychain temporal al final del job (`if: always()`), necesaria en un runner que persiste entre releases, a diferencia de uno efímero de GitHub.
+
+---
+
 ## 0.3.29 - 2026-08-20
 
 ### Arreglado

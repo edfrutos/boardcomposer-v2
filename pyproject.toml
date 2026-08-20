@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "boardcomposer"
-version = "0.3.29"
+version = "0.3.30"
 requires-python = ">=3.13"
 dependencies = [
     "anthropic",

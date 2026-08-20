@@ -11,7 +11,16 @@ permissions:
 
 jobs:
   package:
-    runs-on: macos-latest
+    # Self-hosted (the user's own Mac), not macos-latest: GitHub-hosted
+    # macOS runners cost ~10x a Linux minute on a private repo, and a
+    # signed+notarized build here runs ~60-70min — that adds up fast with
+    # a release cut every time a fix needs a real end-to-end test. Public
+    # repos get free unlimited Actions minutes instead, but that would
+    # expose billing.py/stripe_billing.py's plan/pricing logic, which
+    # DT-0025 explicitly chose not to do. Self-hosted keeps the repo
+    # private at zero marginal cost, using hardware the user already has
+    # on for every release anyway (installing the .dmg by hand).
+    runs-on: [self-hosted, macOS]
 
     env:
       APP_PATH: studio/dist/BoardComposerStudio.app
@@ -58,24 +67,36 @@ jobs:
           MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
           MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
         run: |
-          # A keychain of its own, with a throwaway password: the runner is
-          # destroyed after the job, and this keeps the certificate out of
-          # the default login keychain.
+          # A keychain of its own, with a throwaway password. On a
+          # GitHub-hosted runner this never mattered (the VM is destroyed
+          # after the job); on the self-hosted runner this project uses
+          # instead (see the runs-on comment above), the machine and its
+          # default keychain persist across every release — so the
+          # original default is saved here and restored in the cleanup
+          # step below, and the build keychain gets a per-run filename
+          # (under $GITHUB_RUN_ID) so two runs can never collide —
+          # leftover-keychain corpses from a previous crashed run don't
+          # block a new one from creating its own.
+          original_default_keychain="$(security default-keychain | tr -d ' "')"
+          echo "ORIGINAL_DEFAULT_KEYCHAIN=$original_default_keychain" >> "$GITHUB_ENV"
+          keychain_path="$RUNNER_TEMP/build-$GITHUB_RUN_ID.keychain-db"
+          echo "BUILD_KEYCHAIN_PATH=$keychain_path" >> "$GITHUB_ENV"
+
           keychain_password="$(uuidgen)"
           echo "$MACOS_CERTIFICATE_P12" | base64 --decode > /tmp/certificate.p12
 
-          security create-keychain -p "$keychain_password" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "$keychain_password" build.keychain
+          security create-keychain -p "$keychain_password" "$keychain_path"
+          security default-keychain -s "$keychain_path"
+          security unlock-keychain -p "$keychain_password" "$keychain_path"
           # Without this the keychain re-locks after 5 minutes and codesign
           # fails partway through a long signing run.
-          security set-keychain-settings -t 3600 -u build.keychain
+          security set-keychain-settings -t 3600 -u "$keychain_path"
 
-          security import /tmp/certificate.p12 -k build.keychain \
+          security import /tmp/certificate.p12 -k "$keychain_path" \
             -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
           # Lets codesign use the key without a UI prompt nobody can answer.
           security set-key-partition-list -S apple-tool:,apple: \
-            -s -k "$keychain_password" build.keychain
+            -s -k "$keychain_password" "$keychain_path"
 
           rm -f /tmp/certificate.p12
 
@@ -87,6 +108,22 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
         run: scripts/sign_and_notarize.sh
+
+      - name: Clean up temporary keychain
+        # Only matters on the self-hosted runner (see above), but harmless
+        # everywhere: if: always() so a failure earlier in the job (a
+        # broken build, a notarization timeout) still restores the
+        # machine's real default keychain instead of leaving it pointed
+        # at a build.keychain that a later run's create-keychain would
+        # then fail to create fresh.
+        if: always() && steps.signing.outputs.available == 'true'
+        run: |
+          if [ -n "${ORIGINAL_DEFAULT_KEYCHAIN:-}" ]; then
+            security default-keychain -s "$ORIGINAL_DEFAULT_KEYCHAIN" || true
+          fi
+          if [ -n "${BUILD_KEYCHAIN_PATH:-}" ]; then
+            security delete-keychain "$BUILD_KEYCHAIN_PATH" || true
+          fi
 
       - name: Report what got shipped
         run: |
