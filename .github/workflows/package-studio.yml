@@ -24,6 +24,12 @@ jobs:
 
     env:
       APP_PATH: studio/dist/BoardComposerStudio.app
+      # actions/setup-python defaults its install dir to /Users/runner
+      # (the account name on GitHub-hosted macOS runners) — on this
+      # self-hosted one the account is the user's own, so that mkdir
+      # fails with Permission denied. runner.temp is always writable by
+      # whoever the runner actually runs as, hosted or not.
+      AGENT_TOOLSDIRECTORY: ${{ runner.temp }}/toolcache
 
     steps:
       - uses: actions/checkout@v4
