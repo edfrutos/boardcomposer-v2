@@ -1,4 +1,5 @@
 import plistlib
+import shlex
 import shutil
 import subprocess
 from pathlib import Path
@@ -154,7 +155,7 @@ def test_install_update_surfaces_a_ditto_failure(tmp_path, monkeypatch):
         assert plistlib.load(file)["CFBundleShortVersionString"] == "0.3.25"
 
 
-def test_relaunch_opens_the_bundle_as_a_detached_process(tmp_path, monkeypatch):
+def test_relaunch_opens_the_bundle_as_a_new_detached_instance(tmp_path, monkeypatch):
     calls = []
     monkeypatch.setattr(
         subprocess,
@@ -166,5 +167,28 @@ def test_relaunch_opens_the_bundle_as_a_detached_process(tmp_path, monkeypatch):
 
     assert len(calls) == 1
     args, kwargs = calls[0]
-    assert args == ["open", str(tmp_path / "BoardComposerStudio.app")]
+    # -n forces a genuinely new instance — without it, Launch Services can
+    # treat this as "activate the (almost dead) already-running one" and
+    # silently do nothing, which is exactly what happened in production.
+    assert args == ["open", "-n", str(tmp_path / "BoardComposerStudio.app")]
+    assert kwargs.get("start_new_session") is True
+
+
+def test_relaunch_waits_for_the_given_pid_to_exit_before_opening(tmp_path, monkeypatch):
+    calls = []
+    monkeypatch.setattr(
+        subprocess,
+        "Popen",
+        lambda args, **kwargs: calls.append((args, kwargs)),
+    )
+    bundle = tmp_path / "BoardComposerStudio.app"
+
+    relaunch(bundle, wait_for_pid=4242)
+
+    assert len(calls) == 1
+    args, kwargs = calls[0]
+    assert args[:2] == ["/bin/sh", "-c"]
+    script = args[2]
+    assert "kill -0 4242" in script
+    assert f"open -n {shlex.quote(str(bundle))}" in script
     assert kwargs.get("start_new_session") is True

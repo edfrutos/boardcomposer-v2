@@ -1,3 +1,4 @@
+import os
 import subprocess
 
 import pytest
@@ -279,7 +280,8 @@ def test_self_update_installs_and_relaunches_when_running_from_a_bundle(
     monkeypatch.setattr("studio.main_window.install_update", _fake_install_update)
     relaunch_calls = []
     monkeypatch.setattr(
-        "studio.main_window.relaunch", lambda path: relaunch_calls.append(path)
+        "studio.main_window.relaunch",
+        lambda path, *, wait_for_pid=None: relaunch_calls.append((path, wait_for_pid)),
     )
     quit_calls = []
     monkeypatch.setattr(
@@ -289,7 +291,11 @@ def test_self_update_installs_and_relaunches_when_running_from_a_bundle(
     window._check_for_updates()
 
     assert install_calls == [(dmg_path, bundle_path, "9.9.9")]
-    assert relaunch_calls == [new_bundle_path]
+    # wait_for_pid has to be this process's own pid — relaunching by path
+    # while this process is still alive can make Launch Services treat it
+    # as "already running" and silently do nothing (confirmed in
+    # production: the file swap completed, but the app never reappeared).
+    assert relaunch_calls == [(new_bundle_path, os.getpid())]
     assert quit_calls == [1]
 
 

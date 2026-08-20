@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 18/08/2026
+**Última revisión:** 20/08/2026
 
 ---
 
@@ -119,8 +119,7 @@ Observaciones:
 
 ## IDE-0045 — Auto-actualización: sustituir el `.app` y relanzar, sin arrastrar nada a mano
 
-**Estado:** 🟢 Completada, pendiente de la próxima release (`v0.3.26` sigue
-siendo la última publicada). Pedido por el usuario el 18/08/2026 tras
+**Estado:** 🟢 Completada en `v0.3.27`. Pedido por el usuario el 18/08/2026 tras
 probar `IDE-0043` en real: "Buscar actualizaciones" ya descargaba y
 abría el `.dmg`, pero seguía exigiendo cerrar la app a mano y arrastrar
 el icono a Aplicaciones — la fricción real hizo que el usuario pidiera
@@ -161,7 +160,8 @@ descartada por ahora.
   esperada, y sustituye con dos renames atómicos dentro del mismo
   directorio (nunca dos operaciones que puedan dejar la ruta sin ningún
   `.app`). `relaunch()` abre el `.app` nuevo como proceso independiente
-  (`start_new_session=True`) antes de que el actual termine.
+  (`start_new_session=True`), esperando primero a que el proceso actual
+  termine de verdad (`DT-0029`, ver más abajo).
 - `studio/main_window.py`: `closeEvent()` se refactoriza — su lógica de
   "¿hay cambios sin guardar?" pasa a `_maybe_save_and_confirm_close()`,
   reutilizada también por `_offer_to_download_update()`. Con
@@ -175,6 +175,16 @@ descartada por ahora.
   el mismo camino de `IDE-0043`).
 - Documentación: `docs/studio.md`, `DOC-999-Ideas.md` (candidata
   promovida).
+
+**Ampliación (20/08/2026, `DT-0029`):** primera prueba real (`v0.3.27` →
+`v0.3.28`) confirmó que la sustitución del `.app` funcionaba pero la app
+no se reabría — `relaunch()` llamaba a `open` mientras el proceso viejo
+seguía vivo en la misma ruta, y Launch Services de macOS puede tratar
+eso como "ya está en marcha" y no arrancar nada. Corregido: `relaunch()`
+gana `wait_for_pid`, lanza un `/bin/sh -c` desacoplado que sondea
+`kill -0 <pid>` hasta que el proceso indicado desaparece de verdad, y
+solo entonces `open -n` (fuerza instancia nueva). Pendiente de confirmar
+en la siguiente release.
 
 **Fuera de alcance:** elevación de privilegios para instalar en una
 ruta protegida (si `install_update()` no tiene permiso de escritura,

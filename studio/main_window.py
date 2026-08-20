@@ -571,7 +571,7 @@ class MainWindow(QMainWindow):
             return
 
         progress.close()
-        relaunch(new_bundle)
+        relaunch(new_bundle, wait_for_pid=os.getpid())
         QApplication.quit()
 
     def _open_preferences(self):

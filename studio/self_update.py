@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import os
 import plistlib
+import shlex
 import shutil
 import subprocess
 import sys
@@ -174,8 +175,28 @@ def install_update(
     return current_bundle
 
 
-def relaunch(bundle: Path) -> None:
+def relaunch(bundle: Path, *, wait_for_pid: int | None = None) -> None:
     """Starts the new bundle as an independent process (detached from this
     one, `start_new_session=True`) so it keeps running after this process
-    exits — the caller quits right after calling this."""
-    subprocess.Popen(["open", str(bundle)], start_new_session=True)
+    exits — the caller quits right after calling this.
+
+    `wait_for_pid`, when given, is this process's own pid: calling `open`
+    for the *same bundle path* while this process is still alive races
+    Launch Services' "is this app already running" check, which can just
+    activate (or no-op on) the almost-dead old instance instead of
+    starting a new one — the launch silently does nothing (confirmed:
+    the file swap itself completes, but the app never reappears). A
+    detached shell polls for that pid to actually disappear before
+    calling `open -n` (force a new instance, in case Launch Services is
+    still confused about a just-vacated bundle identifier), so the
+    launch only ever happens once this process is truly gone.
+    """
+    if wait_for_pid is None:
+        subprocess.Popen(["open", "-n", str(bundle)], start_new_session=True)
+        return
+
+    script = (
+        f"while kill -0 {wait_for_pid} 2>/dev/null; do sleep 0.2; done; "
+        f"open -n {shlex.quote(str(bundle))}"
+    )
+    subprocess.Popen(["/bin/sh", "-c", script], start_new_session=True)
