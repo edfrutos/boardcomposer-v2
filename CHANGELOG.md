@@ -1,5 +1,11 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.34 - 2026-08-20
+
+Sin cambios de producto. La firma fallaba con "unable to build chain to self-signed root" / `errSecInternalComponent` — el certificado intermedio de Apple (Developer ID G2) no estaba donde `codesign` lo buscaba, ni siquiera tras añadirlo al llavero de sesión a mano. Ahora el propio workflow lo descarga e importa dentro del llavero temporal de la build en cada ejecución — autocontenido, sin depender de configuración manual por máquina.
+
+---
+
 ## 0.3.33 - 2026-08-20
 
 Sin cambios de producto. `actions/setup-python@v5` no funciona de fiar en un runner autoalojado de macOS: sus binarios de Python están compilados con rutas fijas a `/Users/runner/hostedtoolcache`, sin override real posible. Sustituido por un paso que usa el `python3.13` ya instalado en el Mac y crea un venv aislado por ejecución — nada de tocar el Python del sistema, sin depender de un mecanismo pensado para VMs efímeras.

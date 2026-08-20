@@ -117,6 +117,20 @@ jobs:
 
           rm -f /tmp/certificate.p12
 
+          # Apple's Developer ID intermediate CA — without it in a keychain
+          # codesign can find, chain-building fails with
+          # "unable to build chain to self-signed root" / errSecInternalComponent
+          # (confirmed on this runner: adding it only to the login keychain
+          # wasn't enough, whatever the runner's search-list state is when
+          # the launchd service runs headless). Importing it straight into
+          # the build keychain sidesteps that entirely — self-contained,
+          # works the same on any future self-hosted runner too, no
+          # per-machine manual cert setup needed.
+          curl -sL -o /tmp/DeveloperIDG2CA.cer \
+            https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer
+          security import /tmp/DeveloperIDG2CA.cer -k "$keychain_path"
+          rm -f /tmp/DeveloperIDG2CA.cer
+
       - name: Sign, notarize and staple
         if: steps.signing.outputs.available == 'true'
         env:
