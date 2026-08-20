@@ -1,5 +1,13 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.27 - 2026-08-20
+
+### Añadido
+
+- "Buscar actualizaciones" sustituye ahora la app en marcha por la nueva versión y la relanza sola, sin tener que cerrarla ni arrastrar el icono a Aplicaciones a mano (`IDE-0045`). Si tienes un proyecto sin guardar, se te pregunta antes de tocar nada — igual que al cerrar Studio. Solo aplica cuando corres desde un `.app` instalado; ejecutando desde código fuente sigue funcionando como antes (descargar y abrir el `.dmg`).
+
+---
+
 ## 0.3.26 - 2026-08-18
 
 ### Añadido
