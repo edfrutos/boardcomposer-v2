@@ -7,22 +7,31 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    # Self-hosted (the user's own Mac), not ubuntu-latest: GitHub-hosted
+    # minutes are billed on this private repo and ran out mid-August 2026,
+    # blocking every push with "spending limit needs to be increased".
+    # Same fix already applied to Package Studio (see that workflow's
+    # runs-on comment) — reuse the Mac that's already on for releases
+    # instead of paying per minute for a Linux VM.
+    runs-on: [self-hosted, macOS]
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - name: Install Qt runtime libraries (headless PySide6)
+      - name: Set up Python virtual environment
         run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libegl1 libgl1 libxkbcommon0 libxkbcommon-x11-0 \
-            libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
-            libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-shape0
+          # Not actions/setup-python@v5 (DT-0031/DT-0032): its macOS Python
+          # archives are non-relocatable, hardcoded to
+          # /Users/runner/hostedtoolcache, which doesn't exist on this
+          # self-hosted Mac. Same workaround as package-studio.yml: use
+          # whatever python3.13 is already installed and build an isolated
+          # venv per run under $RUNNER_TEMP.
+          if ! command -v python3.13 >/dev/null 2>&1; then
+            echo "::error::python3.13 no está instalado en este Mac. Instálalo (p. ej. 'brew install python@3.13') y vuelve a lanzar el job." >&2
+            exit 1
+          fi
+          python3.13 -m venv "$RUNNER_TEMP/venv"
+          echo "$RUNNER_TEMP/venv/bin" >> "$GITHUB_PATH"
 
       - name: Install dependencies
         run: |
@@ -37,8 +46,6 @@ jobs:
 
       - name: Run tests
         run: pytest -q
-        env:
-          QT_QPA_PLATFORM: offscreen
 
       - name: Check project (paths, packaged version in sync with pyproject.toml)
         run: python scripts/check_project.py

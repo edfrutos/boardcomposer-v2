@@ -1,5 +1,9 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.35 - 2026-08-21
+
+Sin cambios de producto. `ci.yml` (tests en cada push/PR) llevaba 5 pushes seguidos fallando en 4s: `ubuntu-latest` está bloqueado por el mismo límite de gasto de GitHub Actions que ya obligó a mover `package-studio.yml` a un runner autoalojado (`v0.3.30`) — a diferencia de aquel, `ci.yml` no se había migrado. Ahora corre en el mismo Mac autoalojado, con el mismo patrón de `python3.13` + venv aislado en `$RUNNER_TEMP` (`DT-0031`/`DT-0032`) en vez de `actions/setup-python@v5`. Cae también la instalación de librerías Qt para Linux headless (`libegl1`/`libxcb-*`) y el `QT_QPA_PLATFORM=offscreen`: innecesarios en el Mac, donde `package-studio.yml` ya corre `pytest -q` sin ellos.
+
 ## 0.3.34 - 2026-08-20
 
 Sin cambios de producto. La firma fallaba con "unable to build chain to self-signed root" / `errSecInternalComponent` — el certificado intermedio de Apple (Developer ID G2) no estaba donde `codesign` lo buscaba, ni siquiera tras añadirlo al llavero de sesión a mano. Ahora el propio workflow lo descarga e importa dentro del llavero temporal de la build en cada ejecución — autocontenido, sin depender de configuración manual por máquina.
