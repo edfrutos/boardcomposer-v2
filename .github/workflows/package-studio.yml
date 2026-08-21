@@ -6,6 +6,16 @@ on:
       - "v*"
   workflow_dispatch:
 
+# Pushing a tag alongside a branch update in one `git push` (--follow-tags/
+# --atomic) can make GitHub deliver two separate push events for the same
+# tag ref (observed on v0.3.31 and v0.3.35: identical head_sha, seconds
+# apart). Without this, both duplicate runs execute the full signed build
+# on the self-hosted Mac (~60-70min each). Grouping by ref + cancelling the
+# older run in favour of the newer one keeps only one build running per tag.
+concurrency:
+  group: package-studio-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: write
 
