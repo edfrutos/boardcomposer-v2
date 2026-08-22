@@ -1,6 +1,6 @@
 # BoardComposer — MASTERPLAN
 
-**Última revisión:** 08/08/2026
+**Última revisión:** 22/08/2026
 
 > Este documento resume el estado del proyecto y las normas de trabajo.
 > El detalle vivo de cada funcionalidad está en `DOC-004-Backlog.md`, la
@@ -10,36 +10,13 @@
 ## Estado actual
 
 Rama: `main`
-Versión publicada: `0.3.15` (08/08/2026, tag `v0.3.15`) — arreglo
-urgente sobre `v0.3.14` (`DT-0023`): el `.app` publicado no arrancaba,
-`ModuleNotFoundError: No module named 'google.genai._gaos.utils.url'`.
-`google-genai` resuelve buena parte de su subsistema interno con
-`importlib.import_module()` sobre un nombre calculado en tiempo de
-ejecución, invisible para el análisis estático de Nuitka — CI en verde
-(compiló, firmó y notarizó sin fallos) no lo detectó porque notarizar
-solo valida la firma, nunca ejecuta el binario. Detectado pidiendo al
-usuario que ejecutara el binario desde Terminal en vez de con doble
-clic, para ver el traceback que Finder se traga en silencio.
-`studio/pysidedeploy.spec` fuerza ahora el empaquetado completo de
-`google.genai`/`openai` (`--include-package`). **Confirmado por el
-usuario el 10/08/2026** contra un `.dmg` real — arranca sin el
-`ModuleNotFoundError`, `DT-0023` cerrada.
-
-`v0.3.14` (07/08/2026): `IDE-0036`, soporte multi-proveedor en el
-Asistente IA. Propuesto por el usuario al abrir la conversación de
-alcance de la Fase 5 (Ecosistema): además de Anthropic (Claude), ahora
-se puede elegir OpenAI (GPT), Google Gemini u Ollama (local, sin clave
-— host/puerto + nombre de modelo) desde un desplegable nuevo en
-Preferencias (`BOARDCOMPOSER_AI_PROVIDER`, mismo bridge
-QSettings→entorno que `IDE-0034`, `ADR-001`). Hallazgo real:
-`OpenAI()`/`genai.Client()` lanzan de inmediato sin su clave, a
-diferencia de `Anthropic()` — `AssistantService._resolve_provider()`
-(nuevo) evita que elegir un proveedor sin configurar tumbe el arranque
-de Studio. Verificado con una clave real de OpenAI: llamada real al
-SDK, flujo completo de Preferencias, y una pregunta con contexto de
-proyecto real respondida correctamente; Gemini y Ollama sin verificar
-aún con credenciales/servidor reales.
-Tests: 960, en verde.
+Versión publicada: `0.3.36` (22/08/2026, tag `v0.3.36`) — sin cambios de
+producto, sube solo el número de versión para que la instalación real
+del usuario (`v0.3.35`, ya confirmada: arranque con doble clic y `.dmg`
+sin bloqueo de Gatekeeper) tenga algo que ofrecer al ciclo completo de
+auto-actualización (`IDE-0045`). Detalle release a release en
+`CHANGELOG.md`; narrativa completa por hilos en `NOTEBOOK.md`. Última
+verificación operativa completa: `CHECKLIST-operativa.md` (21/08/2026).
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -49,29 +26,59 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 | 2 — BoardComposer Studio | 🟢 Completada |
 | 3 — Plataforma (API, servicios remotos, Cloud) | 🟢 Completada |
 | 4 — Inteligencia (IA) | 🟢 Completada |
-| 5 — Ecosistema | 🟡 En curso |
+| 5 — Ecosistema | 🟡 En curso (biblioteca de materiales e inventario de retales completos; marketplace público y comunidad sin empezar) |
 
-Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0036`, todos 🟢 completados
-y en `main`.
+Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0045`, todos 🟢
+completados y en `main`.
 
-Deuda técnica (`DOC-006-DeudaTecnica.md`): 23 registros, los 23 resueltos
-(`DT-0023`, el `.app` de `v0.3.14` no arrancaba — `google-genai`/Nuitka,
-confirmado el 10/08/2026 contra un `.dmg` real, ver abajo).
-`DT-0011` (el `.app` de macOS sin firmar/notarizar) cerrada del todo el
-01/08/2026: cuenta de Apple Developer activada, secrets cargados, `v0.3.3`
-es la primera release firmada y notarizada de verdad — tres bugs reales en
-`scripts/sign_and_notarize.sh` aparecieron y se corrigieron en el proceso,
-solo visibles al firmar contra un certificado real por primera vez. Sigue
-sin cubrir Windows/Linux/Intel, fuera de alcance de este ítem.
+Deuda técnica (`DOC-006-DeudaTecnica.md`): 33 registros. 32 resueltos;
+`DT-0029` (relanzado tras la auto-sustitución del `.app`, `IDE-0045`)
+🟡 mitigado, pendiente de reconfirmar contra un ciclo real ahora que
+`v0.3.36` le da a `v0.3.35` algo que detectar. `DT-0011` (el `.app` de
+macOS sin firmar/notarizar) cerrada del todo el 01/08/2026; sigue sin
+cubrir Windows/Linux/Intel, fuera de alcance de este ítem.
+
+Runners de CI/CD: ambos workflows (`ci.yml`, `package-studio.yml`)
+migrados de runners alojados por GitHub a un runner autoalojado en el
+Mac del usuario (`v0.3.30`–`v0.3.35`, `DT-0030`–`DT-0033`), tras
+agotarse el límite de gasto de Actions en el repo privado — cinco
+intentos seguidos hasta que el pipeline de firma llegó a completarse de
+verdad. Concurrencia (`cancel-in-progress`) añadida a `package-studio.yml`
+para evitar la build duplicada al empujar rama+tag juntos, pendiente de
+confirmar contra el push que produjo `v0.3.36`.
 
 Despliegue privado en marcha (`IDE-0017`): API en `bc.efjdefrutos.com` y
 Studio por navegador (noVNC) en `studio.efjdefrutos.com`. Contenedores
 reconstruidos y verificados el 31/07/2026 tras el commit `043caf1`
-(rebuild manual por SSH, no automatizado — sin CI/CD de despliegue todavía).
+(rebuild manual por SSH, no automatizado — sin CI/CD de despliegue
+todavía); pendiente de reverificar que corren `v0.3.35`/`v0.3.36`
+(`CHECKLIST-operativa.md`).
 
 ## Trabajo en curso
 
-Ninguno abierto. Últimas tres piezas pedidas juntas el 04/08/2026
+Ninguno abierto en desarrollo activo. Pendiente real hoy, de
+`CHECKLIST-operativa.md` (21/08/2026):
+
+- Confirmar el ciclo completo de auto-actualización (`IDE-0045`,
+  `DT-0029`) contra `v0.3.35` → `v0.3.36` instalada de verdad.
+- `bc.efjdefrutos.com`/`studio.efjdefrutos.com` responden desde fuera de
+  la VPS, y corren la versión actual — sin comprobar desde `v0.3.25`.
+- Activar Stripe en producción (`IDE-0021`, ya construido, inactivo sin
+  `STRIPE_SECRET_KEY`/`STRIPE_PRICE_*`).
+- Al menos una clave real de Gemini/Ollama probada en producción (hoy
+  solo Anthropic y OpenAI verificados con credenciales reales,
+  `IDE-0036`).
+
+## Historial hasta el 08/08/2026
+
+Las siguientes entradas documentan el trabajo hasta `v0.3.15`
+(08/08/2026), última vez que esta sección se mantuvo al día
+release a release. A partir de ahí, el detalle vivo pasó a
+`NOTEBOOK.md`/`CHANGELOG.md` (narrativa) y `DOC-004-Backlog.md`
+(`IDE-0032`–`IDE-0045`) — no duplicado aquí para no repetir la misma
+brecha de mantenimiento que motivó esta revisión (22/08/2026).
+
+Últimas tres piezas pedidas juntas el 04/08/2026
 (`IDE-0029`/`IDE-0030`/`IDE-0031`), las tres 🟢 completadas y en `main`.
 
 - `IDE-0029` — importar tableros (CSV) en Studio: mismo patrón que la
@@ -278,6 +285,8 @@ como candidatas futuras si el modelo híbrido no basta.
 
 Pendiente, de menor a mayor alcance:
 
+0. Confirmar en real el ciclo completo de auto-actualización (`IDE-0045`,
+   `DT-0029` mitigado sin confirmar) contra `v0.3.35` → `v0.3.36`.
 1. Activar Stripe en producción (`IDE-0021` ya construido, inactivo): crear
    los Price de `básico`/`pro` en la cuenta Stripe del usuario (hoy solo
    probada en modo test) y configurar `STRIPE_SECRET_KEY`/

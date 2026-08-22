@@ -254,3 +254,9 @@ El usuario confirmó `v0.3.35` en real en su Mac: arranque con doble clic y `.dm
 De paso, primer tag empujado junto con su rama desde `d999825` (21/08/2026): la concurrencia (`cancel-in-progress`) añadida a `package-studio.yml` para evitar la build duplicada que ya se vio en `v0.3.31`/`v0.3.35` (mismo `head_sha`, dos eventos `push` para rama y tag) sigue sin confirmarse contra un push real de los dos juntos — este lo es.
 
 Sin cambios de producto ni de tests.
+
+## 2026-08-22 - Puesta al día de la documentación viva
+
+`MASTERPLAN.md` llevaba desde el 08/08/2026 sin tocarse (estado de `v0.3.15`) y `DOC-004-Backlog.md` desde `IDE-0031` (03/08/2026) — catorce releases (`v0.3.16`→`v0.3.36`) y catorce bloques (`IDE-0032`–`IDE-0045`) construidos y en producción sin cerrar su registro, la misma clase de brecha que el proyecto ya había marcado como deuda de proceso (`DT-0021`/`DT-0022`) pero en la dirección contraria: aquí no faltó dar de alta antes de construir, faltó anotar después. `NOTEBOOK.md` y `CHANGELOG.md` (registros de solo-añadir) nunca se desincronizaron — la brecha estaba solo en los documentos "vivos" que se supone resumen el estado.
+
+Corregido: `DOC-004-Backlog.md` gana las catorce entradas que faltaban, marcadas explícitamente "registrado retroactivamente el 22/08/2026" en vez de fingir que se dieron de alta antes de construirse, cuando no fue así. `DOC-003-Roadmap.md` (Fase 2, Fase 4, Fase 5) y el bloque "Estado actual" de `MASTERPLAN.md` puestos al día contra `v0.3.36` (1166 tests, `DT-0029` como único pendiente de los 33 registros de `DOC-006`). La narrativa release-a-release que `MASTERPLAN.md` llevaba duplicando de `NOTEBOOK.md` hasta `v0.3.15` se deja como histórico con fecha, sin continuarla — mantener el mismo contenido en dos sitios era parte de por qué se desincronizó.

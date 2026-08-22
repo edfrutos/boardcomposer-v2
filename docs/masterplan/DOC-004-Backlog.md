@@ -6,7 +6,7 @@
 **Versión:** 1.0.0
 **Estado:** En revisión
 **Fecha de creación:** 01/07/2026
-**Última revisión:** 20/08/2026
+**Última revisión:** 22/08/2026
 
 ---
 
@@ -1235,6 +1235,154 @@ directas — se derivan del hueco (ancho/alto) menos la holgura por lado.
   `tests/test_main_window_container_generator.py`) y con la app real
   (offscreen): el combo ofrece ambos tipos y `values()` cambia de forma
   correcta al alternar. 873 tests en verde.
+
+---
+
+## IDE-0032 — Buscar actualizaciones desde el menú Ayuda
+
+**Estado:** 🟢 Completado. Registrado retroactivamente el 22/08/2026 (construido en `v0.3.9`–`v0.3.12`, 09–10/08/2026).
+
+Pedido por el usuario en sesiones de UAT sobre releases reales: "Buscar actualizaciones" en el menú Ayuda consulta bajo demanda la API de GitHub (`releases/latest`) y compara contra `studio/_version.py`, sin descargar ni instalar nada — solo informa y ofrece un enlace. Base sobre la que se construyeron después `IDE-0043` (descarga) e `IDE-0045` (auto-sustitución). `update_check.py` (nuevo, sin Qt).
+
+---
+
+## IDE-0033 — "Acerca de" en el menú Ayuda
+
+**Estado:** 🟢 Completado. Registrado retroactivamente el 22/08/2026 (construido en `v0.3.13`, 07/08/2026).
+
+Diálogo estándar de macOS con versión, y enlaces a repositorio/licencia — mismo patrón `QAction`/`MenuRole` que `IDE-0025` para que macOS lo mueva solo al menú de la app.
+
+---
+
+## IDE-0034 — Clave de API de Anthropic configurable en Preferencias
+
+**Estado:** 🟢 Completado. Registrado retroactivamente el 22/08/2026 (construido en `v0.3.13`, 07/08/2026).
+
+Hallazgo real que motivó el bloque: un `.app` abierto con doble clic no hereda las variables de entorno de una Terminal, así que el Asistente IA caía siempre en `MockAIProvider` sin ninguna pista de por qué para quien lo instala desde el `.dmg`. Preferencias gana un campo para `ANTHROPIC_API_KEY`, persistido en `QSettings` y expuesto al proceso vía el mismo puente `QSettings`→entorno que ya usaba el tema (`ADR-001`).
+
+---
+
+## IDE-0035 — Separar "quitar del tablero" de "eliminar del proyecto"
+
+**Estado:** 🟢 Completado. Registrado retroactivamente el 22/08/2026 (construido en `v0.3.13`, 07/08/2026).
+
+`Backspace` sobre una pieza colocada hacía las dos cosas a la vez (la quitaba del tablero y la borraba del proyecto), sin forma de recuperarla salvo deshacer. Ahora son dos acciones distintas en el menú/atajos — quitar del tablero deja la pieza en "sin colocar", eliminar del proyecto sigue siendo destructivo (deshacible vía el historial de comandos, como el resto).
+
+---
+
+## IDE-0036 — Soporte multi-proveedor en el Asistente IA
+
+**Estado:** 🟢 Completado. Registrado retroactivamente el 22/08/2026 (construido en `v0.3.14`, 07/08/2026).
+
+Propuesto por el usuario al abrir la conversación de alcance de la Fase 5 (Ecosistema): además de Anthropic (Claude), Preferencias permite elegir OpenAI (GPT), Google Gemini u Ollama (local, sin clave — host/puerto + nombre de modelo) vía `BOARDCOMPOSER_AI_PROVIDER` (mismo puente `QSettings`→entorno que `IDE-0034`).
+
+- `AssistantService._resolve_provider()` (nuevo): `OpenAI()`/`genai.Client()` lanzan de inmediato si falta su clave, a diferencia de `Anthropic()` — sin esto, elegir un proveedor sin configurar tumbaba el arranque de Studio. Cae a respuestas de ejemplo con el motivo visible en vez de crashear.
+- Verificado con una clave real de OpenAI: llamada real al SDK, flujo completo de Preferencias, pregunta con contexto de proyecto real respondida correctamente. Gemini y Ollama sin verificar con credenciales/servidor reales en ese momento.
+- **`DT-0023`** (misma release): el `.app` publicado no arrancaba — `google-genai` resuelve buena parte de su subsistema interno vía `importlib.import_module()` con nombres calculados en tiempo de ejecución, invisible al análisis estático de Nuitka. Resuelto forzando `--include-package=google.genai --include-package=openai` en `studio/pysidedeploy.spec`. Confirmado el 10/08/2026 contra un `.dmg` real.
+- 960 tests en verde.
+
+---
+
+## IDE-0037 — Columna `quantity` opcional en el import CSV (piezas/tableros del Core)
+
+**Estado:** 🟢 Completado. Registrado retroactivamente el 22/08/2026 (construido en `v0.3.16`, 08/08/2026).
+
+Pedido por el usuario porque el diálogo "Pieza"/"Tablero" de Studio ya tenía un campo "Cantidad" que nunca llegó al CSV. Una fila con `quantity` > 1 se expande a N piezas/tableros idénticos con ids derivados por sufijo, determinista (a diferencia del diálogo, que prueba el siguiente sufijo libre en silencio) — cualquier colisión aborta toda la importación en vez de improvisar un id.
+
+---
+
+## IDE-0038 — `quantity`/`material` en los tres formatos de CSV (Core, piezas y tableros de Studio)
+
+**Estado:** 🟢 Completado. Registrado retroactivamente el 22/08/2026 (construido en `v0.3.17`, 09/08/2026).
+
+Ampliación de `IDE-0037` a los tres importadores, en el mismo orden. Investigar el alcance real destapó una asimetría de dominio, no solo de código:
+
+- **El Core nunca ha tenido `material`** — el único "material" existente era `material_usage_score`, una métrica del solver (% de aprovechamiento), sin relación con un tipo de madera. Se añadió como campo pasivo en `Board` (se guarda, se expone, no afecta al solver) porque el Core empaqueta piezas sobre **una única lámina implícita** (`ProjectConstraints`) — convertirlo a multi-lámina con material real sería un cambio de arquitectura mayor, fuera de alcance.
+- **En Studio sí hay varias `StudioBoard` reales**, así que ahí `material` pasa de etiqueta a **restricción dura** — mismo patrón exacto que `thickness_mm` (`LayoutService.to_core_project()`/`apply_best_fit_distribution()`, `MainWindow._edit_board()`/`_edit_piece()`/`_move_piece_to_board()`), nunca dentro de `piece_fits_on_board()` (geometría pura).
+- 993 tests en verde (15 nuevos sobre `v0.3.16`).
+
+---
+
+## IDE-0039 — Inventario persistente de retales en Studio
+
+**Estado:** 🟢 Completado. Registrado retroactivamente el 22/08/2026 (construido en `v0.3.18`, 10/08/2026).
+
+La mitad que `DEC-0019` (03/08/2026) había dejado deliberadamente sin construir al acotar el aprovechamiento de retales a "solo alta manual, sin inventario persistente". `studio/project/scrap_inventory.py` (capa pura, SQLite, mismo patrón que `billing.py` del Core pero a nivel de un solo taller) guarda cada retal con `consumed_at` en vez de borrarlo al usarse — la historia sobrevive aunque ya no aparezca disponible.
+
+- `ScrapInventoryService` resuelve el fichero por defecto vía `QStandardPaths.AppDataLocation` — deliberadamente fuera de `StudioServices`, porque el inventario es del taller, no de un proyecto.
+- Dos diálogos nuevos en "Proyecto" ("Añadir retal…"/"Usar retal…"); usar un retal ejecuta un `AddBoardCommand` deshacible normal, pero el consumo del inventario queda fuera del historial de undo a propósito — deshacer el tablero no lo devuelve al inventario (decisión, no limitación descubierta después).
+- 1022 tests en verde (29 nuevos sobre `v0.3.17`), incluida fixture nueva (`QStandardPaths.setTestModeEnabled`) para que ningún test escriba en el perfil real del desarrollador.
+
+---
+
+## IDE-0040 — Menú contextual en el lienzo + "Eliminar tablero"
+
+**Estado:** 🟢 Completado. Registrado retroactivamente el 22/08/2026 (construido en `v0.3.19`, 10/08/2026).
+
+Clic derecho sobre una pieza o un tablero en el lienzo abre un menú con las mismas acciones que ya existían en "Proyecto", más una construida de cero: "Eliminar tablero" (`DeleteBoardCommand`, deshacible, desplaza las piezas del tablero a "sin colocar" en vez de borrarlas, mismo criterio que `UnplacePieceCommand`).
+
+- `BoardWorkspace.mousePressEvent()` tuvo que distinguir sobre qué se hace clic (pieza/tablero/vacío) antes de decidir panear o abrir menú — la rejilla cubre todo `sceneRect()`, mucho más grande que el tablero, así que la comprobación real es geométrica contra `sceneBoundingRect()`, no `itemAt()`.
+- **`DT-0027`** (11/08/2026, `v0.3.21`): con un Magic Mouse el clic secundario no llega garantizado a `mousePressEvent()`. Movido a `contextMenuEvent()` (el mecanismo de Qt que normaliza botón derecho físico, Magic Mouse, trackpad y tecla Menú); cancela cualquier paneo en curso antes de abrir el menú.
+- 1037 tests en verde (15 nuevos sobre `v0.3.18`).
+
+---
+
+## IDE-0041 — Biblioteca de materiales del taller
+
+**Estado:** 🟢 Completado. Registrado retroactivamente el 22/08/2026 (construido en `v0.3.23`, 13/08/2026).
+
+Acotado con el usuario antes de programar (`DEC-0020`): catálogo de materiales — nombre, grosor, proveedor, precio — exportable/importable como CSV, mismo patrón SQLite que `IDE-0039` pero como dato de referencia sin ciclo de vida (eliminar es un `DELETE` real, no un flag de "consumido").
+
+- `studio/project/materials_library.py` (capa pura) + `studio/project/materials_csv.py` (columnas aceptadas también en español y en mayúsculas desde el primer commit, aplicando la lección de `DT-0026` de forma proactiva). `add_materials_bulk()` inserta la importación completa en una única transacción, para que una fila mala no deje el catálogo a medias.
+- `MaterialsLibraryDialog` rompe a propósito el patrón del resto de diálogos de Studio (puros, sin estado): posee `MaterialsLibraryService` directamente y persiste cada alta/edición/baja al momento — el catálogo no participa del undo/redo de ningún proyecto.
+- El campo "Material" en `BoardDialog`/`PieceDialog` pasa de texto libre a desplegable editable con los nombres del catálogo, sin bloquear un catálogo vacío.
+
+---
+
+## IDE-0042 — Enlace de consulta entre la biblioteca de materiales y el inventario de retales
+
+**Estado:** 🟢 Completado. Registrado retroactivamente el 22/08/2026 (construido en `v0.3.24`, 14/08/2026).
+
+El usuario pidió que el catálogo detallara "la medida de cada tablero", esperando que mejorara la colocación automática. Acotado con el usuario antes de programar: no es un tamaño estándar por material, es vincular el catálogo con el inventario de retales real (`IDE-0039`) — explícitamente **solo información de consulta**, sin tocar el solver ni `apply_best_fit_distribution()`, descartando la expectativa inicial de que afectara al reparto automático. Columna "Retales" (recuento) y botón "Ver retales…" (dimensiones, procedencia) en `MaterialsLibraryDialog`.
+
+- 1136 tests en verde (11 nuevos sobre `v0.3.23`).
+
+---
+
+## IDE-0043 — Descargar y abrir la actualización desde "Buscar actualizaciones"
+
+**Estado:** 🟢 Completado. Registrado retroactivamente el 22/08/2026 (construido en `v0.3.25`, 16/08/2026).
+
+`DT-0028` destapó que "Buscar actualizaciones" (`IDE-0032`) nunca había descargado ni instalado nada, solo comparaba versiones — sin comunicarlo con claridad. Acotado con el usuario (`DEC-0021`): de dos alcances posibles, se construyó el menor — descargar el `.dmg` y abrirlo (Finder monta la imagen), no una instalación completa estilo Sparkle.
+
+- Bloqueo real encontrado al acotar: los assets de una release de un repo **privado** exigen autenticación (`404` sin ella, mismo patrón que `DT-0025` pero para el binario). Resuelto creando `edfrutos/boardcomposer-releases`, repo público sin código, solo para alojar `.dmg`.
+- `studio/update_installer.py` (nuevo, sin Qt): descarga con progreso y cancelación cooperativa, abre el `.dmg` con `open`. `MainWindow._check_for_updates()` pide confirmación antes de descargar, `QProgressDialog` cancelable síncrono con `QApplication.processEvents()` (mismo patrón que el Asistente IA, sin `QThread` nuevo).
+- `package-studio.yml` sube el `.dmg` también al repo público y actualiza el Gist (`scripts/update_version_gist.py`) en cada release, con `RELEASES_REPO_TOKEN` de alcance mínimo — cierra `DT-0028` de raíz.
+- Verificado en vivo: `check_for_update("0.3.23")` devolvió el `dmg_url` real con descarga pública confirmada sin autenticación (`302` a URL firmada de S3). 1149 tests en verde (13 nuevos sobre `v0.3.24`).
+
+---
+
+## IDE-0044 — Usar retal del inventario desde "Añadir tablero…"
+
+**Estado:** 🟢 Completado. Registrado retroactivamente el 22/08/2026 (construido en `v0.3.26`, 18/08/2026).
+
+Retomó la candidata de priorización de retales que `DEC-0019` había dejado sin acotar. Acotado con el usuario (`DEC-0022`): descartó que el solver decida solo qué retal usar — prefiere seguir eligiendo él, pero en el momento justo. "Usar retal del inventario…" desaparece como entrada de menú independiente; su selector (`UseScrapDialog`) gana un botón "Tablero nuevo…" y se abre **desde** "Añadir tablero…" cuando el inventario tiene algo disponible.
+
+- `MainWindow._add_board()` pasa de "abrir `BoardDialog`" a orquestador: inventario vacío no cambia nada; con inventario, distingue tres salidas (retal elegido → `_apply_scrap_as_board()`; "Tablero nuevo…" → `_add_new_board()`, el `BoardDialog` de siempre; cancelado → nada). `LayoutService`/solver sin tocar.
+- 1153 tests en verde (4 nuevos sobre `v0.3.25`).
+
+---
+
+## IDE-0045 — Sustituir el `.app` en marcha y relanzar (auto-actualización completa)
+
+**Estado:** 🟢 Completado, con `DT-0029` (relanzado) mitigado y pendiente de reconfirmar en real contra `v0.3.36`. Registrado retroactivamente el 22/08/2026 (construido en `v0.3.27`, 20/08/2026).
+
+El usuario pidió retomar la candidata de mayor alcance de `DOC-999-Ideas.md` tras vivir la fricción de `IDE-0043` en producción (cerrar la app y arrastrar el icono a Aplicaciones a mano). Acotado con el usuario (`DEC-0023`): Sparkle real descartado (pensado para bundles Xcode, habría exigido firmar componentes de terceros dentro del bundle de Nuitka — misma fragilidad que ya dio tres bugs en `DT-0011`); en su lugar, un actualizador propio sin proceso auxiliar. "Copia directa, sin respaldo" elegido explícitamente por el usuario frente a la alternativa recomendada (swap atómico con `.bak`); la implementación sí hace un rename atómico intermedio para no dejar nunca la ruta sin ningún `.app` válido si algo falla a mitad.
+
+- `studio/self_update.py`: monta el `.dmg` (`hdiutil`), copia el `.app` con `ditto` (preserva atributos extendidos de los que depende la firma — `shutil.copytree` no), valida `CFBundleShortVersionString` contra la versión esperada, sustituye con dos renames atómicos. Instala siempre en la ruta desde la que se ejecuta hoy, nunca fuerza `/Applications`. Fuera de un `.app` empaquetado, cae intacto al flujo de `IDE-0043`.
+- `_maybe_save_and_confirm_close()` (extraída de `closeEvent()`) protege también la actualización — sustituir la app con un proyecto sin guardar sería pérdida de datos real.
+- **`DT-0029`** (primera prueba real, `v0.3.27`→`v0.3.28`): la app se sustituía a sí misma pero no se reabría — `relaunch()` llamaba `open <ruta>` antes de `QApplication.quit()`, y Launch Services podía tratarlo como "ya en marcha". Mitigado con `wait_for_pid`: sondea `kill -0 <pid>` hasta que el proceso viejo desaparece de verdad y solo entonces `open -n`. Sigue pendiente de confirmar contra un ciclo real (`v0.3.36`, publicada expresamente para tener algo que ofrecer a una instalación de `v0.3.35`).
+- 1165 tests en verde (12 nuevos sobre `v0.3.26`).
 
 ---
 
