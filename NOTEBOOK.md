@@ -246,3 +246,11 @@ Con `v0.3.33` el pipeline llegó, por primera vez, hasta compilar y empezar a fi
 Arreglo definitivo, más robusto que depender del estado de un llavero externo: el propio `package-studio.yml` descarga el certificado intermedio de Apple e lo importa **dentro del llavero temporal de la build**, junto al certificado de firma — autocontenido, sin ninguna configuración manual por máquina, y válido igual para cualquier otro runner autoalojado que se añada en el futuro.
 
 Quinto intento seguido de arreglar el pipeline en el mismo runner (`DT-0030` a `DT-0033`) — cada fallo llegó más lejos que el anterior (permisos → parseo del workflow → binarios no relocalizables → cadena de certificados), señal de que el proceso de depurar contra un entorno real, aunque lento (cada vuelta son ~40 min de build), sí iba convergiendo.
+
+## 2026-08-22 - Release v0.3.36
+
+El usuario confirmó `v0.3.35` en real en su Mac: arranque con doble clic y `.dmg` sin bloqueo de Gatekeeper, ambos checks de `CHECKLIST-operativa.md` que solo se pueden verificar fuera de CI. Quedaba el tercero, el ciclo completo de auto-actualización (`IDE-0045`) — pero necesita una versión más nueva que la ya instalada para tener algo que ofrecer. Esta release es solo el número de versión subido, mismo patrón que `v0.3.28` para el mismo propósito.
+
+De paso, primer tag empujado junto con su rama desde `d999825` (21/08/2026): la concurrencia (`cancel-in-progress`) añadida a `package-studio.yml` para evitar la build duplicada que ya se vio en `v0.3.31`/`v0.3.35` (mismo `head_sha`, dos eventos `push` para rama y tag) sigue sin confirmarse contra un push real de los dos juntos — este lo es.
+
+Sin cambios de producto ni de tests.

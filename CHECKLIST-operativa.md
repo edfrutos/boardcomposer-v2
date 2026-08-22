@@ -46,9 +46,9 @@ El bloqueo original (*"recent account payments have failed or your spending limi
 
 - [x] El `.app` compila sin errores en el Mac real — verificado indirectamente vía CI (`package-studio.yml` en verde, `v0.3.35`), no con `make package` a mano
 - [x] Firma y notarización vigentes — confirmado en el log (`Timestamp=21 Aug 2026...`, sin `errSecInternalComponent`)
-- [ ] El `.app` arranca con doble clic (no solo desde Terminal) — el bug de `DT-0023` solo era visible así; el CI no lo prueba, solo firma/compila
-- [ ] Descargar el `.dmg` real de la release `v0.3.35` y comprobar que Gatekeeper no bloquea al abrirlo
-- [ ] "Buscar actualizaciones" detecta, descarga y relanza correctamente desde una versión anterior instalada (`IDE-0043`/`IDE-0045`)
+- [x] El `.app` arranca con doble clic (no solo desde Terminal) — confirmado por el usuario contra `v0.3.35`; `DT-0023` sigue cerrado
+- [x] Descargar el `.dmg` real de la release `v0.3.35` y comprobar que Gatekeeper no bloquea al abrirlo — confirmado por el usuario
+- [ ] "Buscar actualizaciones" detecta, descarga y relanza correctamente desde una versión anterior instalada (`IDE-0043`/`IDE-0045`) — pendiente: se publica `v0.3.36` (solo número de versión) para que `v0.3.35` ya instalada tenga algo que ofrecer
 
 ## ☁️ Despliegue en producción
 
