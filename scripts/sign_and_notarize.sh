@@ -10,11 +10,18 @@
 # build plus docs/INSTALL-macos.md (see DT-0011).
 #
 # Required environment:
-#   APP_PATH            path to the .app bundle
-#   SIGNING_IDENTITY    e.g. "Developer ID Application: Name (TEAMID)"
-#   APPLE_ID            Apple account email
-#   APPLE_TEAM_ID       10-character team identifier
-#   APPLE_APP_PASSWORD  app-specific password, NOT the account password
+#   APP_PATH              path to the .app bundle
+#   SIGNING_IDENTITY      e.g. "Developer ID Application: Name (TEAMID)"
+#   APPLE_API_KEY_PATH    path to the App Store Connect API key (.p8)
+#   APPLE_API_KEY_ID      the key's 10-character Key ID
+#   APPLE_API_ISSUER_ID   the account's Issuer ID (a UUID)
+#
+# notarytool auth via an App Store Connect API key, not an Apple ID +
+# app-specific password: the latter got silently revoked in production
+# (DT-0037) with no warning ahead of time, tied as it is to the Apple ID's
+# own security state (2FA, password changes) rather than to this one
+# purpose. An API key is scoped to notarization only and doesn't expire on
+# the same schedule.
 #
 # Usage: scripts/sign_and_notarize.sh
 
@@ -22,9 +29,9 @@ set -euo pipefail
 
 : "${APP_PATH:?APP_PATH no definido}"
 : "${SIGNING_IDENTITY:?SIGNING_IDENTITY no definido}"
-: "${APPLE_ID:?APPLE_ID no definido}"
-: "${APPLE_TEAM_ID:?APPLE_TEAM_ID no definido}"
-: "${APPLE_APP_PASSWORD:?APPLE_APP_PASSWORD no definido}"
+: "${APPLE_API_KEY_PATH:?APPLE_API_KEY_PATH no definido}"
+: "${APPLE_API_KEY_ID:?APPLE_API_KEY_ID no definido}"
+: "${APPLE_API_ISSUER_ID:?APPLE_API_ISSUER_ID no definido}"
 
 if [[ ! -d "$APP_PATH" ]]; then
   echo "No existe el bundle: $APP_PATH" >&2
@@ -135,9 +142,9 @@ echo "==> Subiendo a notarizar (puede tardar varios minutos)"
 ditto -c -k --keepParent "$APP_PATH" "$notarization_zip"
 
 submit_output="$(xcrun notarytool submit "$notarization_zip" \
-  --apple-id "$APPLE_ID" \
-  --team-id "$APPLE_TEAM_ID" \
-  --password "$APPLE_APP_PASSWORD" \
+  --key "$APPLE_API_KEY_PATH" \
+  --key-id "$APPLE_API_KEY_ID" \
+  --issuer "$APPLE_API_ISSUER_ID" \
   --wait)"
 echo "$submit_output"
 
@@ -153,9 +160,9 @@ status="$(awk '/^  status:/{print $2; exit}' <<< "$submit_output")"
 if [[ "$status" != "Accepted" ]]; then
   echo "==> Notarización rechazada (status=$status) — log detallado de Apple:"
   xcrun notarytool log "$submission_id" \
-    --apple-id "$APPLE_ID" \
-    --team-id "$APPLE_TEAM_ID" \
-    --password "$APPLE_APP_PASSWORD"
+    --key "$APPLE_API_KEY_PATH" \
+    --key-id "$APPLE_API_KEY_ID" \
+    --issuer "$APPLE_API_ISSUER_ID"
   exit 1
 fi
 
