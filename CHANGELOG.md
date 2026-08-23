@@ -1,5 +1,9 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.38 - 2026-08-23
+
+Sin cambios de producto. `v0.3.37` falló al notarizar (`DT-0037`): la contraseña de aplicación del Apple ID se había revocado sin aviso. `notarytool` pasa a autenticarse con una clave de App Store Connect (`--key`/`--key-id`/`--issuer`) en vez de Apple ID + contraseña — scoped solo a notarización, sin depender del ciclo de vida de seguridad de la cuenta. Esta release es solo para ejercitar el pipeline de firma con el método nuevo de principio a fin.
+
 ## 0.3.37 - 2026-08-23
 
 ### Arreglado
