@@ -31,16 +31,20 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0045`, todos 🟢
 completados y en `main`.
 
-Deuda técnica (`DOC-006-DeudaTecnica.md`): 34 registros. 33 resueltos;
+Deuda técnica (`DOC-006-DeudaTecnica.md`): 35 registros. 34 resueltos;
 `DT-0029` (relanzado tras la auto-sustitución del `.app`, `IDE-0045`)
 🟡 mitigado, pendiente de reconfirmar contra un ciclo real ahora que
 `v0.3.36` le da a `v0.3.35` algo que detectar. `DT-0011` (el `.app` de
 macOS sin firmar/notarizar) cerrada del todo el 01/08/2026; sigue sin
-cubrir Windows/Linux/Intel, fuera de alcance de este ítem. `DT-0034`
-(23/08/2026): la API de la VPS llevaba desde `v0.3.9` sin reconstruirse
-(27 versiones de desfase) — al fin rehecha por SSH, con un fallo de
-permisos del volumen `boardcomposer-data` (recurrencia del mismo bug de
-`IDE-0020`, ahora con el `chown` incorporado a `docs/deploy.md`).
+cubrir Windows/Linux/Intel, fuera de alcance de este ítem. `DT-0034`/
+`DT-0035` (23/08/2026): tanto la API (`v0.3.9`, 27 versiones de
+desfase) como Studio por navegador (`studio.efjdefrutos.com`, noVNC,
+igual de desfasado — le faltaban `IDE-0039`/`IDE-0041`) llevaban meses
+sin reconstruirse en la VPS. Ambos reconstruidos y confirmados en
+`v0.3.36`; `docs/deploy.md` gana el paso de `chown` que causó el fallo
+de la API (`DT-0034`). Ninguno de los dos despliegues tiene CI/CD
+propio — sigue dependiendo de que alguien se acuerde de reconstruir
+los dos contenedores, no automatizado.
 
 Runners de CI/CD: ambos workflows (`ci.yml`, `package-studio.yml`)
 migrados de runners alojados por GitHub a un runner autoalojado en el
@@ -52,15 +56,17 @@ para evitar la build duplicada al empujar rama+tag juntos, pendiente de
 confirmar contra el push que produjo `v0.3.36`.
 
 Despliegue privado en marcha (`IDE-0017`): API en `bc.efjdefrutos.com` y
-Studio por navegador (noVNC) en `studio.efjdefrutos.com`. La API se
-reconstruyó y verificó de nuevo el 23/08/2026 (`DT-0034`) — corría
-`v0.3.9` desde el rebuild del 31/07/2026 (commit `043caf1`), ahora en
-`v0.3.36`; `/health` y `/strategies` (con `BOARDCOMPOSER_API_KEY`)
-confirmados desde fuera de la VPS. Rebuild sigue siendo manual por SSH,
-sin CI/CD de despliegue — `docs/deploy.md` gana el paso de `chown` del
-volumen que causó el fallo esta vez, para que no se repita una tercera.
-Studio por noVNC (`studio.efjdefrutos.com`) sin reverificar en esta
-sesión.
+Studio por navegador (noVNC) en `studio.efjdefrutos.com` — dos
+contenedores independientes, cada uno con su propio ciclo de
+reconstrucción manual. Ambos reconstruidos y verificados el 23/08/2026
+(`DT-0034`/`DT-0035`): la API corría `v0.3.9` desde el 31/07/2026
+(commit `043caf1`), Studio remoto igual de desfasado (le faltaban
+`IDE-0039`/`IDE-0041` en el menú "Proyecto") — los dos confirmados en
+`v0.3.36`, con paridad completa entre la web y la app local. `docs/deploy.md`
+gana el paso de `chown` del volumen que causó el fallo de la API; el de
+Studio remoto no lo necesitó. Ningún CI/CD de despliegue todavía —
+sigue dependiendo de que alguien reconstruya los dos contenedores a
+mano.
 
 ## Trabajo en curso
 
@@ -69,18 +75,24 @@ Ninguno abierto en desarrollo activo. Pendiente real hoy, de
 
 - Confirmar el ciclo completo de auto-actualización (`IDE-0045`,
   `DT-0029`) contra `v0.3.35` → `v0.3.36` instalada de verdad.
-- `studio.efjdefrutos.com` (noVNC) carga y permite operar Studio desde
-  el navegador — sin comprobar desde `v0.3.25`.
 - Activar Stripe en producción (`IDE-0021`, ya construido, inactivo sin
   `STRIPE_SECRET_KEY`/`STRIPE_PRICE_*`).
 - Al menos una clave real de Gemini/Ollama probada en producción (hoy
   solo Anthropic y OpenAI verificados con credenciales reales,
   `IDE-0036`).
-- Rotar `BOARDCOMPOSER_API_KEY` y la contraseña de `auth_basic` de
-  nginx (`bc-studio`): ambas se compartieron en texto plano en una
-  sesión de chat el 23/08/2026 al verificar `DT-0034` — el canal no es
-  el mismo riesgo que un repositorio público, pero es una credencial
-  de producción que ya salió de la VPS una vez de más de lo necesario.
+- **Rotar credenciales de producción compartidas en texto plano en el
+  chat el 23/08/2026** (`DT-0034`/`DT-0035`), ninguna confirmada
+  rotada todavía: `BOARDCOMPOSER_API_KEY`, la contraseña de
+  `auth_basic` de nginx de la API (`bc-studio`), `VNC_PASSWORD` de
+  Studio remoto (con el mismo valor que `BOARDCOMPOSER_API_KEY` —
+  credencial reutilizada entre dos servicios, motivo de más para
+  rotar ambas) y la clave real de `ANTHROPIC_API_KEY`. Considerar
+  además separar `VNC_PASSWORD`/`BOARDCOMPOSER_API_KEY` para que no
+  vuelvan a coincidir por descuido.
+- Considerar automatizar (o al menos dar un guardarraíl tipo
+  `scripts/check_project.py`) la reconstrucción de ambos contenedores
+  de la VPS — es la segunda vez en la vida del proyecto que se
+  descubren meses de desfase solo al pedir explícitamente comprobarlo.
 
 ## Historial hasta el 08/08/2026
 

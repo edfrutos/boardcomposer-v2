@@ -53,7 +53,7 @@ El bloqueo original (*"recent account payments have failed or your spending limi
 ## ☁️ Despliegue en producción
 
 - [x] `bc.efjdefrutos.com` responde (`/health`) desde fuera de la VPS — confirmado 23/08/2026, `{"status":"ok"}`
-- [ ] `studio.efjdefrutos.com` (noVNC) carga y permite operar Studio desde el navegador
+- [x] `studio.efjdefrutos.com` (noVNC) carga y permite operar Studio desde el navegador, con paridad completa respecto a la app local — confirmado 23/08/2026 tras reconstruir el contenedor (`DT-0035`); estaba tan desfasado como la API (`DT-0034`), le faltaban `IDE-0039`/`IDE-0041`
 - [x] Los contenedores de la VPS corren la versión actual (`v0.3.36`) — confirmado 23/08/2026 tras rehacer el build por SSH; estaba en `v0.3.9` (27 versiones de desfase, `DT-0034`)
 - [x] `BOARDCOMPOSER_API_KEY` / auth básica de nginx siguen activas — confirmado 23/08/2026 (`/strategies` con clave devuelve `200`); `VNC_PASSWORD` (Studio/noVNC) sin comprobar en esta sesión
 
