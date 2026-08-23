@@ -109,7 +109,7 @@ mode = onefile
 # --include-package-data the frozen build would carry certifi's Python
 # code but not the .pem file ssl.create_default_context(cafile=...)
 # actually reads, right back to CERTIFICATE_VERIFY_FAILED.
-extra_args = --quiet --noinclude-qt-translations --macos-signed-app-name=com.efjdefrutos.boardcomposer.studio --macos-app-name="BoardComposer Studio" --macos-app-version=0.3.36 --include-package=google.genai --include-package=openai --include-package=certifi --include-package-data=certifi
+extra_args = --quiet --noinclude-qt-translations --macos-signed-app-name=com.efjdefrutos.boardcomposer.studio --macos-app-name="BoardComposer Studio" --macos-app-version=0.3.37 --include-package=google.genai --include-package=openai --include-package=certifi --include-package-data=certifi
 
 [buildozer]
 

@@ -1,5 +1,11 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.37 - 2026-08-23
+
+### Arreglado
+
+- `DT-0036`: la etiqueta del id de un tablero (p. ej. "TAB01") usaba una fuente fija de 48pt y un desplazamiento vertical fijo, sin relación con el tamaño real del tablero — en un tablero delgado (460×40mm, reportado por el usuario tras importar un CSV real) el texto era casi tan alto como el propio tablero y se metía dentro del rectángulo. El tamaño de fuente ahora se escala al lado más corto del tablero (mínimo 12pt, máximo 48pt — un tablero grande se ve igual que antes) y el desplazamiento vertical usa la métrica real de la fuente elegida, así la etiqueta queda siempre por encima del rectángulo sin solaparlo, para cualquier tamaño.
+
 ## 0.3.36 - 2026-08-22
 
 Sin cambios de producto. Sube solo el número de versión, para que la app instalada (`v0.3.35`, ya confirmada en real: arranque con doble clic y `.dmg` sin bloqueo de Gatekeeper) tenga algo que detectar y ejercitar el ciclo completo de auto-actualización (`IDE-0045`) — sigue pendiente de reconfirmar `DT-0029` (el relanzado tras sustituir el `.app`). De paso, primer tag empujado junto con su rama desde `d999825` (mitigación de la build duplicada en `package-studio.yml`), pendiente de confirmar en real.

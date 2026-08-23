@@ -5,4 +5,4 @@ doesn't carry). Kept in sync with pyproject.toml by scripts/check_project.py,
 same guard pattern already used for studio/pysidedeploy.spec.
 """
 
-__version__ = "0.3.36"
+__version__ = "0.3.37"
