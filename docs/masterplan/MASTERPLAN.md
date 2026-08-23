@@ -68,6 +68,14 @@ Studio remoto no lo necesitó. Ningún CI/CD de despliegue todavía —
 sigue dependiendo de que alguien reconstruya los dos contenedores a
 mano.
 
+Credenciales rotadas el 23/08/2026, mismo día: `BOARDCOMPOSER_API_KEY`,
+la contraseña de `auth_basic` de nginx (`bc-studio`), `VNC_PASSWORD`
+(ya no coincide con `BOARDCOMPOSER_API_KEY` — antes reutilizaba el
+mismo valor) y `ANTHROPIC_API_KEY` (clave vieja revocada en la consola
+de Anthropic, nueva en uso) — las cuatro se habían compartido en texto
+plano durante el diagnóstico de `DT-0034`/`DT-0035`. Confirmado por el
+usuario contra los contenedores reales tras recrearlos.
+
 ## Trabajo en curso
 
 Ninguno abierto en desarrollo activo. Pendiente real hoy, de
@@ -80,15 +88,6 @@ Ninguno abierto en desarrollo activo. Pendiente real hoy, de
 - Al menos una clave real de Gemini/Ollama probada en producción (hoy
   solo Anthropic y OpenAI verificados con credenciales reales,
   `IDE-0036`).
-- **Rotar credenciales de producción compartidas en texto plano en el
-  chat el 23/08/2026** (`DT-0034`/`DT-0035`), ninguna confirmada
-  rotada todavía: `BOARDCOMPOSER_API_KEY`, la contraseña de
-  `auth_basic` de nginx de la API (`bc-studio`), `VNC_PASSWORD` de
-  Studio remoto (con el mismo valor que `BOARDCOMPOSER_API_KEY` —
-  credencial reutilizada entre dos servicios, motivo de más para
-  rotar ambas) y la clave real de `ANTHROPIC_API_KEY`. Considerar
-  además separar `VNC_PASSWORD`/`BOARDCOMPOSER_API_KEY` para que no
-  vuelvan a coincidir por descuido.
 - Considerar automatizar (o al menos dar un guardarraíl tipo
   `scripts/check_project.py`) la reconstrucción de ambos contenedores
   de la VPS — es la segunda vez en la vida del proyecto que se
