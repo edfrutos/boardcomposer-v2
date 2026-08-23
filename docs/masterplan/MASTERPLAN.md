@@ -31,12 +31,16 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0045`, todos 🟢
 completados y en `main`.
 
-Deuda técnica (`DOC-006-DeudaTecnica.md`): 33 registros. 32 resueltos;
+Deuda técnica (`DOC-006-DeudaTecnica.md`): 34 registros. 33 resueltos;
 `DT-0029` (relanzado tras la auto-sustitución del `.app`, `IDE-0045`)
 🟡 mitigado, pendiente de reconfirmar contra un ciclo real ahora que
 `v0.3.36` le da a `v0.3.35` algo que detectar. `DT-0011` (el `.app` de
 macOS sin firmar/notarizar) cerrada del todo el 01/08/2026; sigue sin
-cubrir Windows/Linux/Intel, fuera de alcance de este ítem.
+cubrir Windows/Linux/Intel, fuera de alcance de este ítem. `DT-0034`
+(23/08/2026): la API de la VPS llevaba desde `v0.3.9` sin reconstruirse
+(27 versiones de desfase) — al fin rehecha por SSH, con un fallo de
+permisos del volumen `boardcomposer-data` (recurrencia del mismo bug de
+`IDE-0020`, ahora con el `chown` incorporado a `docs/deploy.md`).
 
 Runners de CI/CD: ambos workflows (`ci.yml`, `package-studio.yml`)
 migrados de runners alojados por GitHub a un runner autoalojado en el
@@ -48,26 +52,35 @@ para evitar la build duplicada al empujar rama+tag juntos, pendiente de
 confirmar contra el push que produjo `v0.3.36`.
 
 Despliegue privado en marcha (`IDE-0017`): API en `bc.efjdefrutos.com` y
-Studio por navegador (noVNC) en `studio.efjdefrutos.com`. Contenedores
-reconstruidos y verificados el 31/07/2026 tras el commit `043caf1`
-(rebuild manual por SSH, no automatizado — sin CI/CD de despliegue
-todavía); pendiente de reverificar que corren `v0.3.35`/`v0.3.36`
-(`CHECKLIST-operativa.md`).
+Studio por navegador (noVNC) en `studio.efjdefrutos.com`. La API se
+reconstruyó y verificó de nuevo el 23/08/2026 (`DT-0034`) — corría
+`v0.3.9` desde el rebuild del 31/07/2026 (commit `043caf1`), ahora en
+`v0.3.36`; `/health` y `/strategies` (con `BOARDCOMPOSER_API_KEY`)
+confirmados desde fuera de la VPS. Rebuild sigue siendo manual por SSH,
+sin CI/CD de despliegue — `docs/deploy.md` gana el paso de `chown` del
+volumen que causó el fallo esta vez, para que no se repita una tercera.
+Studio por noVNC (`studio.efjdefrutos.com`) sin reverificar en esta
+sesión.
 
 ## Trabajo en curso
 
 Ninguno abierto en desarrollo activo. Pendiente real hoy, de
-`CHECKLIST-operativa.md` (21/08/2026):
+`CHECKLIST-operativa.md` (23/08/2026):
 
 - Confirmar el ciclo completo de auto-actualización (`IDE-0045`,
   `DT-0029`) contra `v0.3.35` → `v0.3.36` instalada de verdad.
-- `bc.efjdefrutos.com`/`studio.efjdefrutos.com` responden desde fuera de
-  la VPS, y corren la versión actual — sin comprobar desde `v0.3.25`.
+- `studio.efjdefrutos.com` (noVNC) carga y permite operar Studio desde
+  el navegador — sin comprobar desde `v0.3.25`.
 - Activar Stripe en producción (`IDE-0021`, ya construido, inactivo sin
   `STRIPE_SECRET_KEY`/`STRIPE_PRICE_*`).
 - Al menos una clave real de Gemini/Ollama probada en producción (hoy
   solo Anthropic y OpenAI verificados con credenciales reales,
   `IDE-0036`).
+- Rotar `BOARDCOMPOSER_API_KEY` y la contraseña de `auth_basic` de
+  nginx (`bc-studio`): ambas se compartieron en texto plano en una
+  sesión de chat el 23/08/2026 al verificar `DT-0034` — el canal no es
+  el mismo riesgo que un repositorio público, pero es una credencial
+  de producción que ya salió de la VPS una vez de más de lo necesario.
 
 ## Historial hasta el 08/08/2026
 

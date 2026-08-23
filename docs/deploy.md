@@ -212,6 +212,7 @@ location = /health {
     cd boardcomposer && git pull
     docker build -t boardcomposer-api .
     docker stop boardcomposer-api && docker rm boardcomposer-api
+    docker run --rm -v boardcomposer-data:/data alpine chown -R 1000:1000 /data
     docker run -d --name boardcomposer-api --restart unless-stopped \
       -p 127.0.0.1:5050:5050 \
       -v boardcomposer-data:/data \
@@ -220,7 +221,9 @@ location = /health {
       -e ANTHROPIC_API_KEY="sk-ant-..." \
       boardcomposer-api
 
-Si no vas a vender acceso por plan, omite `-v .../data` y `BOARDCOMPOSER_DB_PATH` — sin esas dos líneas la API funciona igual que antes de `IDE-0020`, solo con la clave única. **Si ya los usas** (planes `free`/`basico`/`pro`), no los omitas al reconstruir: sin `BOARDCOMPOSER_DB_PATH` el proceso arranca sin base de claves y toda clave de cliente que no sea la admin empieza a devolver `401` en vez de aplicar su cuota — la app arranca igual, sin avisar de que el billing quedó desactivado.
+Si no vas a vender acceso por plan, omite `-v .../data`, `BOARDCOMPOSER_DB_PATH` y el `chown` — sin esas líneas la API funciona igual que antes de `IDE-0020`, solo con la clave única. **Si ya los usas** (planes `free`/`basico`/`pro`), no los omitas al reconstruir: sin `BOARDCOMPOSER_DB_PATH` el proceso arranca sin base de claves y toda clave de cliente que no sea la admin empieza a devolver `401` en vez de aplicar su cuota — la app arranca igual, sin avisar de que el billing quedó desactivado.
+
+**El paso `chown` es obligatorio si `boardcomposer-data` es un volumen nuevo o recién recreado** (`DT-0034`): la imagen corre como `appuser` (UID 1000, sin privilegios) y el `Dockerfile` solo hace `chown` de `/app`, nunca del punto de montaje de un volumen — Docker lo crea con propietario `root:root` por defecto. Sin este paso, `boardcomposer.billing.init_db()` falla con `sqlite3.OperationalError: unable to open database file` y el contenedor entra en bucle de reinicio (`docker logs boardcomposer-api` lo confirma). Si el volumen ya existía de una ejecución anterior con los permisos ya corregidos, el `chown` es idempotente — no hace daño repetirlo en cada actualización.
 
 Uso personal/de un único usuario: con el `auth_basic` del paso 5 ya nadie sin la contraseña llega ni a `/health`, así que es la protección principal, y funciona desde cualquier red; mantener `BOARDCOMPOSER_API_KEY` definida además es defensa en profundidad barata (una segunda credencial independiente, a otro nivel — HTTP vs. aplicación). Con `ANTHROPIC_API_KEY` real (sin `MockAIProvider`), fijar un límite de gasto mensual en la propia consola de Anthropic — BoardComposer no impone ninguno.
 

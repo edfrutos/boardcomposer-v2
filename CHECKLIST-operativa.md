@@ -1,7 +1,7 @@
 # BoardComposer — Checklist operativa
 
-**Versión revisada:** `0.3.35`
-**Fecha de verificación:** 21/08/2026 (actualizada tras la migración de `ci.yml`)
+**Versión revisada:** `0.3.36`
+**Fecha de verificación:** 23/08/2026 (actualizada tras rehacer el build de la API en la VPS, `DT-0034`)
 **Entorno de verificación:** sandbox Linux (Ubuntu 26.04, arm64) para el core/API/Studio local; runner autoalojado del Mac del usuario para CI y empaquetado — verificado vía `gh run watch`/logs, no solo asumido.
 
 ---
@@ -52,10 +52,10 @@ El bloqueo original (*"recent account payments have failed or your spending limi
 
 ## ☁️ Despliegue en producción
 
-- [ ] `bc.efjdefrutos.com` responde (`/health`) desde fuera de la VPS
+- [x] `bc.efjdefrutos.com` responde (`/health`) desde fuera de la VPS — confirmado 23/08/2026, `{"status":"ok"}`
 - [ ] `studio.efjdefrutos.com` (noVNC) carga y permite operar Studio desde el navegador
-- [ ] Los contenedores de la VPS corren la versión actual (`v0.3.35`) — el rebuild es manual por SSH, puede estar desfasado
-- [ ] `BOARDCOMPOSER_API_KEY` / `VNC_PASSWORD` / auth básica de nginx siguen activas
+- [x] Los contenedores de la VPS corren la versión actual (`v0.3.36`) — confirmado 23/08/2026 tras rehacer el build por SSH; estaba en `v0.3.9` (27 versiones de desfase, `DT-0034`)
+- [x] `BOARDCOMPOSER_API_KEY` / auth básica de nginx siguen activas — confirmado 23/08/2026 (`/strategies` con clave devuelve `200`); `VNC_PASSWORD` (Studio/noVNC) sin comprobar en esta sesión
 
 ## 💳 Billing / Stripe
 
