@@ -1,7 +1,7 @@
 # BoardComposer — Checklist operativa
 
 **Versión revisada:** `0.3.38`
-**Fecha de verificación:** 24/08/2026 (actualizada tras migrar la notarización a clave de App Store Connect, `DT-0037`)
+**Fecha de verificación:** 24/08/2026 (actualizada tras confirmar el ciclo completo de auto-actualización, `DT-0029`)
 **Entorno de verificación:** sandbox Linux (Ubuntu 26.04, arm64) para el core/API/Studio local; runner autoalojado del Mac del usuario para CI y empaquetado — verificado vía `gh run watch`/logs, no solo asumido.
 
 ---
@@ -48,7 +48,7 @@ El bloqueo original (*"recent account payments have failed or your spending limi
 - [x] Firma y notarización vigentes — confirmado en el log (`Timestamp=21 Aug 2026...`, sin `errSecInternalComponent`)
 - [x] El `.app` arranca con doble clic (no solo desde Terminal) — confirmado por el usuario contra `v0.3.35`; `DT-0023` sigue cerrado
 - [x] Descargar el `.dmg` real de la release `v0.3.35` y comprobar que Gatekeeper no bloquea al abrirlo — confirmado por el usuario
-- [ ] "Buscar actualizaciones" detecta, descarga y relanza correctamente desde una versión anterior instalada (`IDE-0043`/`IDE-0045`) — pendiente: se publica `v0.3.36` (solo número de versión) para que `v0.3.35` ya instalada tenga algo que ofrecer
+- [x] "Buscar actualizaciones" detecta, descarga y relanza correctamente desde una versión anterior instalada (`IDE-0043`/`IDE-0045`) — confirmado 24/08/2026 (`v0.3.35`→`v0.3.38`, `DT-0029`). Primer intento con un falso positivo de red (timeout de *handshake* TLS en la red del usuario, servidor descartado como causa); reintentado sin más incidencias
 
 ## ☁️ Despliegue en producción
 

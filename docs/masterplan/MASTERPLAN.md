@@ -33,13 +33,14 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0045`, todos 🟢
 completados y en `main`.
 
-Deuda técnica (`DOC-006-DeudaTecnica.md`): 37 registros. 36 resueltos;
-`DT-0029` (relanzado tras la auto-sustitución del `.app`, `IDE-0045`)
-🟡 mitigado, pendiente de reconfirmar contra un ciclo real ahora que
-`v0.3.38` le da a `v0.3.35`/`v0.3.36` algo que detectar. `DT-0011` (el
-`.app` de macOS sin firmar/notarizar) cerrada del todo el 01/08/2026;
-sigue sin cubrir Windows/Linux/Intel, fuera de alcance de este ítem.
-`DT-0034`/`DT-0035` (23/08/2026): tanto la API (`v0.3.9`, 27 versiones
+Deuda técnica (`DOC-006-DeudaTecnica.md`): 37 registros, los 37
+resueltos. `DT-0029` (relanzado tras la auto-sustitución del `.app`,
+`IDE-0045`) confirmado del todo el 24/08/2026: ciclo completo
+`v0.3.35`→`v0.3.38` probado en real por el usuario — descarga,
+sustitución en marcha y relanzado sin intervención manual. `DT-0011`
+(el `.app` de macOS sin firmar/notarizar) cerrada del todo el
+01/08/2026; sigue sin cubrir Windows/Linux/Intel, fuera de alcance de
+este ítem. `DT-0034`/`DT-0035` (23/08/2026): tanto la API (`v0.3.9`, 27 versiones
 de desfase) como Studio por navegador (`studio.efjdefrutos.com`,
 noVNC, igual de desfasado — le faltaban `IDE-0039`/`IDE-0041`)
 llevaban meses sin reconstruirse en la VPS. Ambos reconstruidos y
@@ -88,10 +89,8 @@ usuario contra los contenedores reales tras recrearlos.
 ## Trabajo en curso
 
 Ninguno abierto en desarrollo activo. Pendiente real hoy, de
-`CHECKLIST-operativa.md` (23/08/2026):
+`CHECKLIST-operativa.md` (24/08/2026):
 
-- Confirmar el ciclo completo de auto-actualización (`IDE-0045`,
-  `DT-0029`) contra `v0.3.35` → `v0.3.36` instalada de verdad.
 - Activar Stripe en producción (`IDE-0021`, ya construido, inactivo sin
   `STRIPE_SECRET_KEY`/`STRIPE_PRICE_*`).
 - Al menos una clave real de Gemini/Ollama probada en producción (hoy
@@ -318,8 +317,6 @@ como candidatas futuras si el modelo híbrido no basta.
 
 Pendiente, de menor a mayor alcance:
 
-0. Confirmar en real el ciclo completo de auto-actualización (`IDE-0045`,
-   `DT-0029` mitigado sin confirmar) contra `v0.3.35` → `v0.3.36`.
 1. Activar Stripe en producción (`IDE-0021` ya construido, inactivo): crear
    los Price de `básico`/`pro` en la cuenta Stripe del usuario (hoy solo
    probada en modo test) y configurar `STRIPE_SECRET_KEY`/
