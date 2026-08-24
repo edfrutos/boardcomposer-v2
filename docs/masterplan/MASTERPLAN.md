@@ -1,6 +1,6 @@
 # BoardComposer — MASTERPLAN
 
-**Última revisión:** 22/08/2026
+**Última revisión:** 24/08/2026
 
 > Este documento resume el estado del proyecto y las normas de trabajo.
 > El detalle vivo de cada funcionalidad está en `DOC-004-Backlog.md`, la
@@ -10,13 +10,15 @@
 ## Estado actual
 
 Rama: `main`
-Versión publicada: `0.3.36` (22/08/2026, tag `v0.3.36`) — sin cambios de
-producto, sube solo el número de versión para que la instalación real
-del usuario (`v0.3.35`, ya confirmada: arranque con doble clic y `.dmg`
-sin bloqueo de Gatekeeper) tenga algo que ofrecer al ciclo completo de
-auto-actualización (`IDE-0045`). Detalle release a release en
-`CHANGELOG.md`; narrativa completa por hilos en `NOTEBOOK.md`. Última
-verificación operativa completa: `CHECKLIST-operativa.md` (21/08/2026).
+Versión publicada: `0.3.38` (24/08/2026, tag `v0.3.38`) — `DT-0036`
+(etiqueta de tablero delgado desbordando su rectángulo) y `DT-0037`
+(notarización migrada de Apple ID + contraseña a clave de App Store
+Connect, tras una revocación sin aviso). Pipeline de firma verificado
+de principio a fin: `.app` firmado, notarizado, grapado, `.dmg`
+publicado en la release de GitHub, en el repo público y en el Gist.
+Detalle release a release en `CHANGELOG.md`; narrativa completa por
+hilos en `NOTEBOOK.md`. Última verificación operativa completa:
+`CHECKLIST-operativa.md` (21/08/2026).
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -31,20 +33,27 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0045`, todos 🟢
 completados y en `main`.
 
-Deuda técnica (`DOC-006-DeudaTecnica.md`): 35 registros. 34 resueltos;
+Deuda técnica (`DOC-006-DeudaTecnica.md`): 37 registros. 36 resueltos;
 `DT-0029` (relanzado tras la auto-sustitución del `.app`, `IDE-0045`)
 🟡 mitigado, pendiente de reconfirmar contra un ciclo real ahora que
-`v0.3.36` le da a `v0.3.35` algo que detectar. `DT-0011` (el `.app` de
-macOS sin firmar/notarizar) cerrada del todo el 01/08/2026; sigue sin
-cubrir Windows/Linux/Intel, fuera de alcance de este ítem. `DT-0034`/
-`DT-0035` (23/08/2026): tanto la API (`v0.3.9`, 27 versiones de
-desfase) como Studio por navegador (`studio.efjdefrutos.com`, noVNC,
-igual de desfasado — le faltaban `IDE-0039`/`IDE-0041`) llevaban meses
-sin reconstruirse en la VPS. Ambos reconstruidos y confirmados en
-`v0.3.36`; `docs/deploy.md` gana el paso de `chown` que causó el fallo
-de la API (`DT-0034`). Ninguno de los dos despliegues tiene CI/CD
-propio — sigue dependiendo de que alguien se acuerde de reconstruir
-los dos contenedores, no automatizado.
+`v0.3.38` le da a `v0.3.35`/`v0.3.36` algo que detectar. `DT-0011` (el
+`.app` de macOS sin firmar/notarizar) cerrada del todo el 01/08/2026;
+sigue sin cubrir Windows/Linux/Intel, fuera de alcance de este ítem.
+`DT-0034`/`DT-0035` (23/08/2026): tanto la API (`v0.3.9`, 27 versiones
+de desfase) como Studio por navegador (`studio.efjdefrutos.com`,
+noVNC, igual de desfasado — le faltaban `IDE-0039`/`IDE-0041`)
+llevaban meses sin reconstruirse en la VPS. Ambos reconstruidos y
+confirmados en `v0.3.36`; `docs/deploy.md` gana el paso de `chown` que
+causó el fallo de la API. `DT-0036` (23/08/2026): etiqueta de tablero
+delgado desbordando su rectángulo, mismo tipo de bug que ya se había
+corregido una vez para las piezas — resuelto en `v0.3.37`. `DT-0037`
+(23-24/08/2026): la contraseña de aplicación del Apple ID usada para
+notarizar se revocó sin aviso; migrado a una clave de App Store
+Connect, scoped solo a notarización — cinco vueltas de depuración
+contra el pipeline real hasta confirmarlo en `v0.3.38`. Ninguno de los
+dos despliegues de la VPS tiene CI/CD propio — sigue dependiendo de
+que alguien se acuerde de reconstruir los dos contenedores, no
+automatizado.
 
 Runners de CI/CD: ambos workflows (`ci.yml`, `package-studio.yml`)
 migrados de runners alojados por GitHub a un runner autoalojado en el

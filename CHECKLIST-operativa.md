@@ -1,7 +1,7 @@
 # BoardComposer — Checklist operativa
 
-**Versión revisada:** `0.3.36`
-**Fecha de verificación:** 23/08/2026 (actualizada tras rehacer el build de la API en la VPS, `DT-0034`)
+**Versión revisada:** `0.3.38`
+**Fecha de verificación:** 24/08/2026 (actualizada tras migrar la notarización a clave de App Store Connect, `DT-0037`)
 **Entorno de verificación:** sandbox Linux (Ubuntu 26.04, arm64) para el core/API/Studio local; runner autoalojado del Mac del usuario para CI y empaquetado — verificado vía `gh run watch`/logs, no solo asumido.
 
 ---
