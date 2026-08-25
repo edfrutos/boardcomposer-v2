@@ -50,18 +50,20 @@ Los planes `free` se bloquean con `402` al agotar la cuota mensual; `basico`/`pr
 
 ### Cobro del overage con Stripe (`src/boardcomposer/stripe_billing.py`)
 
-Opcional — sin configurar, el overage se acumula igual que antes pero no se cobra. Requiere haber creado en Stripe un Price por plan de pago (tarifa graduada: cuota base incluida + precio por unidad extra — `básico` 9€ + 300 incluidas + 0,05€/extra, `pro` 29€ + 1500 incluidas + 0,03€/extra):
+Opcional — sin configurar, el overage se acumula igual que antes pero no se cobra. Requiere **dos** Price por plan de pago en Stripe, no uno (`DT-0038`): un Price normal recurrente para la cuota fija mensual (`básico` 9€/mes, `pro` 29€/mes — sin metering, Stripe lo cobra solo cada periodo) y un Price **medido, sin tramos**, para el overage (`básico` 0,05€/unidad, `pro` 0,03€/unidad). Un único Price "graduado" con el corte en la cuota incluida (300/1500) no sirve: `report_overage()` solo reporta a Stripe las unidades que ya son overage, nunca las que están dentro de la cuota — así que el uso acumulado que ve Stripe en un mes nunca llega a cruzar un corte de tramo puesto en 300/1500, y el overage real quedaría sin cobrarse nunca.
 
     docker run -d --name boardcomposer-api -p 5050:5050 \
       -e BOARDCOMPOSER_DB_PATH="/data/keys.db" \
       -v boardcomposer-data:/data \
       -e STRIPE_SECRET_KEY="sk_live_..." \
       -e STRIPE_PRICE_BASICO="price_..." \
+      -e STRIPE_PRICE_BASICO_OVERAGE="price_..." \
       -e STRIPE_PRICE_PRO="price_..." \
+      -e STRIPE_PRICE_PRO_OVERAGE="price_..." \
       -e ANTHROPIC_API_KEY="sk-ant-..." \
       boardcomposer-api
 
-Con estas tres variables presentes, `scripts/manage_keys.py create <cliente> --plan pro` crea también el Customer + Subscription en Stripe (guarda el `subscription_item_id` en `keys.db` junto a la clave); cada solve por encima de la cuota reporta 1 unidad de uso a ese `subscription_item_id` (`SubscriptionItem.create_usage_record`, best-effort — un fallo de Stripe no rompe la petición del cliente, solo esa unidad de overage no se factura ese ciclo). El plan `free` nunca toca Stripe.
+Con estas variables presentes, `scripts/manage_keys.py create <cliente> --plan pro` crea también el Customer + una Subscription de **dos** ítems en Stripe (el de cuota fija se factura solo; guarda en `keys.db` el id del ítem de overage, no el de la cuota); cada solve por encima de la cuota reporta 1 unidad de uso a ese ítem de overage (`SubscriptionItem.create_usage_record`, best-effort — un fallo de Stripe no rompe la petición del cliente, solo esa unidad de overage no se factura ese ciclo). El plan `free` nunca toca Stripe. Si falta cualquiera de las dos variables de un plan (base u overage), `stripe_billing.is_configured()` lo trata como no configurado del todo — nunca crea una suscripción a medias.
 
 ---
 

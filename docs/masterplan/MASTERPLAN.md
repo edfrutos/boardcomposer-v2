@@ -1,6 +1,6 @@
 # BoardComposer — MASTERPLAN
 
-**Última revisión:** 24/08/2026
+**Última revisión:** 25/08/2026
 
 > Este documento resume el estado del proyecto y las normas de trabajo.
 > El detalle vivo de cada funcionalidad está en `DOC-004-Backlog.md`, la
@@ -33,8 +33,15 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0045`, todos 🟢
 completados y en `main`.
 
-Deuda técnica (`DOC-006-DeudaTecnica.md`): 37 registros, los 37
-resueltos. `DT-0029` (relanzado tras la auto-sustitución del `.app`,
+Deuda técnica (`DOC-006-DeudaTecnica.md`): 38 registros, los 38
+resueltos. `DT-0038` (25/08/2026): encontrado revisando el diseño de
+facturación antes de activar Stripe en real, no reportado por nadie —
+`report_overage()` solo reportaba las unidades ya por encima de cuota,
+así que un único Price graduado con el corte en la cuota incluida
+(300/1500) nunca llegaría a cruzarlo, facturando 0€ de overage en
+silencio. Corregido a dos Price por plan (cuota fija recurrente +
+overage medido sin tramos) antes de crear nada real en Stripe.
+`DT-0029` (relanzado tras la auto-sustitución del `.app`,
 `IDE-0045`) confirmado del todo el 24/08/2026: ciclo completo
 `v0.3.35`→`v0.3.38` probado en real por el usuario — descarga,
 sustitución en marcha y relanzado sin intervención manual. `DT-0011`
@@ -317,10 +324,15 @@ como candidatas futuras si el modelo híbrido no basta.
 
 Pendiente, de menor a mayor alcance:
 
-1. Activar Stripe en producción (`IDE-0021` ya construido, inactivo): crear
-   los Price de `básico`/`pro` en la cuenta Stripe del usuario (hoy solo
-   probada en modo test) y configurar `STRIPE_SECRET_KEY`/
-   `STRIPE_PRICE_BASICO`/`STRIPE_PRICE_PRO` en la VPS.
+1. Activar Stripe en producción (`IDE-0021` ya construido, inactivo;
+   `DT-0038` corregido antes de tocar dinero real — dos Price por plan,
+   no uno, ver `DOC-006-DeudaTecnica.md`): crear en la cuenta Stripe del
+   usuario (ya en modo live) **dos** Price por plan — uno recurrente
+   normal para la cuota fija (`básico` 9€/mes, `pro` 29€/mes) y uno
+   medido sin tramos para el overage (`básico` 0,05€/unidad, `pro`
+   0,03€/unidad) — y configurar `STRIPE_SECRET_KEY`/`STRIPE_PRICE_BASICO`/
+   `STRIPE_PRICE_BASICO_OVERAGE`/`STRIPE_PRICE_PRO`/
+   `STRIPE_PRICE_PRO_OVERAGE` en la VPS.
 2. Alta de cliente self-service (hoy `scripts/manage_keys.py` es manual,
    sin landing ni registro automático).
 3. Automatizar el rebuild/despliegue del VPS (hoy manual por SSH, ver

@@ -44,9 +44,9 @@ def _cmd_create(args) -> None:
             print(f"Cliente Stripe creado: {stripe_customer_id}")
         else:
             print(
-                "Aviso: Stripe no configurado (falta STRIPE_SECRET_KEY o el Price "
-                "ID del plan) — la clave se emite igualmente, sin facturación "
-                "automática de overage."
+                "Aviso: Stripe no configurado (falta STRIPE_SECRET_KEY, o el "
+                "Price de cuota fija, o el de overage de este plan) — la clave "
+                "se emite igualmente, sin facturación automática de overage."
             )
 
     raw_key = billing.create_key(

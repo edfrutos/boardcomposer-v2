@@ -1,5 +1,11 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.39 - 2026-08-25
+
+### Arreglado
+
+- `DT-0038`: `stripe_billing.create_customer_and_subscription()` creaba una única suscripción sobre un solo Price por plan — encontrado al preparar la activación real de Stripe (`IDE-0021`), antes de crear ningún producto real: `report_overage()` solo reporta a Stripe las unidades ya por encima de cuota, nunca las que están dentro, así que un Price graduado con el corte de tramo en la cuota incluida (300/1500) casi nunca llegaría a cruzarlo — el overage real quedaría facturado como 0€, en silencio. Ahora se crean dos Price por plan: uno recurrente normal para la cuota fija (sin metering) y uno medido sin tramos para el overage — nuevas variables `STRIPE_PRICE_BASICO_OVERAGE`/`STRIPE_PRICE_PRO_OVERAGE`, junto a las ya existentes `STRIPE_PRICE_BASICO`/`STRIPE_PRICE_PRO` para la cuota fija.
+
 ## 0.3.38 - 2026-08-23
 
 Sin cambios de producto. `v0.3.37` falló al notarizar (`DT-0037`): la contraseña de aplicación del Apple ID se había revocado sin aviso. `notarytool` pasa a autenticarse con una clave de App Store Connect (`--key`/`--key-id`/`--issuer`) en vez de Apple ID + contraseña — scoped solo a notarización, sin depender del ciclo de vida de seguridad de la cuenta. Esta release es solo para ejercitar el pipeline de firma con el método nuevo de principio a fin.
