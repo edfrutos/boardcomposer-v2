@@ -1,5 +1,11 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.40 - 2026-08-26
+
+### Arreglado
+
+- `DT-0039`: `report_overage()` usaba `SubscriptionItem.create_usage_record`, la API antigua de Stripe para uso por ítem de suscripción — incompatible con el sistema nuevo de "Billing Meters" que exige la cuenta para crear un Price medido. Encontrado al crear en real los Price de overage de `DT-0038` (Stripe rechazó crearlos sin un *Meter* asociado). Ahora reporta un `Meter Event` (`billing.MeterEvent.create`) keyed por `stripe_customer_id` + un `event_name` fijo por plan (`boardcomposer_basico_overage`/`boardcomposer_pro_overage`, configurado como Meter en el Dashboard de Stripe) en vez del id del ítem de la suscripción.
+
 ## 0.3.39 - 2026-08-25
 
 ### Arreglado

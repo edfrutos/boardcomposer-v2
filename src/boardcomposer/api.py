@@ -197,7 +197,7 @@ def create_app(
                 )
                 if result.overage > 0:
                     stripe_billing.report_overage(
-                        record.get("stripe_subscription_item_id")
+                        record.get("stripe_customer_id"), record["plan"]
                     )
                 if not result.allowed:
                     return jsonify(

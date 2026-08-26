@@ -120,19 +120,30 @@ def test_create_customer_and_subscription_finds_overage_item_regardless_of_order
     assert result == ("cus_123", "si_overage")
 
 
-def test_report_overage_noop_without_subscription_item_id(monkeypatch):
+def test_report_overage_noop_without_customer_id(monkeypatch):
     monkeypatch.setenv(stripe_billing.STRIPE_SECRET_KEY_ENV_VAR, "sk_test_x")
     fake_stripe = MagicMock()
     monkeypatch.setitem(sys.modules, "stripe", fake_stripe)
 
-    stripe_billing.report_overage(None)
+    stripe_billing.report_overage(None, "basico")
 
-    fake_stripe.SubscriptionItem.create_usage_record.assert_not_called()
+    fake_stripe.billing.MeterEvent.create.assert_not_called()
+
+
+def test_report_overage_noop_for_unknown_plan(monkeypatch):
+    # No meter event name mapped for this plan — must not guess one.
+    monkeypatch.setenv(stripe_billing.STRIPE_SECRET_KEY_ENV_VAR, "sk_test_x")
+    fake_stripe = MagicMock()
+    monkeypatch.setitem(sys.modules, "stripe", fake_stripe)
+
+    stripe_billing.report_overage("cus_123", "free")
+
+    fake_stripe.billing.MeterEvent.create.assert_not_called()
 
 
 def test_report_overage_noop_when_stripe_unconfigured():
     # No STRIPE_SECRET_KEY set — must not raise even with a real-looking id.
-    stripe_billing.report_overage("si_123")
+    stripe_billing.report_overage("cus_123", "basico")
 
 
 def test_report_overage_calls_stripe_when_configured(monkeypatch):
@@ -140,18 +151,19 @@ def test_report_overage_calls_stripe_when_configured(monkeypatch):
     fake_stripe = MagicMock()
     monkeypatch.setitem(sys.modules, "stripe", fake_stripe)
 
-    stripe_billing.report_overage("si_123", quantity=2)
+    stripe_billing.report_overage("cus_123", "pro", quantity=2)
 
-    fake_stripe.SubscriptionItem.create_usage_record.assert_called_once_with(
-        "si_123", quantity=2, action="increment"
+    fake_stripe.billing.MeterEvent.create.assert_called_once_with(
+        event_name="boardcomposer_pro_overage",
+        payload={"value": 2, "stripe_customer_id": "cus_123"},
     )
 
 
 def test_report_overage_swallows_stripe_errors(monkeypatch):
     monkeypatch.setenv(stripe_billing.STRIPE_SECRET_KEY_ENV_VAR, "sk_test_x")
     fake_stripe = MagicMock()
-    fake_stripe.SubscriptionItem.create_usage_record.side_effect = RuntimeError("boom")
+    fake_stripe.billing.MeterEvent.create.side_effect = RuntimeError("boom")
     monkeypatch.setitem(sys.modules, "stripe", fake_stripe)
 
     # Must not raise — a failed usage report shouldn't break the request.
-    stripe_billing.report_overage("si_123")
+    stripe_billing.report_overage("cus_123", "basico")

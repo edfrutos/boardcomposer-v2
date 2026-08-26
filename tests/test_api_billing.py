@@ -121,7 +121,7 @@ def test_overage_reported_to_stripe_once_paid_plan_exceeds_quota(tmp_path):
         db_path,
         customer_id="taller-1",
         plan="basico",
-        stripe_subscription_item_id="si_123",
+        stripe_customer_id="cus_123",
     )
     store = billing.InMemoryQuotaStore()
     client = _client(db_path, quota_store=store, rate_limit="10000 per minute")
@@ -133,7 +133,7 @@ def test_overage_reported_to_stripe_once_paid_plan_exceeds_quota(tmp_path):
         report_overage.assert_not_called()
 
         client.post("/solve", json=SOLVE_PAYLOAD, headers=headers)
-        report_overage.assert_called_once_with("si_123")
+        report_overage.assert_called_once_with("cus_123", "basico")
 
 
 def test_no_overage_report_while_within_quota(tmp_path):
@@ -142,7 +142,7 @@ def test_no_overage_report_while_within_quota(tmp_path):
         db_path,
         customer_id="taller-1",
         plan="free",
-        stripe_subscription_item_id=None,
+        stripe_customer_id=None,
     )
     store = billing.InMemoryQuotaStore()
     client = _client(db_path, quota_store=store)

@@ -63,7 +63,16 @@ Opcional — sin configurar, el overage se acumula igual que antes pero no se co
       -e ANTHROPIC_API_KEY="sk-ant-..." \
       boardcomposer-api
 
-Con estas variables presentes, `scripts/manage_keys.py create <cliente> --plan pro` crea también el Customer + una Subscription de **dos** ítems en Stripe (el de cuota fija se factura solo; guarda en `keys.db` el id del ítem de overage, no el de la cuota); cada solve por encima de la cuota reporta 1 unidad de uso a ese ítem de overage (`SubscriptionItem.create_usage_record`, best-effort — un fallo de Stripe no rompe la petición del cliente, solo esa unidad de overage no se factura ese ciclo). El plan `free` nunca toca Stripe. Si falta cualquiera de las dos variables de un plan (base u overage), `stripe_billing.is_configured()` lo trata como no configurado del todo — nunca crea una suscripción a medias.
+Con estas variables presentes, `scripts/manage_keys.py create <cliente> --plan pro` crea también el Customer + una Subscription de **dos** ítems en Stripe (el de cuota fija se factura solo; guarda en `keys.db` el id del ítem de overage, aunque ya no se usa para facturar — ver abajo). El plan `free` nunca toca Stripe. Si falta cualquiera de las dos variables de un plan (base u overage), `stripe_billing.is_configured()` lo trata como no configurado del todo — nunca crea una suscripción a medias.
+
+**El Price de overage necesita un *Meter* de Stripe** (`DT-0039`, cuentas nuevas de Stripe usan el sistema de "Billing Meters" — la API antigua de `SubscriptionItem.create_usage_record` ya no aplica a un Price basado en medidor). Antes de crear el Price de overage, crea el medidor en el Dashboard de Stripe (*Product catalog → Meters → Create meter*):
+
+| | Básico | Pro |
+|---|---|---|
+| Event name (obligatorio, literal) | `boardcomposer_basico_overage` | `boardcomposer_pro_overage` |
+| Método de agregación | Sum | Sum |
+
+El `event_name` tiene que coincidir exactamente con `_METER_EVENT_NAMES` en `stripe_billing.py` — es una convención fija en el código, no una variable de entorno. Con el medidor creado, el formulario de precio deja elegirlo al marcar el Price como medido ("usage is metered"). Cada solve por encima de la cuota reporta un `Meter Event` (`stripe.billing.MeterEvent.create()`, keyed por el `stripe_customer_id`, no por el ítem de la suscripción — Stripe correlaciona solo con el `event_name`) — best-effort, un fallo de Stripe no rompe la petición del cliente, solo esa unidad de overage no se factura ese ciclo.
 
 ---
 

@@ -24,6 +24,19 @@ involved) from the overage-only metered Price (billed by exactly what
 that mismatch entirely — only the overage item's id needs tracking
 app-side, matching the single `stripe_subscription_item_id` column
 `billing.py` already had before this fix.
+
+Usage reported via Billing Meters, not `SubscriptionItem.create_usage_record`
+(DT-0039): this account's overage Prices require a Meter (Stripe's newer
+usage-based billing model — the legacy per-subscription-item usage record
+API doesn't attach to a meter-backed Price at all). A Meter Event is keyed
+by the *customer* and a fixed `event_name`, not by a subscription item, so
+`report_overage()` takes the Stripe customer id and the plan instead of an
+item id — `_METER_EVENT_NAMES` maps each plan to the `event_name`
+configured on its overage meter in the Stripe Dashboard (a plain string
+chosen when the meter was created, not a Stripe object id — nothing to put
+in an env var). The overage subscription item id is still returned from
+`create_customer_and_subscription()` and stored for reference, but nothing
+reads it for billing purposes anymore.
 """
 
 from __future__ import annotations
@@ -39,6 +52,15 @@ STRIPE_SECRET_KEY_ENV_VAR = "STRIPE_SECRET_KEY"
 PLAN_PRICE_ENV_VARS = {
     "basico": {"base": "STRIPE_PRICE_BASICO", "overage": "STRIPE_PRICE_BASICO_OVERAGE"},
     "pro": {"base": "STRIPE_PRICE_PRO", "overage": "STRIPE_PRICE_PRO_OVERAGE"},
+}
+
+# The overage meters' Event name, as configured in the Stripe Dashboard
+# (Product catalog -> Meters) — fixed by convention, not per-deployment
+# configuration, since it's purely internal wiring between this code and
+# the meter it reports to.
+_METER_EVENT_NAMES = {
+    "basico": "boardcomposer_basico_overage",
+    "pro": "boardcomposer_pro_overage",
 }
 
 
@@ -98,11 +120,22 @@ def create_customer_and_subscription(
     return customer.id, overage_item_id
 
 
-def report_overage(subscription_item_id: str | None, quantity: int = 1) -> None:
+def report_overage(
+    stripe_customer_id: str | None, plan: str, quantity: int = 1
+) -> None:
     """Best-effort: never raises. A failed usage report shouldn't break the
     customer's actual /solve request — worst case that unit of overage
-    isn't billed this cycle, which is a smaller problem than a 500."""
-    if not subscription_item_id:
+    isn't billed this cycle, which is a smaller problem than a 500.
+
+    Reports a Meter Event against the plan's overage meter (see
+    `_METER_EVENT_NAMES`), not against a specific subscription item — Stripe
+    correlates it to whichever of the customer's active Prices is attached
+    to that meter."""
+    if not stripe_customer_id:
+        return
+
+    event_name = _METER_EVENT_NAMES.get(plan)
+    if event_name is None:
         return
 
     stripe = _client()
@@ -110,11 +143,13 @@ def report_overage(subscription_item_id: str | None, quantity: int = 1) -> None:
         return
 
     try:
-        stripe.SubscriptionItem.create_usage_record(
-            subscription_item_id, quantity=quantity, action="increment"
+        stripe.billing.MeterEvent.create(
+            event_name=event_name,
+            payload={"value": quantity, "stripe_customer_id": stripe_customer_id},
         )
     except Exception:
         logger.exception(
-            "Fallo al reportar overage a Stripe (subscription_item=%s)",
-            subscription_item_id,
+            "Fallo al reportar overage a Stripe (customer=%s, plan=%s)",
+            stripe_customer_id,
+            plan,
         )

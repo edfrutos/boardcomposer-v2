@@ -1,6 +1,6 @@
 # BoardComposer — MASTERPLAN
 
-**Última revisión:** 25/08/2026
+**Última revisión:** 26/08/2026
 
 > Este documento resume el estado del proyecto y las normas de trabajo.
 > El detalle vivo de cada funcionalidad está en `DOC-004-Backlog.md`, la
@@ -10,15 +10,14 @@
 ## Estado actual
 
 Rama: `main`
-Versión publicada: `0.3.38` (24/08/2026, tag `v0.3.38`) — `DT-0036`
-(etiqueta de tablero delgado desbordando su rectángulo) y `DT-0037`
-(notarización migrada de Apple ID + contraseña a clave de App Store
-Connect, tras una revocación sin aviso). Pipeline de firma verificado
-de principio a fin: `.app` firmado, notarizado, grapado, `.dmg`
-publicado en la release de GitHub, en el repo público y en el Gist.
-Detalle release a release en `CHANGELOG.md`; narrativa completa por
-hilos en `NOTEBOOK.md`. Última verificación operativa completa:
-`CHECKLIST-operativa.md` (21/08/2026).
+Versión publicada: `0.3.40` (26/08/2026, tag `v0.3.40`) — dos arreglos
+de facturación encontrados y corregidos *antes* de activar Stripe con
+dinero real, ninguno reportado por un cliente (`DT-0038`/`DT-0039`,
+ver `Deuda técnica` abajo). Studio sin cambios desde `v0.3.38`
+(`DT-0036`/`DT-0037`, etiqueta de tablero + notarización con clave de
+App Store Connect). Detalle release a release en `CHANGELOG.md`;
+narrativa completa por hilos en `NOTEBOOK.md`. Última verificación
+operativa completa: `CHECKLIST-operativa.md` (21/08/2026).
 
 Fases del Roadmap (`DOC-003-Roadmap.md`):
 
@@ -33,7 +32,7 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0045`, todos 🟢
 completados y en `main`.
 
-Deuda técnica (`DOC-006-DeudaTecnica.md`): 38 registros, los 38
+Deuda técnica (`DOC-006-DeudaTecnica.md`): 39 registros, los 39
 resueltos. `DT-0038` (25/08/2026): encontrado revisando el diseño de
 facturación antes de activar Stripe en real, no reportado por nadie —
 `report_overage()` solo reportaba las unidades ya por encima de cuota,
@@ -41,7 +40,13 @@ así que un único Price graduado con el corte en la cuota incluida
 (300/1500) nunca llegaría a cruzarlo, facturando 0€ de overage en
 silencio. Corregido a dos Price por plan (cuota fija recurrente +
 overage medido sin tramos) antes de crear nada real en Stripe.
-`DT-0029` (relanzado tras la auto-sustitución del `.app`,
+`DT-0039` (26/08/2026): al crear esos Price reales, Stripe exigió un
+*Meter* — la cuenta usa el sistema nuevo de Billing Meters, incompatible
+con la API antigua (`SubscriptionItem.create_usage_record`) que usaba
+el código. `report_overage()` pasa a reportar por `stripe_customer_id`
++ un `event_name` fijo (`billing.MeterEvent.create`), confirmado contra
+la documentación oficial de Stripe antes de tocar código. `DT-0029`
+(relanzado tras la auto-sustitución del `.app`,
 `IDE-0045`) confirmado del todo el 24/08/2026: ciclo completo
 `v0.3.35`→`v0.3.38` probado en real por el usuario — descarga,
 sustitución en marcha y relanzado sin intervención manual. `DT-0011`
