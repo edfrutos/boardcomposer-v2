@@ -25,6 +25,14 @@ that mismatch entirely — only the overage item's id needs tracking
 app-side, matching the single `stripe_subscription_item_id` column
 `billing.py` already had before this fix.
 
+Billed by emailed invoice, not auto-charged (DT-0040): `manage_keys.py` is
+an admin CLI, not a self-serve checkout, so a freshly-created Customer has
+no payment method on file — Stripe rejects `charge_automatically` (the
+default) outright without one. `collection_method="send_invoice"` bills
+the same two-item Subscription without requiring a card up front, fitting
+a customer onboarded through a direct relationship rather than a
+card-first signup.
+
 Usage reported via Billing Meters, not `SubscriptionItem.create_usage_record`
 (DT-0039): this account's overage Prices require a Meter (Stripe's newer
 usage-based billing model — the legacy per-subscription-item usage record
@@ -111,6 +119,15 @@ def create_customer_and_subscription(
     subscription = stripe.Subscription.create(
         customer=customer.id,
         items=[{"price": base_price_id}, {"price": overage_price_id}],
+        # send_invoice, not the default charge_automatically (DT-0040):
+        # manage_keys.py is an admin CLI, not a self-serve checkout — a
+        # freshly-created Customer has no payment method on file, and
+        # Stripe rejects an auto-charged subscription outright without
+        # one. Billed by email invoice instead, same as any customer
+        # onboarded through a direct/manual relationship rather than a
+        # card-first signup flow.
+        collection_method="send_invoice",
+        days_until_due=15,
     )
     overage_item_id = next(
         item["id"]

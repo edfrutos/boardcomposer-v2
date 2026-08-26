@@ -65,6 +65,8 @@ Opcional — sin configurar, el overage se acumula igual que antes pero no se co
 
 Con estas variables presentes, `scripts/manage_keys.py create <cliente> --plan pro` crea también el Customer + una Subscription de **dos** ítems en Stripe (el de cuota fija se factura solo; guarda en `keys.db` el id del ítem de overage, aunque ya no se usa para facturar — ver abajo). El plan `free` nunca toca Stripe. Si falta cualquiera de las dos variables de un plan (base u overage), `stripe_billing.is_configured()` lo trata como no configurado del todo — nunca crea una suscripción a medias.
 
+**Facturada por email, no con tarjeta automática** (`DT-0040`): un `Customer` recién creado no tiene ningún método de pago asociado, y `manage_keys.py` es una herramienta de admin para altas manuales, no un checkout — no hay ningún paso previo donde el cliente introduzca una tarjeta. `Subscription.create()` usa `collection_method="send_invoice"` (`days_until_due=15`): Stripe envía una factura por email cada periodo en vez de intentar cobrar automáticamente, algo que habría fallado sin una tarjeta ya asociada.
+
 **El Price de overage necesita un *Meter* de Stripe** (`DT-0039`, cuentas nuevas de Stripe usan el sistema de "Billing Meters" — la API antigua de `SubscriptionItem.create_usage_record` ya no aplica a un Price basado en medidor). Antes de crear el Price de overage, crea el medidor en el Dashboard de Stripe (*Product catalog → Meters → Create meter*):
 
 | | Básico | Pro |

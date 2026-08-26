@@ -1,5 +1,11 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.41 - 2026-08-26
+
+### Arreglado
+
+- `DT-0040`: la primera alta real de cliente con `scripts/manage_keys.py` fallaba en Stripe — `Subscription.create()` con cobro automático (el modo por defecto) exige una tarjeta ya asociada al `Customer`, y uno recién creado por el CLI de admin nunca la tiene. `manage_keys.py` da de alta clientes con relación directa, no pasa por ningún checkout. Ahora usa `collection_method="send_invoice"` (`days_until_due=15`): Stripe factura por email cada periodo en vez de intentar cobrar automáticamente.
+
 ## 0.3.40 - 2026-08-26
 
 ### Arreglado

@@ -90,6 +90,8 @@ def test_create_customer_and_subscription_calls_stripe_when_configured(monkeypat
     fake_stripe.Subscription.create.assert_called_once_with(
         customer="cus_123",
         items=[{"price": "price_pro"}, {"price": "price_pro_overage"}],
+        collection_method="send_invoice",
+        days_until_due=15,
     )
 
 
