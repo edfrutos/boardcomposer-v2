@@ -1,5 +1,11 @@
 # CHANGELOG - BoardComposer
 
+## 0.3.42 - 2026-08-26
+
+### Arreglado
+
+- `DT-0041`: `Subscription.create()` con `collection_method="send_invoice"` (`DT-0040`) fallaba con "Missing email" — `create_customer_and_subscription()` creaba el `Customer` sin ningún email, y `customer_id` (el identificador libre que usa `manage_keys.py`) no tiene por qué ser una dirección de correo. `email` pasa a ser un parámetro obligatorio de `create_customer_and_subscription()`; `manage_keys.py create` gana `--email`, exigido con un mensaje de error propio en un plan de pago con Stripe configurado.
+
 ## 0.3.41 - 2026-08-26
 
 ### Arreglado

@@ -95,7 +95,7 @@ def is_configured(plan: str) -> bool:
 
 
 def create_customer_and_subscription(
-    customer_id: str, plan: str
+    customer_id: str, plan: str, email: str
 ) -> tuple[str, str] | None:
     """Returns (stripe_customer_id, overage_subscription_item_id) for a new
     Customer + two-item Subscription (flat base fee + metered overage) on
@@ -103,7 +103,11 @@ def create_customer_and_subscription(
     (free plan, or missing env vars) — callers treat None as "issue the
     key without Stripe billing". Only the overage item's id is returned:
     the base item needs no app-side tracking, Stripe bills it
-    automatically every period regardless of usage."""
+    automatically every period regardless of usage.
+
+    `email` is required (DT-0041): `collection_method="send_invoice"` below
+    fails outright without one — Stripe needs somewhere to send the
+    invoice it's not auto-charging a card for."""
     if not is_configured(plan):
         return None
 
@@ -114,7 +118,9 @@ def create_customer_and_subscription(
     overage_price_id = os.environ.get(price_vars["overage"])
 
     customer = stripe.Customer.create(
-        name=customer_id, metadata={"boardcomposer_customer_id": customer_id}
+        name=customer_id,
+        email=email,
+        metadata={"boardcomposer_customer_id": customer_id},
     )
     subscription = stripe.Subscription.create(
         customer=customer.id,

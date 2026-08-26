@@ -2,7 +2,7 @@
 """Admin CLI for the paid-API key registry (billing.py).
 
 Usage:
-    python scripts/manage_keys.py create <customer_id> --plan pro
+    python scripts/manage_keys.py create <customer_id> --plan pro --email a@b.com
     python scripts/manage_keys.py revoke <raw_key>
     python scripts/manage_keys.py list
 
@@ -36,9 +36,15 @@ def _cmd_create(args) -> None:
     stripe_subscription_item_id = None
     if args.plan in billing.PAID_PLANS:
         if stripe_billing.is_configured(args.plan):
+            if not args.email:
+                raise SystemExit(
+                    "Falta --email: obligatorio en un plan de pago con Stripe "
+                    "configurado — Stripe factura por email (send_invoice, "
+                    "DT-0040) y no puede crear la suscripción sin uno."
+                )
             stripe_customer_id, stripe_subscription_item_id = (
                 stripe_billing.create_customer_and_subscription(
-                    args.customer_id, args.plan
+                    args.customer_id, args.plan, args.email
                 )
             )
             print(f"Cliente Stripe creado: {stripe_customer_id}")
@@ -102,6 +108,11 @@ def main() -> None:
     create_parser.add_argument("customer_id")
     create_parser.add_argument(
         "--plan", choices=sorted(billing.PLAN_LIMITS), default="free"
+    )
+    create_parser.add_argument(
+        "--email",
+        help="Obligatorio en un plan de pago con Stripe configurado "
+        "(Stripe factura por email, DT-0040)",
     )
     create_parser.set_defaults(func=_cmd_create)
 

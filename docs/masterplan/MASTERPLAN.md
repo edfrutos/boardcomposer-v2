@@ -10,13 +10,13 @@
 ## Estado actual
 
 Rama: `main`
-Versión publicada: `0.3.41` (26/08/2026, tag `v0.3.41`) — tres arreglos
-de facturación seguidos, encontrados activando Stripe con dinero real
-paso a paso, ninguno reportado por un cliente todavía (`DT-0038`/
-`DT-0039`/`DT-0040`, ver `Deuda técnica` abajo). Studio sin cambios
-desde `v0.3.38` (`DT-0036`/`DT-0037`, etiqueta de tablero +
-notarización con clave de App Store Connect). Detalle release a
-release en `CHANGELOG.md`; narrativa completa por hilos en
+Versión publicada: `0.3.42` (26/08/2026, tag `v0.3.42`) — cuatro
+arreglos de facturación seguidos, encontrados activando Stripe con
+dinero real paso a paso, ninguno reportado por un cliente todavía
+(`DT-0038`/`DT-0039`/`DT-0040`/`DT-0041`, ver `Deuda técnica` abajo).
+Studio sin cambios desde `v0.3.38` (`DT-0036`/`DT-0037`, etiqueta de
+tablero + notarización con clave de App Store Connect). Detalle
+release a release en `CHANGELOG.md`; narrativa completa por hilos en
 `NOTEBOOK.md`. Última verificación operativa completa:
 `CHECKLIST-operativa.md` (21/08/2026).
 
@@ -33,9 +33,9 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0045`, todos 🟢
 completados y en `main`.
 
-Deuda técnica (`DOC-006-DeudaTecnica.md`): 40 registros. 39 resueltos;
-`DT-0040` 🟡 corregido en código, pendiente de reconfirmar el alta real
-tras desplegar `v0.3.41` en la VPS. `DT-0038` (25/08/2026): encontrado
+Deuda técnica (`DOC-006-DeudaTecnica.md`): 41 registros. 40 resueltos;
+`DT-0041` 🟡 corregido en código, pendiente de reconfirmar el alta real
+tras desplegar `v0.3.42` en la VPS. `DT-0038` (25/08/2026): encontrado
 revisando el diseño de facturación antes de activar Stripe en real, no
 reportado por nadie — `report_overage()` solo reportaba las unidades
 ya por encima de cuota, así que un único Price graduado con el corte
@@ -48,12 +48,17 @@ incompatible con la API antigua (`SubscriptionItem.create_usage_record`)
 que usaba el código. `report_overage()` pasa a reportar por
 `stripe_customer_id` + un `event_name` fijo (`billing.MeterEvent.create`),
 confirmado contra la documentación oficial de Stripe antes de tocar
-código. `DT-0040` (26/08/2026): primera alta real de cliente
-(`manage_keys.py`) rechazada por Stripe — un `Customer` recién creado
-no tiene tarjeta asociada, y el cobro automático (por defecto) la
-exige. `manage_keys.py` es una herramienta de admin, no un checkout;
-`Subscription.create()` pasa a `collection_method="send_invoice"`
-(factura por email, sin tarjeta previa). `DT-0029`
+código. `DT-0040` (26/08/2026, resuelto y confirmado en real): primera
+alta real de cliente (`manage_keys.py`) rechazada por Stripe — un
+`Customer` recién creado no tiene tarjeta asociada, y el cobro
+automático (por defecto) la exige. `manage_keys.py` es una herramienta
+de admin, no un checkout; `Subscription.create()` pasa a
+`collection_method="send_invoice"` (factura por email, sin tarjeta
+previa) — desplegado, confirmado que el error de tarjeta desaparece.
+`DT-0041` (26/08/2026): la misma prueba reveló el siguiente requisito
+de Stripe — facturar por email exige, literalmente, un email, que
+`create_customer_and_subscription()` nunca pasaba. `email` pasa a ser
+obligatorio ahí y en `manage_keys.py create --email`. `DT-0029`
 (relanzado tras la auto-sustitución del `.app`,
 `IDE-0045`) confirmado del todo el 24/08/2026: ciclo completo
 `v0.3.35`→`v0.3.38` probado en real por el usuario — descarga,

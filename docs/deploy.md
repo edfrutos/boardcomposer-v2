@@ -42,9 +42,11 @@ Sin `BOARDCOMPOSER_API_KEY`, la API queda sin autenticación (mismo comportamien
 
 Gestión de claves con `scripts/manage_keys.py` (dentro del contenedor o con el mismo `BOARDCOMPOSER_DB_PATH` montado):
 
-    python scripts/manage_keys.py create taller-perez --plan pro
+    python scripts/manage_keys.py create taller-perez --plan pro --email taller-perez@ejemplo.com
     python scripts/manage_keys.py list
     python scripts/manage_keys.py revoke bc_...
+
+`--email` es obligatorio en un plan de pago si Stripe está configurado (`DT-0041`): la factura se envía por correo (`DT-0040`), y Stripe rechaza crear la suscripción sin uno. Sin Stripe configurado, o en el plan `free`, se puede omitir.
 
 Los planes `free` se bloquean con `402` al agotar la cuota mensual; `basico`/`pro` siguen respondiendo por encima de su cuota.
 

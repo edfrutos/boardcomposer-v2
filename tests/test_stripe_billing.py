@@ -53,13 +53,23 @@ def test_is_configured_true_when_secret_and_both_prices_set(monkeypatch):
 
 
 def test_create_customer_and_subscription_none_when_unconfigured():
-    assert stripe_billing.create_customer_and_subscription("taller-1", "pro") is None
+    assert (
+        stripe_billing.create_customer_and_subscription(
+            "taller-1", "pro", "a@b.com"
+        )
+        is None
+    )
 
 
 def test_create_customer_and_subscription_none_for_free_plan(monkeypatch):
     monkeypatch.setenv(stripe_billing.STRIPE_SECRET_KEY_ENV_VAR, "sk_test_x")
 
-    assert stripe_billing.create_customer_and_subscription("taller-1", "free") is None
+    assert (
+        stripe_billing.create_customer_and_subscription(
+            "taller-1", "free", "a@b.com"
+        )
+        is None
+    )
 
 
 def test_create_customer_and_subscription_calls_stripe_when_configured(monkeypatch):
@@ -79,13 +89,17 @@ def test_create_customer_and_subscription_calls_stripe_when_configured(monkeypat
     }
     monkeypatch.setitem(sys.modules, "stripe", fake_stripe)
 
-    result = stripe_billing.create_customer_and_subscription("taller-1", "pro")
+    result = stripe_billing.create_customer_and_subscription(
+        "taller-1", "pro", "taller@example.com"
+    )
 
     # Only the overage item's id comes back — report_overage() must never
     # report usage against the flat base-fee item.
     assert result == ("cus_123", "si_overage")
     fake_stripe.Customer.create.assert_called_once_with(
-        name="taller-1", metadata={"boardcomposer_customer_id": "taller-1"}
+        name="taller-1",
+        email="taller@example.com",
+        metadata={"boardcomposer_customer_id": "taller-1"},
     )
     fake_stripe.Subscription.create.assert_called_once_with(
         customer="cus_123",
@@ -117,7 +131,9 @@ def test_create_customer_and_subscription_finds_overage_item_regardless_of_order
     }
     monkeypatch.setitem(sys.modules, "stripe", fake_stripe)
 
-    result = stripe_billing.create_customer_and_subscription("taller-1", "pro")
+    result = stripe_billing.create_customer_and_subscription(
+        "taller-1", "pro", "taller@example.com"
+    )
 
     assert result == ("cus_123", "si_overage")
 
