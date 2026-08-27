@@ -131,10 +131,16 @@ Ninguno abierto en desarrollo activo. Pendiente real hoy, de
 - Al menos una clave real de Gemini/Ollama probada en producción (hoy
   solo Anthropic y OpenAI verificados con credenciales reales,
   `IDE-0036`).
-- Considerar automatizar (o al menos dar un guardarraíl tipo
-  `scripts/check_project.py`) la reconstrucción de ambos contenedores
-  de la VPS — es la segunda vez en la vida del proyecto que se
-  descubren meses de desfase solo al pedir explícitamente comprobarlo.
+- Guardarraíl contra la VPS desfasada (`DT-0034`/`DT-0035`): parcial
+  desde el 27/08/2026. `/health` expone ahora `version` (la del paquete
+  instalado) y `scripts/check_deployment.py` / `make check-deploy` la
+  comparan con `pyproject.toml`, saliendo ≠ 0 si no coinciden. **Pasos
+  pendientes:** reconstruir el contenedor de la API para que sirva el
+  campo nuevo (el `v0.3.42` desplegado es anterior), y correr
+  `check-deploy` tras cada rebuild. No cubre `boardcomposer-studio-remote`
+  (sin versión por HTTP) ni automatiza la reconstrucción — sigue siendo
+  manual, solo deja de ser invisible. Automatizarlo del todo (cron en el
+  runner autoalojado, o CI/CD de despliegue) queda como decisión aparte.
 
 ## Historial hasta el 08/08/2026
 
@@ -366,6 +372,9 @@ Pendiente, de menor a mayor alcance:
    alcance.**
 3. Automatizar el rebuild/despliegue del VPS (hoy manual por SSH, ver
    `Estado actual`) si la cadencia de cambios en la API lo justifica.
+   Guardarraíl mínimo ya hecho (27/08/2026): `/health` sirve `version` y
+   `make check-deploy` avisa del desfase (`DT-0034`/`DT-0035`) — pero
+   sigue habiendo que reconstruir a mano y correr el check.
 
 Si el kerf tiene que importar también fuera de Studio (CLI y API hoy no lo
 tienen), `DEC-0016` es la decisión a revisitar.

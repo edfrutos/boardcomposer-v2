@@ -45,6 +45,8 @@ supply one without changing this module.
 
 import json
 import os
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _dist_version
 
 from flask import Flask, Response, g, jsonify, request
 from flask_limiter import Limiter
@@ -79,6 +81,26 @@ MAX_BOARDS = 100
 
 API_KEY_ENV_VAR = "BOARDCOMPOSER_API_KEY"
 API_KEY_HEADER = "X-API-Key"
+
+
+def _running_version() -> str:
+    """Version of the installed boardcomposer package, surfaced on /health.
+
+    This is the build/deploy version (what `pip show boardcomposer` reports
+    inside the container), not an API-contract version — DOC-008-API.md still
+    lists contract versioning as pending. Its only job is to let a remote
+    check (`scripts/check_deployment.py`, run after every VPS rebuild) catch
+    a container that was never rebuilt against the current release, the drift
+    that DT-0034/DT-0035 only found by luck. Falls back to "unknown" when run
+    from a source tree with no dist metadata (never the deployed case).
+    """
+    try:
+        return _dist_version("boardcomposer")
+    except PackageNotFoundError:  # pragma: no cover - source tree without dist-info
+        return "unknown"
+
+
+RUNNING_VERSION = _running_version()
 DEFAULT_RATE_LIMIT = "60 per minute"
 DB_PATH_ENV_VAR = "BOARDCOMPOSER_DB_PATH"
 REDIS_URL_ENV_VAR = "REDIS_URL"
@@ -217,7 +239,7 @@ def create_app(
     @app.get("/health")
     @limiter.exempt
     def health():
-        return jsonify(status="ok")
+        return jsonify(status="ok", version=RUNNING_VERSION)
 
     @app.get("/strategies")
     def strategies():

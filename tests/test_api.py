@@ -28,7 +28,17 @@ def test_health_returns_ok(client):
     response = client.get("/health")
 
     assert response.status_code == 200
-    assert response.get_json() == {"status": "ok"}
+    assert response.get_json()["status"] == "ok"
+
+
+def test_health_reports_the_running_version(client):
+    # The deploy guardrail (scripts/check_deployment.py) reads this field to
+    # tell whether the VPS container was rebuilt against the current release.
+    from importlib.metadata import version
+
+    response = client.get("/health")
+
+    assert response.get_json()["version"] == version("boardcomposer")
 
 
 def test_strategies_lists_known_names(client):

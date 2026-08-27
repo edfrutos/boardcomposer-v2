@@ -240,6 +240,17 @@ Si no vas a vender acceso por plan, omite `-v .../data`, `BOARDCOMPOSER_DB_PATH`
 
 **El paso `chown` es obligatorio si `boardcomposer-data` es un volumen nuevo o recién recreado** (`DT-0034`): la imagen corre como `appuser` (UID 1000, sin privilegios) y el `Dockerfile` solo hace `chown` de `/app`, nunca del punto de montaje de un volumen — Docker lo crea con propietario `root:root` por defecto. Sin este paso, `boardcomposer.billing.init_db()` falla con `sqlite3.OperationalError: unable to open database file` y el contenedor entra en bucle de reinicio (`docker logs boardcomposer-api` lo confirma). Si el volumen ya existía de una ejecución anterior con los permisos ya corregidos, el `chown` es idempotente — no hace daño repetirlo en cada actualización.
 
+**9. Confirmar que el contenedor sirve la versión actual** (`DT-0034`/`DT-0035` — dos veces se descubrió que la VPS llevaba meses desfasada solo al comprobarlo a mano):
+
+    curl -u USUARIO:CONTRASEÑA https://bc.tu-dominio.com/health
+    # {"status": "ok", "version": "0.3.42"}   ← debe coincidir con pyproject.toml
+
+O, desde un clon del repo en el mismo commit que quieres tener desplegado:
+
+    BC_DEPLOY_AUTH="USUARIO:CONTRASEÑA" make check-deploy
+
+`scripts/check_deployment.py` compara el `version` de `/health` con el de `pyproject.toml` y sale con código ≠ 0 si no coinciden (o si el `/health` desplegado aún no trae el campo — señal de que el contenedor es anterior a este guardarraíl). No comprueba el contenedor de Studio por navegador (`boardcomposer-studio-remote`), que no expone su versión por HTTP: reconstrúyelo desde el mismo tag (`docs/deploy-studio-remote.md`) y confírmalo con "Ayuda → Acerca de" — es el que se quedó atrás en `DT-0035`.
+
 Uso personal/de un único usuario: con el `auth_basic` del paso 5 ya nadie sin la contraseña llega ni a `/health`, así que es la protección principal, y funciona desde cualquier red; mantener `BOARDCOMPOSER_API_KEY` definida además es defensa en profundidad barata (una segunda credencial independiente, a otro nivel — HTTP vs. aplicación). Con `ANTHROPIC_API_KEY` real (sin `MockAIProvider`), fijar un límite de gasto mensual en la propia consola de Anthropic — BoardComposer no impone ninguno.
 
 **Verificado con un despliegue real (`IDE-0017`)**, no solo con `docker build`/`run` local: subdominio propio con SSL Let's Encrypt, contenedor corriendo en el VPS, proxy nginx conectado tras desactivar "Modo proxy" en Plesk, `/health` (`200`) y `/strategies` con clave (`200`, lista de estrategias) desde la IP permitida, `403` de nginx desde una IP fuera del `allow` (probado con datos móviles). Dos falsos positivos descartados durante el diagnóstico: Fail2Ban y el Web Application Firewall (mod_security) de Plesk, ambos desactivados para este dominio — el `403` inicial que parecía venir de uno de los dos resultó ser, una vez añadido `-v` a `curl`, simplemente la clave de ejemplo sin sustituir por la real. Protección migrada después de `allow`/`deny` por IP a `auth_basic` (`DEC-0015`) para no depender de una IP fija.

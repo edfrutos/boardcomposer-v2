@@ -55,7 +55,7 @@ Cubre `IDE-0006` y la Fase F de `IDE-0007` (`docs/masterplan/DOC-004-Backlog.md`
 
 | Ruta | Método | Qué hace |
 |---|---|---|
-| `/health` | GET | Comprobación trivial de que el servicio responde. |
+| `/health` | GET | Comprobación trivial de que el servicio responde: `{"status": "ok", "version": "<versión del paquete instalado>"}`. El campo `version` (la que reporta `pip show boardcomposer` dentro del contenedor, no una versión de contrato de API) lo lee `scripts/check_deployment.py` para detectar un contenedor de la VPS que nunca se reconstruyó contra la release actual (`DT-0034`/`DT-0035`). |
 | `/strategies` | GET | Lista las estrategias registradas: `balanced`/`material`/`compact` más las que aporten plugins instalados (`IDE-0008` Fase C). |
 | `/plugins` | GET | Visibilidad de plugins instalados (`DOC-999-Ideas.md`, Marketplace/Comunidad): plugins de terceros detectados y errores de carga, por cada uno de los 4 grupos de entry point del Core (generadores, estrategias, importadores, exportadores) — `plugin_visibility.plugin_summary()`, misma lógica que `boardcomposer plugins` en la CLI. Los paneles de Studio quedan fuera, solo importan dentro de la app de escritorio. |
 | `/solve` | POST | Recibe `boards`/`constraints`/`strategy`/`top` en JSON, ejecuta `GeometrySolver` y devuelve el mismo JSON que ya genera `solutions_to_json()` para el CLI. |

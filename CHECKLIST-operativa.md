@@ -54,7 +54,9 @@ El bloqueo original (*"recent account payments have failed or your spending limi
 
 - [x] `bc.efjdefrutos.com` responde (`/health`) desde fuera de la VPS — confirmado 23/08/2026, `{"status":"ok"}`
 - [x] `studio.efjdefrutos.com` (noVNC) carga y permite operar Studio desde el navegador, con paridad completa respecto a la app local — confirmado 23/08/2026 tras reconstruir el contenedor (`DT-0035`); estaba tan desfasado como la API (`DT-0034`), le faltaban `IDE-0039`/`IDE-0041`
-- [x] Los contenedores de la VPS corren la versión actual (`v0.3.36`) — confirmado 23/08/2026 tras rehacer el build por SSH; estaba en `v0.3.9` (27 versiones de desfase, `DT-0034`)
+- [x] Los contenedores de la VPS corren la versión actual — API en `v0.3.42` (27/08/2026, alta de Stripe); Studio remoto sin verificar desde `v0.3.36` (23/08/2026)
+- [ ] **Reconstruir el contenedor de la API para que `/health` exponga `version`** (guardarraíl nuevo, 27/08/2026): el `v0.3.42` desplegado es anterior al campo. Tras `git pull` + rebuild, `BC_DEPLOY_AUTH="usuario:contraseña" make check-deploy` debe dar verde. A partir de ahí, correrlo tras cada rebuild y periódicamente (`DT-0034`/`DT-0035`)
+- [ ] Reconstruir también `boardcomposer-studio-remote` desde el mismo tag y confirmar la versión con "Ayuda → Acerca de" (no lo cubre `check-deploy`)
 - [x] `BOARDCOMPOSER_API_KEY` / auth básica de nginx siguen activas — confirmado 23/08/2026 (`/strategies` con clave devuelve `200`); `VNC_PASSWORD` (Studio/noVNC) sin comprobar en esta sesión
 
 ## 💳 Billing / Stripe
