@@ -100,15 +100,16 @@ confirmar contra el push que produjo `v0.3.36`.
 Despliegue privado en marcha (`IDE-0017`): API en `bc.efjdefrutos.com` y
 Studio por navegador (noVNC) en `studio.efjdefrutos.com` — dos
 contenedores independientes, cada uno con su propio ciclo de
-reconstrucción manual. Ambos reconstruidos y verificados el 23/08/2026
-(`DT-0034`/`DT-0035`): la API corría `v0.3.9` desde el 31/07/2026
-(commit `043caf1`), Studio remoto igual de desfasado (le faltaban
-`IDE-0039`/`IDE-0041` en el menú "Proyecto") — los dos confirmados en
-`v0.3.36`, con paridad completa entre la web y la app local. `docs/deploy.md`
-gana el paso de `chown` del volumen que causó el fallo de la API; el de
-Studio remoto no lo necesitó. Ningún CI/CD de despliegue todavía —
-sigue dependiendo de que alguien reconstruya los dos contenedores a
-mano.
+reconstrucción manual. **Ambos en `v0.3.42`, reconstruidos y verificados
+el 27/08/2026** (API por `curl /health` + `make check-deploy`, Studio por
+"Ayuda → Acerca de"). Antes, el 23/08/2026 (`DT-0034`/`DT-0035`): la API
+corría `v0.3.9` desde el 31/07/2026 (commit `043caf1`) y Studio remoto
+igual de desfasado (le faltaban `IDE-0039`/`IDE-0041`) — ese desfase de
+27 versiones se descubrió solo al comprobarlo a mano. `docs/deploy.md`
+ganó el paso de `chown` del volumen (fallo de la API), y desde el
+27/08/2026 hay un guardarraíl mínimo: `/health` expone `version` y
+`make check-deploy` avisa del desfase. Sigue sin CI/CD de despliegue —
+la reconstrucción de los dos contenedores es manual.
 
 Credenciales rotadas el 23/08/2026, mismo día: `BOARDCOMPOSER_API_KEY`,
 la contraseña de `auth_basic` de nginx (`bc-studio`), `VNC_PASSWORD`
@@ -126,21 +127,24 @@ Ninguno abierto en desarrollo activo. Pendiente real hoy, de
 - ~~Activar Stripe en producción (`IDE-0021`)~~ — hecho el 27/08/2026:
   `v0.3.42` en la VPS con las cinco variables `STRIPE_*` y los dos
   *Meters* de Stripe live, primer alta real de cliente completa
-  (`DT-0041`). Falta el alta self-service (`DOC-999-Ideas.md`), fuera
-  del alcance de "activar".
+  (`DT-0041`, cliente de prueba `taller-prueba` retirado después). Falta
+  el alta self-service (`DOC-999-Ideas.md`), fuera del alcance de
+  "activar".
 - Al menos una clave real de Gemini/Ollama probada en producción (hoy
   solo Anthropic y OpenAI verificados con credenciales reales,
   `IDE-0036`).
-- Guardarraíl contra la VPS desfasada (`DT-0034`/`DT-0035`): parcial
-  desde el 27/08/2026. `/health` expone ahora `version` (la del paquete
-  instalado) y `scripts/check_deployment.py` / `make check-deploy` la
-  comparan con `pyproject.toml`, saliendo ≠ 0 si no coinciden. **Pasos
-  pendientes:** reconstruir el contenedor de la API para que sirva el
-  campo nuevo (el `v0.3.42` desplegado es anterior), y correr
-  `check-deploy` tras cada rebuild. No cubre `boardcomposer-studio-remote`
-  (sin versión por HTTP) ni automatiza la reconstrucción — sigue siendo
-  manual, solo deja de ser invisible. Automatizarlo del todo (cron en el
-  runner autoalojado, o CI/CD de despliegue) queda como decisión aparte.
+- ~~Guardarraíl contra la VPS desfasada (`DT-0034`/`DT-0035`)~~ —
+  operativo desde el 27/08/2026. `/health` expone `version` (la del
+  paquete instalado) y `scripts/check_deployment.py` / `make check-deploy`
+  la comparan con `pyproject.toml`, saliendo ≠ 0 si no coinciden.
+  Ambos contenedores de la VPS reconstruidos ese día en `v0.3.42` y
+  verificados (API por `curl`/`check-deploy`, Studio por "Ayuda →
+  Acerca de"). No cubre `boardcomposer-studio-remote` (sin versión por
+  HTTP) ni automatiza la reconstrucción — sigue siendo manual, solo deja
+  de ser invisible. Automatizarlo del todo (cron en el runner
+  autoalojado, o CI/CD de despliegue) queda como decisión aparte.
+- Verificar el cobro de overage de punta a punta contra Stripe (requiere
+  superar la cuota real de un plan de pago).
 
 ## Historial hasta el 08/08/2026
 

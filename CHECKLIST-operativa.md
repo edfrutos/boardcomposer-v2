@@ -52,19 +52,18 @@ El bloqueo original (*"recent account payments have failed or your spending limi
 
 ## ☁️ Despliegue en producción
 
-- [x] `bc.efjdefrutos.com` responde (`/health`) desde fuera de la VPS — confirmado 23/08/2026, `{"status":"ok"}`
-- [x] `studio.efjdefrutos.com` (noVNC) carga y permite operar Studio desde el navegador, con paridad completa respecto a la app local — confirmado 23/08/2026 tras reconstruir el contenedor (`DT-0035`); estaba tan desfasado como la API (`DT-0034`), le faltaban `IDE-0039`/`IDE-0041`
-- [x] Los contenedores de la VPS corren la versión actual — API en `v0.3.42` (27/08/2026, alta de Stripe); Studio remoto sin verificar desde `v0.3.36` (23/08/2026)
-- [ ] **Reconstruir el contenedor de la API para que `/health` exponga `version`** (guardarraíl nuevo, 27/08/2026): el `v0.3.42` desplegado es anterior al campo. Tras `git pull` + rebuild, `BC_DEPLOY_AUTH="usuario:contraseña" make check-deploy` debe dar verde. A partir de ahí, correrlo tras cada rebuild y periódicamente (`DT-0034`/`DT-0035`)
-- [ ] Reconstruir también `boardcomposer-studio-remote` desde el mismo tag y confirmar la versión con "Ayuda → Acerca de" (no lo cubre `check-deploy`)
+- [x] `bc.efjdefrutos.com` responde (`/health`) desde fuera de la VPS — confirmado 27/08/2026, `{"status":"ok","version":"0.3.42"}`
+- [x] `studio.efjdefrutos.com` (noVNC) carga y permite operar Studio desde el navegador, con paridad completa respecto a la app local — confirmado 27/08/2026 tras reconstruir el contenedor en `v0.3.42` ("Ayuda → Acerca de" → `0.3.42`). El primer intento daba "Failed to connect to server": caché del navegador (funciona en incógnito / con recarga forzada), no el backend
+- [x] Los contenedores de la VPS corren la versión actual (`v0.3.42`) — API y Studio remoto reconstruidos y verificados el 27/08/2026 desde el mismo checkout de `main`
+- [x] `/health` de la API expone `version` y `make check-deploy` (o el `curl` directo) lo compara con `pyproject.toml` — guardarraíl nuevo (`DT-0034`/`DT-0035`), operativo desde el 27/08/2026. Correrlo tras cada rebuild y periódicamente. No cubre `boardcomposer-studio-remote` (sin versión por HTTP): ese se confirma a mano con "Ayuda → Acerca de"
 - [x] `BOARDCOMPOSER_API_KEY` / auth básica de nginx siguen activas — confirmado 23/08/2026 (`/strategies` con clave devuelve `200`); `VNC_PASSWORD` (Studio/noVNC) sin comprobar en esta sesión
 
 ## 💳 Billing / Stripe
 
 - [x] Stripe activado en producción (27/08/2026): `v0.3.42` en la VPS con las cinco variables `STRIPE_SECRET_KEY` / `STRIPE_PRICE_BASICO` / `STRIPE_PRICE_BASICO_OVERAGE` / `STRIPE_PRICE_PRO` / `STRIPE_PRICE_PRO_OVERAGE`, más los dos *Meters* de Stripe live (`boardcomposer_basico_overage` / `boardcomposer_pro_overage`, agregación Sum). Confirmado con `docker exec ... env | grep STRIPE`.
 - [x] Alta de cliente real con `scripts/manage_keys.py` (27/08/2026): `taller-prueba`, plan `basico`, con `--email` — `Cliente Stripe creado: cus_...` y clave emitida sin traceback; en el dashboard de Stripe el Customer aparece con email y una Subscription activa de dos ítems (cuota fija + overage medido) con `collection method = Send invoice`. Cierra `DT-0041` y la cadena `DT-0038`→`DT-0041`.
-- [ ] Revocar el cliente de validación `taller-prueba` (`manage_keys.py revoke`) y cancelar su Subscription en Stripe cuando ya no haga falta para pruebas.
-- [ ] Verificar el cobro de overage de punta a punta: superar la cuota de un plan de pago y comprobar que llega el `Meter Event` a Stripe y se refleja en la factura del periodo.
+- [x] Cliente de validación `taller-prueba` retirado (27/08/2026): Subscription cancelada en el dashboard de Stripe y clave local desactivada (`UPDATE api_keys SET active=0`, 1 fila).
+- [ ] Verificar el cobro de overage de punta a punta: superar la cuota de un plan de pago y comprobar que llega el `Meter Event` a Stripe y se refleja en la factura del periodo. Requiere >300 solves reales en `basico` — hacerlo cuando haya un cliente real, o bajando temporalmente `PLAN_LIMITS` en `billing.py` contra una clave de prueba.
 
 ## 🤖 Proveedores de IA
 
