@@ -30,6 +30,14 @@ in front of the API on the real VPS (`docs/deploy.md`, Opción C, paso 5).
 key — it is exempt from `X-API-Key` (only the Basic auth sits in front of it).
 """
 
+# Runs against the deployed box, sometimes from the VPS host's own old system
+# Python (3.9-ish), not just the 3.13 inside the container or a dev venv:
+#   * __future__ annotations so PEP 604 hints (`str | None`) aren't evaluated
+#   * tomllib import guarded (stdlib only from 3.11) with a regex fallback
+# Keep both when editing so `python3 scripts/check_deployment.py` keeps working
+# on the server.
+from __future__ import annotations
+
 import argparse
 import base64
 import json
