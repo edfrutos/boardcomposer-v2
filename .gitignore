@@ -58,3 +58,12 @@ studio/deployment/
 # materiales, etc.) — personal data, not sample/source data (that lives
 # in data/samples/).
 studio/*.csv
+
+# Capturas de pantalla sueltas (secrets de GitHub, Actions, suscripción…):
+# material de trabajo personal, no assets del proyecto. El repo no versiona
+# ningún .png a día de hoy.
+*.png
+
+# Carpeta de trabajo personal con datos de pruebas (CSVs, proyectos .bcstudio,
+# notas): no es fuente del proyecto.
+__.__V2/
