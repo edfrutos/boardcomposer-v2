@@ -34,11 +34,16 @@ import argparse
 import base64
 import json
 import os
+import re
 import sys
-import tomllib
 import urllib.error
 import urllib.request
 from pathlib import Path
+
+try:
+    import tomllib
+except ModuleNotFoundError:  # Python < 3.11 (e.g. the VPS host outside the container)
+    tomllib = None
 
 DEFAULT_API_URL = "https://bc.efjdefrutos.com"
 STUDIO_CONTAINER = "boardcomposer-studio-remote"
@@ -54,8 +59,28 @@ def _fail(code: int, message: str) -> None:
 
 
 def _project_version() -> str:
-    with Path("pyproject.toml").open("rb") as file:
-        return tomllib.load(file)["project"]["version"]
+    """The version in pyproject.toml — what a rebuilt container should serve.
+
+    Uses tomllib when available; falls back to a line-scoped regex so the
+    script also runs on the pre-3.11 system Python of the VPS host (the
+    `[project]` table's `version = "x.y.z"` is plain enough to match safely).
+    """
+    text = Path("pyproject.toml").read_text(encoding="utf-8")
+
+    if tomllib is not None:
+        return tomllib.loads(text)["project"]["version"]
+
+    in_project = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("["):
+            in_project = stripped == "[project]"
+            continue
+        if in_project:
+            match = re.match(r'version\s*=\s*"([^"]+)"', stripped)
+            if match:
+                return match.group(1)
+    raise SystemExit("no se encontró [project].version en pyproject.toml")
 
 
 def _fetch_health(api_url: str, auth: str | None, timeout: float) -> dict:

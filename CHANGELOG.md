@@ -4,7 +4,7 @@
 
 ### Añadido
 
-- Guardarraíl contra un despliegue de la VPS desfasado (`DT-0034`/`DT-0035`): `/health` de la API devuelve ahora `version` (la del paquete instalado, la que reporta `pip show boardcomposer` dentro del contenedor — versión de build/despliegue, no de contrato de API). `scripts/check_deployment.py`, envuelto en `make check-deploy`, la compara con la de `pyproject.toml` y sale con código ≠ 0 ante un desfase o ante un `/health` que aún no traiga el campo (contenedor anterior al guardarraíl). Toma `BC_DEPLOY_AUTH="usuario:contraseña"` para el HTTP Basic de nginx. No cubre el contenedor de Studio por navegador (`boardcomposer-studio-remote`), que no expone su versión por HTTP: el script imprime un recordatorio de reconstruirlo desde el mismo tag y confirmarlo con "Ayuda → Acerca de".
+- Guardarraíl contra un despliegue de la VPS desfasado (`DT-0034`/`DT-0035`): `/health` de la API devuelve ahora `version` (la del paquete instalado, la que reporta `pip show boardcomposer` dentro del contenedor — versión de build/despliegue, no de contrato de API). `scripts/check_deployment.py`, envuelto en `make check-deploy`, la compara con la de `pyproject.toml` y sale con código ≠ 0 ante un desfase o ante un `/health` que aún no traiga el campo (contenedor anterior al guardarraíl). Toma `BC_DEPLOY_AUTH="usuario:contraseña"` para el HTTP Basic de nginx. Solo stdlib y con fallback sin `tomllib`, para poder correrlo también con el Python < 3.11 del host de la VPS. No cubre el contenedor de Studio por navegador (`boardcomposer-studio-remote`), que no expone su versión por HTTP: el script imprime un recordatorio de reconstruirlo desde el mismo tag y confirmarlo con "Ayuda → Acerca de".
 
 ### Cambiado
 

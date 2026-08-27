@@ -74,3 +74,13 @@ def test_studio_reminder_is_always_printed(monkeypatch, fake_health, capsys):
     _run(monkeypatch)
 
     assert check_deployment.STUDIO_CONTAINER in capsys.readouterr().out
+
+
+def test_project_version_regex_fallback_matches_tomllib(monkeypatch):
+    """The pre-3.11 path (VPS host has no tomllib) must read the same value."""
+    with_tomllib = check_deployment._project_version()
+
+    monkeypatch.setattr(check_deployment, "tomllib", None)
+    without_tomllib = check_deployment._project_version()
+
+    assert without_tomllib == with_tomllib
