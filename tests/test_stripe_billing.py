@@ -54,9 +54,7 @@ def test_is_configured_true_when_secret_and_both_prices_set(monkeypatch):
 
 def test_create_customer_and_subscription_none_when_unconfigured():
     assert (
-        stripe_billing.create_customer_and_subscription(
-            "taller-1", "pro", "a@b.com"
-        )
+        stripe_billing.create_customer_and_subscription("taller-1", "pro", "a@b.com")
         is None
     )
 
@@ -65,9 +63,7 @@ def test_create_customer_and_subscription_none_for_free_plan(monkeypatch):
     monkeypatch.setenv(stripe_billing.STRIPE_SECRET_KEY_ENV_VAR, "sk_test_x")
 
     assert (
-        stripe_billing.create_customer_and_subscription(
-            "taller-1", "free", "a@b.com"
-        )
+        stripe_billing.create_customer_and_subscription("taller-1", "free", "a@b.com")
         is None
     )
 
