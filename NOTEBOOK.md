@@ -313,3 +313,19 @@ Desplegada `v0.3.41` en la VPS: el error de "sin método de pago" desapareció, 
 Cuatro fallos de facturación seguidos en la misma tarde, cada uno visible solo al llegar más lejos que el anterior — mismo patrón de convergencia real que ya se vio depurando el runner autoalojado (`DT-0030`-`DT-0033`) y la notarización con clave de App Store Connect (`DT-0037`).
 
 Con `v0.3.38` publicada, el usuario probó por fin el ciclo completo de auto-actualización pendiente desde `v0.3.27`/`v0.3.28` (`DT-0029`, `IDE-0045`): "Buscar actualizaciones" desde `v0.3.35` instalada. Primer intento, falso positivo: `No se pudo descargar la actualización. <urlopen error _ssl.c:1015: The handshake operation timed out>`. Antes de tocar código se descartó el servidor como causa — el `dmg_url` del Gist respondía `200` en 6s desde fuera, *handshake* TLS en 0.17s, así que el timeout de 15s de `download_dmg()` (`studio/update_installer.py`) no era corto de por sí, era la red del usuario en ese momento puntual (candidato señalado: las descargas de release de GitHub redirigen a un dominio distinto de `github.com`, que algunos firewalls/VPN tratan distinto). Reintentado: descarga, sustitución del `.app` en marcha y relanzado sin intervención manual — `DT-0029` confirmado del todo, cierra el último pendiente de `IDE-0045`.
+
+## 2026-08-27 - Cadena de facturación cerrada: `v0.3.42` en producción, primer alta real (`DT-0041`)
+
+Retomado el pendiente de la sesión del 25/08: los cuatro arreglos de facturación (`DT-0038`→`DT-0041`) estaban en `v0.3.42` pero sin confirmar contra la VPS.
+
+Antes de desplegar, CI (`ruff format --check .`) empezó a fallar: el fix de `DT-0041` (`v0.3.42`) dejó dos llamadas a `create_customer_and_subscription()` con saltos de línea que `ruff format` colapsa en una sola — norma 5/7 de `MASTERPLAN.md` (ruff limpio antes de commit) saltada al comitear ese test. Corregido y pusheado (`15b2f8d`), CI en verde en 5m19s. `v0.3.42` no se re-publica: el fallo era solo de formato en un test, sin efecto en el `.app` ni en la API ya desplegable.
+
+El usuario hizo el despliegue y la activación de Stripe (pasos manuales: SSH a la VPS + Dashboard de Stripe live, fuera del alcance de esta sesión):
+
+- **Stripe live:** dos *Meters* (`boardcomposer_basico_overage`/`boardcomposer_pro_overage`, agregación Sum — literales exactos de `_METER_EVENT_NAMES`) y los cuatro Price definitivos (cuota fija recurrente + overage medido sin tramos, por plan).
+- **VPS:** `v0.3.42` con las cinco variables `STRIPE_*` (`STRIPE_SECRET_KEY` + los cuatro `STRIPE_PRICE_*`).
+- **Primer alta real completa:** `manage_keys.py create taller-prueba --plan basico --email …` imprimió `Cliente Stripe creado: cus_…` y emitió la clave sin traceback. En el Dashboard de Stripe: Customer con email + Subscription activa de dos ítems (cuota fija 9€ + overage medido) con `collection method = Send invoice`.
+
+`DT-0041` 🟢 y con él la cadena `DT-0038`→`DT-0041` entera: primer cliente de pago dado de alta de principio a fin, cuatro fallos encontrados y corregidos por el propio proceso de activar Stripe con cuidado, ninguno por un cliente real. `taller-prueba` es de validación — a revocar (`manage_keys.py revoke`) y cancelar su Subscription cuando ya no haga falta. Pendiente aún: verificar el cobro de overage de punta a punta (superar cuota → `Meter Event` → factura del periodo).
+
+De los tres pendientes de negocio de `MASTERPLAN.md` ("Próxima decisión"), el de "activar Stripe" queda cerrado; el de menor alcance pasa a ser el alta de cliente self-service.

@@ -1,6 +1,6 @@
 # BoardComposer — MASTERPLAN
 
-**Última revisión:** 26/08/2026
+**Última revisión:** 27/08/2026
 
 > Este documento resume el estado del proyecto y las normas de trabajo.
 > El detalle vivo de cada funcionalidad está en `DOC-004-Backlog.md`, la
@@ -14,6 +14,12 @@ Versión publicada: `0.3.42` (26/08/2026, tag `v0.3.42`) — cuatro
 arreglos de facturación seguidos, encontrados activando Stripe con
 dinero real paso a paso, ninguno reportado por un cliente todavía
 (`DT-0038`/`DT-0039`/`DT-0040`/`DT-0041`, ver `Deuda técnica` abajo).
+Cadena de facturación cerrada del todo el 27/08/2026: `v0.3.42`
+desplegado en la VPS con las cinco variables `STRIPE_*` y los dos
+*Meters* de Stripe live creados, primer alta real de cliente completa
+de principio a fin (`taller-prueba`, plan `basico` — Customer con
+email + Subscription de dos ítems `send_invoice` verificados en el
+dashboard). Cliente de validación, a revocar cuando ya no haga falta.
 Studio sin cambios desde `v0.3.38` (`DT-0036`/`DT-0037`, etiqueta de
 tablero + notarización con clave de App Store Connect). Detalle
 release a release en `CHANGELOG.md`; narrativa completa por hilos en
@@ -33,9 +39,8 @@ Fases del Roadmap (`DOC-003-Roadmap.md`):
 Backlog (`DOC-004-Backlog.md`): `IDE-0001`–`IDE-0045`, todos 🟢
 completados y en `main`.
 
-Deuda técnica (`DOC-006-DeudaTecnica.md`): 41 registros. 40 resueltos;
-`DT-0041` 🟡 corregido en código, pendiente de reconfirmar el alta real
-tras desplegar `v0.3.42` en la VPS. `DT-0038` (25/08/2026): encontrado
+Deuda técnica (`DOC-006-DeudaTecnica.md`): 41 registros, los 41
+resueltos. `DT-0038` (25/08/2026): encontrado
 revisando el diseño de facturación antes de activar Stripe en real, no
 reportado por nadie — `report_overage()` solo reportaba las unidades
 ya por encima de cuota, así que un único Price graduado con el corte
@@ -55,10 +60,12 @@ automático (por defecto) la exige. `manage_keys.py` es una herramienta
 de admin, no un checkout; `Subscription.create()` pasa a
 `collection_method="send_invoice"` (factura por email, sin tarjeta
 previa) — desplegado, confirmado que el error de tarjeta desaparece.
-`DT-0041` (26/08/2026): la misma prueba reveló el siguiente requisito
-de Stripe — facturar por email exige, literalmente, un email, que
+`DT-0041` (26/08/2026, resuelto y confirmado en real el 27/08/2026):
+la misma prueba reveló el siguiente requisito de Stripe — facturar por
+email exige, literalmente, un email, que
 `create_customer_and_subscription()` nunca pasaba. `email` pasa a ser
-obligatorio ahí y en `manage_keys.py create --email`. `DT-0029`
+obligatorio ahí y en `manage_keys.py create --email`. Cerrado con el
+despliegue de `v0.3.42` y el alta real de `taller-prueba`. `DT-0029`
 (relanzado tras la auto-sustitución del `.app`,
 `IDE-0045`) confirmado del todo el 24/08/2026: ciclo completo
 `v0.3.35`→`v0.3.38` probado en real por el usuario — descarga,
@@ -114,10 +121,13 @@ usuario contra los contenedores reales tras recrearlos.
 ## Trabajo en curso
 
 Ninguno abierto en desarrollo activo. Pendiente real hoy, de
-`CHECKLIST-operativa.md` (24/08/2026):
+`CHECKLIST-operativa.md`:
 
-- Activar Stripe en producción (`IDE-0021`, ya construido, inactivo sin
-  `STRIPE_SECRET_KEY`/`STRIPE_PRICE_*`).
+- ~~Activar Stripe en producción (`IDE-0021`)~~ — hecho el 27/08/2026:
+  `v0.3.42` en la VPS con las cinco variables `STRIPE_*` y los dos
+  *Meters* de Stripe live, primer alta real de cliente completa
+  (`DT-0041`). Falta el alta self-service (`DOC-999-Ideas.md`), fuera
+  del alcance de "activar".
 - Al menos una clave real de Gemini/Ollama probada en producción (hoy
   solo Anthropic y OpenAI verificados con credenciales reales,
   `IDE-0036`).
@@ -342,17 +352,18 @@ como candidatas futuras si el modelo híbrido no basta.
 
 Pendiente, de menor a mayor alcance:
 
-1. Activar Stripe en producción (`IDE-0021` ya construido, inactivo;
-   `DT-0038` corregido antes de tocar dinero real — dos Price por plan,
-   no uno, ver `DOC-006-DeudaTecnica.md`): crear en la cuenta Stripe del
-   usuario (ya en modo live) **dos** Price por plan — uno recurrente
-   normal para la cuota fija (`básico` 9€/mes, `pro` 29€/mes) y uno
-   medido sin tramos para el overage (`básico` 0,05€/unidad, `pro`
-   0,03€/unidad) — y configurar `STRIPE_SECRET_KEY`/`STRIPE_PRICE_BASICO`/
+1. ~~Activar Stripe en producción~~ — hecho el 27/08/2026. En la cuenta
+   Stripe live: dos *Meters* (`boardcomposer_basico_overage`/
+   `boardcomposer_pro_overage`, agregación Sum) y dos Price por plan
+   (cuota fija recurrente `básico` 9€/mes, `pro` 29€/mes + overage
+   medido sin tramos `básico` 0,05€/unidad, `pro` 0,03€/unidad). En la
+   VPS: `STRIPE_SECRET_KEY`/`STRIPE_PRICE_BASICO`/
    `STRIPE_PRICE_BASICO_OVERAGE`/`STRIPE_PRICE_PRO`/
-   `STRIPE_PRICE_PRO_OVERAGE` en la VPS.
+   `STRIPE_PRICE_PRO_OVERAGE` con `v0.3.42`. Primer alta real completa
+   verificada (`taller-prueba`, `DT-0041`).
 2. Alta de cliente self-service (hoy `scripts/manage_keys.py` es manual,
-   sin landing ni registro automático).
+   sin landing ni registro automático). **Ahora el pendiente de menor
+   alcance.**
 3. Automatizar el rebuild/despliegue del VPS (hoy manual por SSH, ver
    `Estado actual`) si la cadencia de cambios en la API lo justifica.
 

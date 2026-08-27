@@ -1,7 +1,7 @@
 # BoardComposer — Checklist operativa
 
-**Versión revisada:** `0.3.38`
-**Fecha de verificación:** 24/08/2026 (actualizada tras confirmar el ciclo completo de auto-actualización, `DT-0029`)
+**Versión revisada:** `0.3.42`
+**Fecha de verificación:** 27/08/2026 (actualizada tras cerrar la cadena de facturación de Stripe, `DT-0038`→`DT-0041`)
 **Entorno de verificación:** sandbox Linux (Ubuntu 26.04, arm64) para el core/API/Studio local; runner autoalojado del Mac del usuario para CI y empaquetado — verificado vía `gh run watch`/logs, no solo asumido.
 
 ---
@@ -59,8 +59,10 @@ El bloqueo original (*"recent account payments have failed or your spending limi
 
 ## 💳 Billing / Stripe
 
-- [ ] Confirmar si `STRIPE_SECRET_KEY` / `STRIPE_PRICE_BASICO` / `STRIPE_PRICE_PRO` ya están configuradas en la VPS (según `MASTERPLAN.md`, seguían pendientes a fecha 08/08/2026)
-- [ ] Probar un alta de cliente real con `scripts/manage_keys.py`
+- [x] Stripe activado en producción (27/08/2026): `v0.3.42` en la VPS con las cinco variables `STRIPE_SECRET_KEY` / `STRIPE_PRICE_BASICO` / `STRIPE_PRICE_BASICO_OVERAGE` / `STRIPE_PRICE_PRO` / `STRIPE_PRICE_PRO_OVERAGE`, más los dos *Meters* de Stripe live (`boardcomposer_basico_overage` / `boardcomposer_pro_overage`, agregación Sum). Confirmado con `docker exec ... env | grep STRIPE`.
+- [x] Alta de cliente real con `scripts/manage_keys.py` (27/08/2026): `taller-prueba`, plan `basico`, con `--email` — `Cliente Stripe creado: cus_...` y clave emitida sin traceback; en el dashboard de Stripe el Customer aparece con email y una Subscription activa de dos ítems (cuota fija + overage medido) con `collection method = Send invoice`. Cierra `DT-0041` y la cadena `DT-0038`→`DT-0041`.
+- [ ] Revocar el cliente de validación `taller-prueba` (`manage_keys.py revoke`) y cancelar su Subscription en Stripe cuando ya no haga falta para pruebas.
+- [ ] Verificar el cobro de overage de punta a punta: superar la cuota de un plan de pago y comprobar que llega el `Meter Event` a Stripe y se refleja en la factura del periodo.
 
 ## 🤖 Proveedores de IA
 
